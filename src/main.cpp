@@ -1,29 +1,25 @@
 #include <raylib-cpp.hpp>
+#include <fmt/base.h>
 
 int main() {
-    
-    // Initialization
-    int screenWidth = 800;
-    int screenHeight = 450;
-
-    raylib::Color textColor(LIGHTGRAY);
-    raylib::Window w(screenWidth, screenHeight, "Raylib C++ Starter Kit Example");
-    
+    raylib::InitWindow(720, 480);
     SetTargetFPS(60);
 
-    // Main game loop
-    while (!w.ShouldClose()) // Detect window close button or ESC key
-    {
-        // Update
+    int hue = 0;
 
-        // TODO: Update your variables here
+    while (!WindowShouldClose()) {
 
-        // Draw
+        if (hue >= 360) hue = 0;
+
         BeginDrawing();
-        ClearBackground(RAYWHITE);
-        textColor.DrawText("Congrats! You created your first window!", 190, 200, 20);
+
+        ClearBackground(ColorFromHSV(++hue, 1, 1));
+        DrawFPS(0, 0);
+
+        fmt::println("h: {}deg", hue);
+
         EndDrawing();
     }
 
-    return 0;
+    CloseWindow();
 }

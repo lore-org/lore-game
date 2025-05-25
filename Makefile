@@ -11,13 +11,13 @@ platformpth = $(subst /,$(PATHSEP),$1)
 
 # Set global macros
 buildDir := bin
-executable := app
+executable := lore
 target := $(buildDir)/$(executable)
 sources := $(call rwildcard,src/,*.cpp)
 objects := $(patsubst src/%, $(buildDir)/%, $(patsubst %.cpp, %.o, $(sources)))
 depends := $(patsubst %.o, %.d, $(objects))
 compileFlags := -std=c++17 -I include
-linkFlags = -L lib/$(platform) -l raylib
+linkFlags = -L lib/$(platform) -l raylib -l format
 
 # Check for Windows
 ifeq ($(OS), Windows_NT)
@@ -73,12 +73,15 @@ include: submodules
 	$(call COPY,vendor/raylib/src,./include,raylib.h)
 	$(call COPY,vendor/raylib/src,./include,raymath.h)
 	$(call COPY,vendor/raylib-cpp/include,./include,*.hpp)
+	$(call COPY,vendor/fmt/include/fmt,./include/fmt,*.h)
 
-# Build the raylib static library file and copy it into lib
+# Build libraries and copy them to lib
 lib: submodules
 	cd vendor/raylib/src $(THEN) "$(MAKE)" PLATFORM=PLATFORM_DESKTOP
 	$(MKDIR) $(call platformpth, lib/$(platform))
 	$(call COPY,vendor/raylib/src,lib/$(platform),libraylib.a)
+	cd vendor/fmt $(THEN) $(CXX) -MMD -MP -c $(compileFlags) src/format.cc $(CXXFLAGS) $(THEN) ar rvs libformat.a format.o
+	$(call COPY,vendor/fmt,lib/$(platform),libformat.a)
 
 # Link the program and create the executable
 $(target): $(objects)
