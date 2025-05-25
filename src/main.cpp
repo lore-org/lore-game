@@ -1,5 +1,6 @@
 #include <raylib-cpp.hpp>
 #include <fmt/base.h>
+#include <fmt/format.h>
 
 int main() {
     raylib::InitWindow(720, 480);
@@ -14,9 +15,7 @@ int main() {
         BeginDrawing();
 
         ClearBackground(ColorFromHSV(++hue, 1, 1));
-        DrawFPS(0, 0);
-
-        fmt::println("h: {}deg", hue);
+        raylib::DrawText(fmt::format("{} FPS", GetFPS()), 5, 5, 20, BLACK);
 
         EndDrawing();
     }
