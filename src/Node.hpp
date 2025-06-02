@@ -1,65 +1,10 @@
 #pragma once
 
 #include <vector>
-#include <functional>
 
 #include "Object.hpp"
 #include "Data.hpp"
-
-/** @brief Node is the main element. Anything that gets drawn or contains things that get drawn is a Node.
- The most popular Nodes are: CCScene, CCLayer, CCSprite, CCMenu.
-
- The main features of a Node are:
- - They can contain other Node nodes (addChild, getChildByTag, removeChild, etc)
- - They can schedule periodic callback (schedule, unschedule, etc)
- - They can execute actions (runAction, stopAction, etc)
-
- Some Node nodes provide extra functionality for them or their children.
-
- Subclassing a Node usually means (one/all) of:
- - overriding init to initialize resources and schedule callbacks
- - create callbacks to handle the advancement of time
- - overriding draw to render the node
-
- Features of Node:
- - position
- - scale (x, y)
- - rotation (in degrees, clockwise)
- - CCCamera (an interface to gluLookAt )
- - CCGridBase (to do mesh transformations)
- - anchor point
- - size
- - visible
- - z-order
- - openGL z position
-
- Default values:
- - rotation: 0
- - position: (x=0,y=0)
- - scale: (x=1,y=1)
- - contentSize: (x=0,y=0)
- - anchorPoint: (x=0,y=0)
-
- Limitations:
- - A Node is a "void" object. It doesn't have a texture
-
- Order in transformations with grid disabled
- -# The node will be translated (position)
- -# The node will be rotated (rotation)
- -# The node will be scaled (scale)
- -# The node will be moved according to the camera values (camera)
-
- Order in transformations with grid enabled
- -# The node will be translated (position)
- -# The node will be rotated (rotation)
- -# The node will be scaled (scale)
- -# The grid will capture the screen
- -# The node will be moved according to the camera values (camera)
- -# The grid will render the captured screen
-
- Camera:
- - Each node has a camera. By default it points to the center of the Node.
- */
+#include "Scheduler.hpp"
 
 class Node : public Object
 {
@@ -147,44 +92,10 @@ public:
     
     Rect boundingBox();
     
-    
-    #define SELECTOR std::function<void(float)>
-    
-    bool isScheduled(SELECTOR selector);
-
-    void scheduleUpdate();
-
-    void scheduleUpdateWithPriority(int priority);
-
-    void unscheduleUpdate();
-
-    #define REPEAT_FOREVER (UINT_MAX -1)
-    // use REPEAT_FOREVER macro to repeat
-    void schedule(SELECTOR selector, float interval, unsigned int repeat, float delay);
-    
-    void schedule(SELECTOR selector, float interval);
-    
-    void scheduleOnce(SELECTOR selector, float delay);
-    
-    void schedule(SELECTOR selector);
-    
-    void unschedule(SELECTOR selector);
-
-    void unscheduleAllSelectors();
-
-    void resumeSchedulerAndActions();
-    void pauseSchedulerAndActions();
-    
     virtual void update(float delta);
 
-private:
-    /// lazy allocs
-    void childrenAlloc();
-    
-    /// helper that reorder a child
+private:    
     void insertChild(Node* child, int z);
-    
-    /// Removes a child, call child->onExit(), do cleanup, remove it from children array.
     void detachChild(Node *child, bool doCleanup);
 
 protected:
@@ -201,9 +112,6 @@ protected:
     
     int m_tag;
     void* m_userData;
-    
-    // TODO - implement m_scheduler
-    // CCScheduler *m_scheduler;
 
     bool m_bVisible;
 };

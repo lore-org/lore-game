@@ -6,7 +6,7 @@
 
 int main() {
     raylib::InitWindow(720, 480);
-    SetTargetFPS(60);
+    SetTargetFPS(240);
 
     auto object = new Object();
 
@@ -14,7 +14,7 @@ int main() {
 
     while (!WindowShouldClose()) {
 
-        if (hue >= 360) hue = 0;
+        if (hue >= 360) hue %= 360;
 
         BeginDrawing();
 
