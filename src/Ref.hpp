@@ -2,7 +2,7 @@
 
 class Ref {
 protected:
-    int m_refCount;
+    unsigned int m_refCount;
 
     Ref() : m_refCount(1) {};
 
@@ -17,8 +17,16 @@ public:
         if (m_refCount <= 0)
             delete this;
     };
-
-    int getReferenceCount() {
+    
+    bool isSingleReference() {
+        return m_refCount == 1;
+    }
+    /**
+     * Returns the Ref's current reference count.
+     *
+     * @returns The Ref's reference count.
+     */
+    unsigned int retainCount() {
         return m_refCount;
     };
 };
