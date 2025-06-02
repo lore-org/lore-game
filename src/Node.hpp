@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <any>
 
 #include "Object.hpp"
 #include "Data.hpp"
@@ -9,43 +10,92 @@
 class Node : public Object
 {
 public:
-    Node();
-    virtual ~Node();
+    Node() : m_rotation(.0f), m_scale(1.f), m_position(0, 0),
+    m_anchorPoint(.5f, .5f), m_contentSize(0, 0), m_zOrder(0),
+    m_parent(nullptr), m_tag(0), m_userData(nullptr), m_visible(true) {};
+    virtual ~Node() {
+        delete m_userData;
+        this->removeAllChildren();
+    };
     
-    virtual bool init();
-    static Node* create();
+    virtual bool init() {
+        return true;
+    };
+    static Node* create() {
+        Node* ret = new Node();
+        if (!ret->init()) return ret;
+        else {
+            return nullptr;
+            ret->release();
+        }
+    };
     
-    const char* description();
+
+    inline virtual void setZOrder(int zOrder) {
+        m_zOrder = zOrder;
+        if (m_parent) m_parent->reorderChild(this, zOrder);
+    };
+    inline virtual int getZOrder() {
+        return m_zOrder;
+    };
+
+    inline virtual void setScale(float scale) {
+        m_scale = scale;
+    };
+    inline virtual float getScale() {
+        return m_scale;
+    };
+
+    inline virtual void setPosition(const Point& position) {
+        m_position = position;
+    };
+    inline virtual const Point& getPosition() const {
+        return m_position;
+    };
+    inline virtual void setPosition(float x, float y) {
+        m_position.x = x;
+        m_position.y = y;
+    };
+    inline virtual void setPositionX(float x) {
+        m_position.x = x;
+    };
+    inline virtual float getPositionX() const {
+        return m_position.x;
+    };
+    inline virtual void setPositionY(float y) {
+        m_position.y = y;
+    };
+    inline virtual float getPositionY() const {
+        return m_position.y;
+    };
+
+    inline virtual void setAnchorPoint(const Point& anchorPoint) {
+        m_anchorPoint = anchorPoint;
+    };
+    inline virtual const Point& getAnchorPoint() const {
+        return m_anchorPoint;
+    };
     
+    inline virtual void setContentSize(const Size& contentSize) {
+        m_contentSize = contentSize;
+    };
+    inline virtual const Size& getContentSize() const {
+        return m_contentSize;
+    };
 
-    virtual void setZOrder(int zOrder);
-    virtual int getZOrder();
+    inline virtual void setVisible(bool visible) {
+        m_visible = visible;
+    };
+    inline virtual bool isVisible() const {
+        return m_visible;
+    };
 
-    virtual void setScale(float scale);
-    virtual float getScale();
-
-    virtual void setScale(float fScaleX,float fScaleY);
-
-    virtual void setPosition(const Point &position);
-    virtual const Point& getPosition();
-    virtual void setPosition(float x, float y);
-    virtual void getPosition(float* x, float* y);
-    virtual void setPositionX(float x);
-    virtual float getPositionX();
-    virtual void setPositionY(float y);
-    virtual float getPositionY();
-
-    virtual void setAnchorPoint(const Point& anchorPoint);
-    virtual const Point& getAnchorPoint();
-    
-    virtual void setContentSize(const Size& contentSize);
-    virtual const Size& getContentSize() const;
-
-    virtual void setVisible(bool visible);
-    virtual bool isVisible();
-
-    virtual void setRotation(float fRotation);
-    virtual float getRotation();
+    inline virtual void setRotation(float rotation) {
+        m_rotation = rotation;
+    };
+    inline virtual float getRotation() const {
+        return m_rotation;
+    };
     
 
     virtual void addChild(Node* child);
@@ -60,43 +110,41 @@ public:
     virtual Node* getParent();
     
     virtual void removeFromParent();
-    virtual void removeFromParentAndCleanup(bool cleanup);
     virtual void removeChild(Node* child);
-    virtual void removeChild(Node* child, bool cleanup);
     virtual void removeChildByTag(int tag);
-    virtual void removeChildByTag(int tag, bool cleanup);
     virtual void removeAllChildren();
-    virtual void removeAllChildrenWithCleanup(bool cleanup);
     
-    virtual void reorderChild(Node * child, int zOrder);
+    virtual void reorderChild(Node* child, int zOrder);
     
     virtual void sortAllChildren();
     
     
-    virtual void setTag(int nTag);
+    virtual void setTag(int tag) {
+        m_tag = tag;
+    };
     
-    virtual void* getUserData();
-    virtual void setUserData(void* userData);
+    virtual std::any* getUserData() {
+        return m_userData;
+    };
+    virtual void setUserData(std::any* userData) {
+        m_userData = userData;
+    };
 
-
-    virtual void onEnter();
-    virtual void onEnterTransitionDidFinish();
-
-    virtual void onExit();
-    virtual void onExitTransitionDidStart();
 
     virtual void cleanup();
     virtual void draw();
     virtual void visit();
 
     
-    Rect boundingBox();
+    Rect getRect() {
+        return Rect(m_position, m_contentSize);
+    };
     
-    virtual void update(float delta);
+    virtual void update(float dt) {};
 
 private:    
     void insertChild(Node* child, int z);
-    void detachChild(Node *child, bool doCleanup);
+    void detachChild(Node* child, bool doCleanup);
 
 protected:
     float m_rotation;
@@ -111,7 +159,7 @@ protected:
     Node* m_parent;
     
     int m_tag;
-    void* m_userData;
+    std::any* m_userData;
 
-    bool m_bVisible;
+    bool m_visible;
 };
