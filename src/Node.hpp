@@ -148,7 +148,7 @@ public:
         child->cleanup();
         child->removeFromParent();
         auto idx = this->_getIndexOfChild(child);
-        if (idx > 0) m_children.erase(idx + m_children.begin());
+        if (idx > 0) m_children.erase(m_children.begin() + idx);
     };
     virtual void removeChildByTag(int tag) {
         auto child = this->getChildByTag(tag);
