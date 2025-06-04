@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <vector>
 #include <any>
 
@@ -98,53 +99,117 @@ public:
     };
     
 
-    virtual void addChild(Node* child);
-    virtual void addChild(Node* child, int zOrder);
-    virtual void addChild(Node* child, int zOrder, int tag);
-    virtual Node* getChildByTag(int tag);
-    virtual std::vector<Node*> getChildren();
+    inline virtual void addChild(Node* child) {
+        this->addChild(
+            child,
+            m_children.at(m_children.size() - 1)->getZOrder()
+        );
+    };
+    inline virtual void addChild(Node* child, int zOrder) {
+        child->setZOrder(zOrder);
+        m_children.push_back(child);
+        this->sortAllChildren();
+    };
+    inline virtual void addChild(Node* child, int zOrder, int tag) {
+        this->setTag(tag);
+        this->addChild(child, zOrder);
+    };
+    // returns nullptr if child does not exist
+    inline virtual Node* getChildByTag(int tag) {
+        auto find = std::find_if(
+            m_children.begin(),
+            m_children.end(),
+            [tag](Node& node) { return node.m_tag == tag; }
+        );
+
+        if (find != m_children.end()) return *find;
+        return nullptr;
+    };
+    inline virtual std::vector<Node*> getChildren() {
+        return m_children;
+    };
     
-    virtual unsigned int getChildrenCount() const;
+    inline virtual unsigned int getChildrenCount() const {
+        return m_children.size();
+    };
     
-    virtual void setParent(Node* parent);
-    virtual Node* getParent();
+    inline virtual void setParent(Node* parent) {
+        m_parent = parent;
+    };
+    inline virtual Node* getParent() {
+        return m_parent;
+    };
     
-    virtual void removeFromParent();
-    virtual void removeChild(Node* child);
-    virtual void removeChildByTag(int tag);
-    virtual void removeAllChildren();
+    virtual void removeFromParent() {
+        m_parent->removeChild(this);
+        this->cleanup();
+    };
+    virtual void removeChild(Node* child) {
+        child->cleanup();
+        child->removeFromParent();
+        auto idx = this->_getIndexOfChild(child);
+        if (idx > 0) m_children.erase(idx + m_children.begin());
+    };
+    virtual void removeChildByTag(int tag) {
+        auto child = this->getChildByTag(tag);
+        if (child) this->removeChild(child);
+    };
+    inline virtual void removeAllChildren() {
+        for (auto& child : m_children) this->removeChild(child);
+    };
     
-    virtual void reorderChild(Node* child, int zOrder);
+    virtual void reorderChild(Node* child, int zOrder) {
+        auto idx = this->_getIndexOfChild(child);
+        if (idx > 0) m_children.at(idx)->setZOrder(zOrder);
+        this->sortAllChildren();
+    };
     
-    virtual void sortAllChildren();
+    inline virtual void sortAllChildren() {
+        std::sort(
+            m_children.begin(),
+            m_children.end(),
+            [](Node& a, Node& b) { return a.getZOrder() < b.getZOrder(); }
+        );
+    };
     
     
-    virtual void setTag(int tag) {
+    inline virtual void setTag(int tag) {
         m_tag = tag;
     };
     
-    virtual std::any* getUserData() {
+    inline virtual std::any* getUserData() {
         return m_userData;
     };
-    virtual void setUserData(std::any* userData) {
+    inline virtual void setUserData(std::any* userData) {
         m_userData = userData;
     };
 
 
-    virtual void cleanup();
-    virtual void draw();
-    virtual void visit();
+    inline virtual void cleanup() {
+        Scheduler::sharedScheduler()->unscheduleUpdate(this);
+        this->removeAllChildren();
+    };
+    inline virtual void draw() {};
 
     
-    Rect getRect() {
+    inline Rect getRect() {
         return Rect(m_position, m_contentSize);
     };
     
-    virtual void update(float dt) {};
+    inline virtual void update(float dt) {};
 
 private:    
-    void insertChild(Node* child, int z);
-    void detachChild(Node* child, bool doCleanup);
+    // returns -1 if child does not exist
+    inline size_t _getIndexOfChild(Node* child) {
+        auto find = std::find_if(
+            m_children.begin(),
+            m_children.end(),
+            [&child](Node& node) { return &node == child; }
+        );
+
+        if (find == m_children.end()) return -1;
+        else return find - m_children.begin();
+    }
 
 protected:
     float m_rotation;

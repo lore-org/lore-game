@@ -18,7 +18,7 @@ Scheduler* g_scheduler;
 class Scheduler : public Object {
 public:
     Scheduler() : m_timeScale(1.f) {};
-    ~Scheduler() {
+    virtual ~Scheduler() {
         this->unscheduleAll();
         this->release();
     };
@@ -35,18 +35,8 @@ public:
         m_timeScale = timeScale;
     }
 
-    inline void sort() {
-        if (m_isSorted) return;
-        std::sort(m_entries.begin(), m_entries.end(), [](_entry& a, _entry& b) {
-            return a.priority < b.priority;
-        });
-        m_isSorted = true;
-    }
-
     void update(float dt) {
         if (m_timeScale != 1.f) dt *= m_timeScale;
-
-        this->sort();
 
         for (auto& entry : m_entries) {
             if (!entry.paused && !entry.willDelete) {
@@ -66,7 +56,9 @@ public:
         if (this->_getIndexOfTarget(target) < 0) return;
 
         m_entries.push_back({ target, priority, paused, false });
-        m_isSorted = false;
+        std::sort(m_entries.begin(), m_entries.end(), [](_entry& a, _entry& b) {
+            return a.priority < b.priority;
+        });
     };
 
     inline void unscheduleUpdate(Object* target) {
@@ -108,7 +100,6 @@ public:
 protected:
     float m_timeScale;
 
-    bool m_isSorted; // avoid resorting every update
     std::vector<_entry> m_entries;
 
 private:
@@ -117,7 +108,7 @@ private:
         auto find = std::find_if(
             m_entries.begin(),
             m_entries.end(),
-            [&target](_entry entry) { return entry.target == target; }
+            [&target](_entry& entry) { return entry.target == target; }
         );
 
         if (find == m_entries.end()) return -1;
@@ -126,7 +117,13 @@ private:
     
     // returns nullptr if target does not exist
     inline _entry* _getEntryFromTarget(Object* target) {
-        if (auto index = this->_getIndexOfTarget(target)) return &m_entries.at(index);
-        return nullptr;
+        auto find = std::find_if(
+            m_entries.begin(),
+            m_entries.end(),
+            [&target](_entry& entry) { return entry.target == target; }
+        );
+
+        if (find != m_entries.end()) return find._Unwrapped();
+        else return nullptr;
     }
 };
