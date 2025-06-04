@@ -200,7 +200,7 @@ public:
 
 private:    
     // returns -1 if child does not exist
-    inline size_t _getIndexOfChild(Node* child) {
+    inline virtual size_t _getIndexOfChild(Node* child) {
         auto find = std::find_if(
             m_children.begin(),
             m_children.end(),

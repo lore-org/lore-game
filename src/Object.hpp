@@ -12,7 +12,6 @@ public:
     virtual bool isEqual(Object* object) {
         return this == object;
     };
-    
     virtual bool operator==(Object* object) {
         return this->isEqual(object);
     };

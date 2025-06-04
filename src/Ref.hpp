@@ -5,6 +5,9 @@ protected:
     unsigned int m_refCount;
 
     Ref() : m_refCount(1) {};
+    virtual ~Ref() {
+        this->release();
+    }
 
 public:
     virtual void retain() {
