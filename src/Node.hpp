@@ -15,8 +15,8 @@ public:
     m_anchorPoint(.5f, .5f), m_contentSize(0, 0), m_zOrder(0),
     m_parent(nullptr), m_tag(0), m_userData(nullptr), m_visible(true) {};
     virtual ~Node() {
-        delete m_userData;
         this->removeAllChildren();
+        delete this;
     };
     
     virtual bool init() {
@@ -177,10 +177,10 @@ public:
         m_tag = tag;
     };
     
-    inline virtual std::any* getUserData() {
+    inline virtual std::any getUserData() {
         return m_userData;
     };
-    inline virtual void setUserData(std::any* userData) {
+    inline virtual void setUserData(std::any userData) {
         m_userData = userData;
     };
 
@@ -189,7 +189,9 @@ public:
         Scheduler::sharedScheduler()->unscheduleUpdate(this);
         this->removeAllChildren();
     };
-    inline virtual void draw() {};
+    inline virtual void draw() {
+        for (auto& child : m_children) child->draw();
+    };
 
     
     inline Rect getRect() {
@@ -224,7 +226,7 @@ protected:
     Node* m_parent;
     
     int m_tag;
-    std::any* m_userData;
+    std::any m_userData;
 
     bool m_visible;
 };

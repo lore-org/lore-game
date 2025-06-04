@@ -14,9 +14,13 @@ public:
     Sprite(Texture2D texture) : m_texture(texture) {
         this->setContentSize(Size(texture.width, texture.height));
     };
-    virtual ~Sprite() {
-        UnloadTexture(m_texture);
-    }
+
+    virtual void release() {
+        if (--m_refCount <= 0) {
+            UnloadTexture(m_texture);
+            delete this;
+        }
+    };
 
     static Sprite* createFromFile(const std::string file) {
         return new Sprite(LoadTexture(file.c_str()));
@@ -44,6 +48,12 @@ public:
     inline void setTexture(const Texture texture) {
         m_texture = texture;
     }
+    inline Image getImage() const {
+        return LoadImageFromTexture(m_texture);
+    }
+    inline Texture getTexture() const {
+        return m_texture;
+    }
 
     virtual void draw() const {
         auto xOffset = fIsZero(m_anchorPoint.x) ? 0 : m_texture.width * m_anchorPoint.x;
@@ -62,6 +72,8 @@ public:
             m_rotation,
             WHITE
         );
+
+        for (auto& child : m_children) child->draw();
     }
 
 protected:

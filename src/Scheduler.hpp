@@ -21,6 +21,7 @@ public:
     virtual ~Scheduler() {
         this->unscheduleAll();
         this->release();
+        delete this;
     };
 
     static Scheduler* sharedScheduler() {

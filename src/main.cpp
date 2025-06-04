@@ -15,7 +15,6 @@ int main() {
     int hue = 0;
 
     while (!WindowShouldClose()) {
-
         if (hue >= 360) hue %= 360;
 
         BeginDrawing();
@@ -29,5 +28,6 @@ int main() {
         EndDrawing();
     }
 
+    spr->release();
     CloseWindow();
 }

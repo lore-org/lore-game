@@ -3,12 +3,7 @@
 
 
 class Object : public Ref {
-protected:
 public:
-    virtual ~Object() {
-        this->release();
-    };
-
     virtual bool isEqual(Object* object) {
         return this == object;
     };

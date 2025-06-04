@@ -7,21 +7,20 @@ protected:
     Ref() : m_refCount(1) {};
     virtual ~Ref() {
         this->release();
+        delete this;
     }
 
 public:
-    virtual void retain() {
+    inline virtual void retain() {
         ++m_refCount;
     };
 
     virtual void release() {
-        --m_refCount;
-
-        if (m_refCount <= 0)
+        if (--m_refCount <= 0)
             delete this;
     };
     
-    virtual bool isSingleReference() {
+    inline virtual bool isSingleReference() {
         return m_refCount == 1;
     }
     /**
@@ -29,7 +28,7 @@ public:
      *
      * @returns The Ref's reference count.
      */
-    virtual unsigned int retainCount() {
+    inline virtual unsigned int retainCount() {
         return m_refCount;
     };
 };
