@@ -4,7 +4,6 @@
 
 #include <raylib-cpp.hpp>
 #include <fmt/base.h>
-#include <Cimg/CImg.h>
 
 #include "Node.hpp"
 #include "raylib.h"
