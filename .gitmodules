@@ -7,6 +7,3 @@
 [submodule "vendor/fmt"]
 	path = vendor/fmt
 	url = https://github.com/fmtlib/fmt
-[submodule "vendor/CImg"]
-	path = vendor/CImg
-	url = https://github.com/GreycLab/CImg
