@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include <raylib-cpp.hpp>
+#include <fmt/format.h>
 
 class Size;
 
@@ -56,6 +57,10 @@ public:
 
     inline operator Vector2() const {
         return { x, y };
+    }
+
+    inline operator std::string() const {
+        return fmt::format("Point {{ {}, {} }}", x, y);
     }
 
     void setPoint(float x, float y) {
@@ -142,6 +147,10 @@ public:
         return { width, height };
     }
 
+    inline operator std::string() const {
+        return fmt::format("Size {{ {}, {} }}", width, height);
+    }
+
     void setSize(float width, float height) {
         this->width = width;
         this->height = height;
@@ -188,6 +197,16 @@ public:
             this->getWidth(),
             this->getHeight()
         };
+    }
+
+    inline operator std::string() const {
+        return fmt::format(
+            "Rect {{ {}, {} }}", 
+            this->getX(),
+            this->getY(),
+            this->getWidth(),
+            this->getHeight()
+        );
     }
 
     void setRect(float x, float y, float width, float height) {

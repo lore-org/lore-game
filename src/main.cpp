@@ -9,8 +9,10 @@ int main() {
     raylib::InitWindow(720, 480);
     SetTargetFPS(240);
 
-    auto spr = Sprite::createFromFile("");
-    spr->setPosition(MakePoint(GetScreenWidth(), GetScreenHeight()) / 2);
+    auto spr = Sprite::createFromFile("resources/kitty.png");
+    spr->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2);
+
+    fmt::println("{}", std::string(spr->getAnchorPoint()));
 
     int hue = 0;
 
@@ -23,6 +25,7 @@ int main() {
         ClearBackground(ColorFromHSV(++hue, 1, 1));
         raylib::DrawText(fmt::format("{} FPS", GetFPS()), 5, 5, 20, BLACK);
 
+        spr->setRotation(spr->getRotation() + 1);
         spr->draw();
 
         EndDrawing();

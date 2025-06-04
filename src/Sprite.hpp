@@ -3,6 +3,8 @@
 #include <string>
 
 #include <raylib-cpp.hpp>
+#include <fmt/base.h>
+#include <Cimg/CImg.h>
 
 #include "Node.hpp"
 #include "raylib.h"
@@ -18,7 +20,9 @@ public:
         return new Sprite(LoadTexture(file.c_str()));
     };
     static Sprite* createWithImage(const Image image) {
-        return new Sprite(LoadTextureFromImage(image));
+        auto spr = new Sprite(LoadTextureFromImage(image));
+        UnloadImage(image);
+        return spr;
     };
     static Sprite* createWithTexture(const Texture texture) {
         return new Sprite(texture);
@@ -40,7 +44,9 @@ public:
     }
 
     virtual void draw() const {
-        DrawTextureEx(m_texture, m_position, m_rotation, m_scale, {1, 1, 1});
+        auto xOffset = m_anchorPoint.x == 0 ? 0 : m_texture.width * m_anchorPoint.x;
+        auto yOffset = m_anchorPoint.y == 0 ? 0 : m_texture.height * m_anchorPoint.y;
+        DrawTextureEx(m_texture, m_position - Point(xOffset, yOffset), m_rotation, m_scale, WHITE);
     }
 
 protected:
