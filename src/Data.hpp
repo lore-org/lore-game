@@ -1,6 +1,10 @@
+#pragma once
+
 #include <math.h>
 #include <cmath>
 #include <tuple>
+
+#include <raylib-cpp.hpp>
 
 class Size;
 
@@ -49,6 +53,10 @@ public:
     inline bool operator==(const Point& right) const {
         return this->equals(right);
     };
+
+    inline operator Vector2() const {
+        return { x, y };
+    }
 
     void setPoint(float x, float y) {
         this->x = x;
@@ -130,6 +138,10 @@ public:
         return this->equals(right);
     };
 
+    inline operator Vector2() const {
+        return { width, height };
+    }
+
     void setSize(float width, float height) {
         this->width = width;
         this->height = height;
@@ -159,6 +171,24 @@ public:
     inline bool operator==(const Rect& right) const {
         return this->equals(right);
     };
+
+    inline operator Vector4() const {
+        return {
+            this->getX(),
+            this->getY(),
+            this->getWidth(),
+            this->getHeight()
+        };
+    }
+
+    inline operator Rectangle() const {
+        return {
+            this->getX(),
+            this->getY(),
+            this->getWidth(),
+            this->getHeight()
+        };
+    }
 
     void setRect(float x, float y, float width, float height) {
         this->setOrigin({ x, y });
@@ -216,6 +246,6 @@ public:
     };
 };
 
-#define MakePoint(x, y) new Point((float)x, (float)y)
-#define MakeSize(width, height) new Size((float)width, (float)height)
-#define MakeRect(x, y, width, height) new Rect((float)x, (float)y, (float)width, (float)height)
+#define MakePoint(x, y) Point((float)x, (float)y)
+#define MakeSize(width, height) Size((float)width, (float)height)
+#define MakeRect(x, y, width, height) Rect((float)x, (float)y, (float)width, (float)height)

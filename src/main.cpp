@@ -2,13 +2,15 @@
 #include <fmt/base.h>
 #include <fmt/format.h>
 
-#include "Object.hpp"
+#include "Data.hpp"
+#include "Sprite.hpp"
 
 int main() {
     raylib::InitWindow(720, 480);
     SetTargetFPS(240);
 
-    auto object = new Object();
+    auto spr = Sprite::createFromFile("");
+    spr->setPosition(MakePoint(GetScreenWidth(), GetScreenHeight()) / 2);
 
     int hue = 0;
 
@@ -18,10 +20,10 @@ int main() {
 
         BeginDrawing();
 
-        fmt::println("object: m_refCount: {}", object->retainCount());
-
         ClearBackground(ColorFromHSV(++hue, 1, 1));
         raylib::DrawText(fmt::format("{} FPS", GetFPS()), 5, 5, 20, BLACK);
+
+        spr->draw();
 
         EndDrawing();
     }

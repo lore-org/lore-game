@@ -119,7 +119,7 @@ public:
         auto find = std::find_if(
             m_children.begin(),
             m_children.end(),
-            [tag](Node& node) { return node.m_tag == tag; }
+            [tag](Node*& node) { return node->m_tag == tag; }
         );
 
         if (find != m_children.end()) return *find;
@@ -168,7 +168,7 @@ public:
         std::sort(
             m_children.begin(),
             m_children.end(),
-            [](Node& a, Node& b) { return a.getZOrder() < b.getZOrder(); }
+            [](Node*& a, Node*& b) { return a->getZOrder() < b->getZOrder(); }
         );
     };
     
@@ -204,7 +204,7 @@ private:
         auto find = std::find_if(
             m_children.begin(),
             m_children.end(),
-            [&child](Node& node) { return &node == child; }
+            [&child](Node*& node) { return node == child; }
         );
 
         if (find == m_children.end()) return -1;

@@ -123,7 +123,7 @@ private:
             [&target](_entry& entry) { return entry.target == target; }
         );
 
-        if (find != m_entries.end()) return find._Unwrapped();
+        if (find != m_entries.end()) return &*find;
         else return nullptr;
     }
 };
