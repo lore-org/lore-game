@@ -12,8 +12,6 @@ int main() {
     auto spr = Sprite::createFromFile("resources/kitty.png");
     spr->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2);
 
-    fmt::println("{}", std::string(spr->getAnchorPoint()));
-
     int hue = 0;
 
     while (!WindowShouldClose()) {
