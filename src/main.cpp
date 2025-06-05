@@ -12,12 +12,6 @@ int main() {
     auto spr = Sprite::createFromFile("resources/kitty.png");
     spr->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2);
 
-    spr->registerEventListener("rotate", [](void* data) {
-        if (auto rotation = static_cast<float*>(data)) {
-            fmt::println("rotation: {}deg", *rotation);
-        }
-    });
-
     int hue = 0;
 
     while (!WindowShouldClose()) {
@@ -28,7 +22,7 @@ int main() {
         ClearBackground(ColorFromHSV(++hue, 1, 1));
         raylib::DrawText(fmt::format("{} FPS", GetFPS()), 5, 5, 20, BLACK);
 
-        spr->setRotation(spr->getRotation() + 1.1f);
+        spr->setRotation(spr->getRotation() + 1.f);
         spr->draw();
 
         EndDrawing();

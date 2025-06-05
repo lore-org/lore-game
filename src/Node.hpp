@@ -91,7 +91,6 @@ public:
     };
 
     inline virtual void setRotation(float rotation) {
-        this->_callEventListener("rotate", (void*)&rotation); // FIXME - only for testing
         m_rotation = rotation;
     };
     inline virtual float getRotation() const {
