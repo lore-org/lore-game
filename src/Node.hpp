@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <vector>
-#include <any>
 
 #include "Object.hpp"
 #include "Data.hpp"
@@ -182,10 +181,10 @@ public:
         m_tag = tag;
     };
     
-    inline virtual std::any getUserData() {
+    inline virtual void* getUserData() {
         return m_userData;
     };
-    inline virtual void setUserData(std::any userData) {
+    inline virtual void setUserData(void* userData) {
         m_userData = userData;
     };
 
@@ -235,7 +234,7 @@ protected:
     Node* m_parent;
     
     int m_tag;
-    std::any m_userData;
+    void* m_userData;
 
     bool m_visible;
 };
