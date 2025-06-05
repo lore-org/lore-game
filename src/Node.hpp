@@ -92,6 +92,7 @@ public:
     };
 
     inline virtual void setRotation(float rotation) {
+        this->_callEventListener("rotate", (void*)&rotation); // FIXME - only for testing
         m_rotation = rotation;
     };
     inline virtual float getRotation() const {
@@ -119,7 +120,7 @@ public:
         auto find = std::find_if(
             m_children.begin(),
             m_children.end(),
-            [tag](Node*& node) { return node->m_tag == tag; }
+            [tag](Node* node) { return node->m_tag == tag; }
         );
 
         if (find != m_children.end()) return *find;
@@ -155,7 +156,11 @@ public:
         if (child) this->removeChild(child);
     };
     inline virtual void removeAllChildren() {
-        for (auto& child : m_children) this->removeChild(child);
+        std::for_each(
+            m_children.begin(),
+            m_children.end(),
+            [this](Node* child) { this->removeChild(child); }
+        );
     };
     
     virtual void reorderChild(Node* child, int zOrder) {
@@ -168,7 +173,7 @@ public:
         std::sort(
             m_children.begin(),
             m_children.end(),
-            [](Node*& a, Node*& b) { return a->getZOrder() < b->getZOrder(); }
+            [](Node* a, Node* b) { return a->getZOrder() < b->getZOrder(); }
         );
     };
     
@@ -190,7 +195,11 @@ public:
         this->removeAllChildren();
     };
     inline virtual void draw() {
-        for (auto& child : m_children) child->draw();
+        std::for_each(
+            m_children.begin(),
+            m_children.end(),
+            [](Node* child) { child->draw(); }
+        );
     };
 
     
@@ -203,10 +212,10 @@ public:
 private:    
     // returns -1 if child does not exist
     inline virtual size_t _getIndexOfChild(Node* child) {
-        auto find = std::find_if(
+        auto find = std::find(
             m_children.begin(),
             m_children.end(),
-            [&child](Node*& node) { return node == child; }
+            child
         );
 
         if (find == m_children.end()) return -1;

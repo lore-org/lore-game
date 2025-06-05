@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <unordered_set>
 #include <algorithm>
@@ -39,18 +41,25 @@ public:
     void update(float dt) {
         if (m_timeScale != 1.f) dt *= m_timeScale;
 
-        for (auto& entry : m_entries) {
-            if (!entry.paused && !entry.willDelete) {
-                entry.target->update(dt);
+        std::for_each(
+            m_entries.begin(),
+            m_entries.end(),
+            [dt](_entry& entry) {
+                if (!entry.paused && !entry.willDelete) {
+                    entry.target->update(dt);
+                }
             }
-        }
+        );
 
         int _i = 0;
-        for (auto& entry : m_entries) {
-            ++_i;
-
-            if (entry.willDelete) m_entries.erase(m_entries.begin() + _i);
-        }
+        std::for_each(
+            m_entries.begin(),
+            m_entries.end(),
+            [this, &_i](_entry& entry) {
+                ++_i;
+                if (entry.willDelete) m_entries.erase(m_entries.begin() + _i);
+            }
+        );
     };
 
     void scheduleUpdate(Object* target, int priority, bool paused) {
@@ -66,10 +75,18 @@ public:
         if (auto entry = this->_getEntryFromTarget(target)) entry->willDelete = true;
     };
     inline void unscheduleUpdates(std::unordered_set<Object*> targets) {
-        for (auto& target : targets) this->unscheduleUpdate(target);
+        std::for_each(
+            targets.begin(),
+            targets.end(),
+            [this](Object* target) { this->unscheduleUpdate(target); }
+        );
     };
     inline void unscheduleAll() {
-        for (auto& entry : m_entries) entry.paused = true;
+        std::for_each(
+            m_entries.begin(),
+            m_entries.end(),
+            [this](_entry& entry) { this->unscheduleUpdate(entry.target); }
+        );
     };
 
     inline void pauseTarget(Object* target) {
@@ -80,18 +97,34 @@ public:
     };
 
     inline void pauseTargets(std::unordered_set<Object*> targets) {
-        for (auto& target : targets) this->pauseTarget(target);
+        std::for_each(
+            targets.begin(),
+            targets.end(),
+            [this](Object* target) { this->pauseTarget(target); }
+        );
     };
     inline void resumeTargets(std::unordered_set<Object*> targets) {
-        for (auto& target : targets) this->resumeTarget(target);
+        std::for_each(
+            targets.begin(),
+            targets.end(),
+            [this](Object* target) { this->resumeTarget(target); }
+        );
     };
 
     inline void pauseAll() {
-        for (auto& entry : m_entries) entry.paused = true;
+        std::for_each(
+            m_entries.begin(),
+            m_entries.end(),
+            [](_entry& entry) { entry.paused = true; }
+        );
     };
     inline void resumeAll() {
-        for (auto& entry : m_entries) entry.paused = false;
-    };    
+        std::for_each(
+            m_entries.begin(),
+            m_entries.end(),
+            [](_entry& entry) { entry.paused = false; }
+        );
+    };
 
     inline bool isTargetPaused(Object* target) {
         auto entry = this->_getEntryFromTarget(target);

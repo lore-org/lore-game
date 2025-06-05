@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <math.h>
 #include <cmath>
 #include <tuple>
@@ -274,4 +275,12 @@ public:
 #ifndef EPSILON
 #define EPSILON 0.000001f
 #endif
-#define fIsZero(f) std::fabs((float)f) < EPSILON
+#define IsZero(f) std::fabs((float)f) < EPSILON
+
+namespace utils {
+    inline std::string toLowerCase(std::string str) {
+        std::string ret;
+        std::transform(str.begin(), str.end(), ret.begin(), ::tolower);
+        return str;
+    }
+}

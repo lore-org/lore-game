@@ -56,8 +56,8 @@ public:
     }
 
     virtual void draw() const {
-        auto xOffset = fIsZero(m_anchorPoint.x) ? 0 : m_texture.width * m_anchorPoint.x;
-        auto yOffset = fIsZero(m_anchorPoint.y) ? 0 : m_texture.height * m_anchorPoint.y;
+        auto xOffset = IsZero(m_anchorPoint.x) ? 0 : m_texture.width * m_anchorPoint.x;
+        auto yOffset = IsZero(m_anchorPoint.y) ? 0 : m_texture.height * m_anchorPoint.y;
         DrawTexturePro(
             m_texture,
             Rect(
@@ -73,7 +73,11 @@ public:
             WHITE
         );
 
-        for (auto& child : m_children) child->draw();
+        std::for_each(
+            m_children.begin(),
+            m_children.end(),
+            [](Node* child) { child->draw(); }
+        );
     }
 
 protected:
