@@ -22,6 +22,7 @@ int main() {
         ClearBackground(ColorFromHSV(++hue, 1, 1));
         raylib::DrawText(fmt::format("{} FPS", GetFPS()), 5, 5, 20, BLACK);
 
+        // TODO - SceneManager to run draw calls
         spr->setRotation(spr->getRotation() + 1.f);
         spr->draw();
 
