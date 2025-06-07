@@ -1,3 +1,6 @@
+#define SUPPORT_CUSTOM_FRAME_CONTROL 1
+
+#include "raylib.h"
 #include <raylib-cpp.hpp>
 #include <fmt/base.h>
 #include <fmt/format.h>
@@ -6,13 +9,14 @@
 #include "Sprite.hpp"
 
 int main() {
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     raylib::InitWindow(720, 480);
-    SetTargetFPS(240);
 
     auto spr = Sprite::createFromFile("resources/kitty.png");
-    spr->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2);
 
     int hue = 0;
+
+    // TODO - run scheduler in seperate thread from frame updates
 
     while (!WindowShouldClose()) {
         if (hue >= 360) hue %= 360;
@@ -24,6 +28,7 @@ int main() {
 
         // TODO - SceneManager to run draw calls
         spr->setRotation(spr->getRotation() + 1.f);
+        spr->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2);
         spr->draw();
 
         EndDrawing();

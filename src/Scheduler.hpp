@@ -13,6 +13,10 @@ typedef struct _entry {
     bool willDelete;
 } entry;
 
+class Scheduler;
+
+inline Scheduler* g_scheduler;
+
 class Scheduler : public Object {
 public:
     Scheduler() : m_timeScale(1.f) {};
@@ -23,8 +27,8 @@ public:
     };
 
     static Scheduler* sharedScheduler() {
-        if (!s_scheduler) s_scheduler = new Scheduler();
-        return s_scheduler;
+        if (!g_scheduler) g_scheduler =  new Scheduler();
+        return g_scheduler;
     }
 
     inline float getTimeScale() {
@@ -58,7 +62,7 @@ public:
         );
     };
 
-    void scheduleUpdate(Object* target, int priority, bool paused) {
+    void scheduleUpdate(Object* target, int priority = 0, bool paused = false) {
         if (this->_getIndexOfTarget(target) < 0) return;
 
         m_entries.push_back({ target, priority, paused, false });
@@ -129,7 +133,6 @@ public:
 
 protected:
     float m_timeScale;
-    static Scheduler* s_scheduler;
 
     std::vector<_entry> m_entries;
 

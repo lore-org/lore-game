@@ -3,19 +3,11 @@
 #include <algorithm>
 #include <functional>
 #include <string>
+#include <unordered_map>
 
 #include "Ref.hpp"
 
 #define EVENT_CALLBACK std::function<void(void*)>
-
-struct Event {
-    std::string name;
-    EVENT_CALLBACK* callback;
-
-    inline bool operator==(const Event& other) {
-        return this->name == other.name && this->callback == other.callback;
-    }
-};
 
 class Object : public Ref {
 public:
@@ -29,31 +21,37 @@ public:
     virtual void update(float dt) {};
 
     // event is case-insensitive
-    virtual Event registerEventListener(std::string name, EVENT_CALLBACK callback) {
-        Event event = { name, &callback };
+    virtual void registerEventListener(std::string name, EVENT_CALLBACK* callback) {
+        auto listeners = this->_getOrCreateListeners(name);
 
-        m_callbacks.push_back(event);
-        return event;
+        listeners.push_back(callback);
     }
-    virtual void unregisterEventListener(Event event) {
-        auto find = std::find(m_callbacks.begin(), m_callbacks.end(), event);
+    virtual void unregisterEventListener(std::string name, EVENT_CALLBACK* callback) {
+        auto listeners = this->_getOrCreateListeners(name);
+        auto find = std::find(listeners.begin(), listeners.end(), callback);
 
-        if (find != m_callbacks.end()) m_callbacks.erase(find);
+        if (find != listeners.end()) listeners.erase(find);
     };
 
 protected:
-    std::vector<Event> m_callbacks;
+    std::unordered_map<std::string, std::vector<EVENT_CALLBACK*>> m_callbacks;
 
-private:
     inline virtual void _callEventListener(std::string name, void* data = nullptr) {
+        auto _listeners = m_callbacks.find(name);
+        if (_listeners == m_callbacks.end()) return;
+        auto listeners = _listeners->second;
         std::for_each(
-            m_callbacks.begin(),
-            m_callbacks.end(),
-            [name, &data](Event event) {
-                if (event.name == name) (*event.callback)(data);
+            listeners.begin(),
+            listeners.end(),
+            [&data](EVENT_CALLBACK* callback) {
+                (*callback)(data);
             }
         );
     };
-
-    friend class Node;
+    
+    inline std::vector<EVENT_CALLBACK*> _getOrCreateListeners(std::string name) {
+        auto _listeners = m_callbacks.find(name);
+        if (_listeners == m_callbacks.end()) m_callbacks.insert(name, {});
+        return m_callbacks[name];
+    };
 };
