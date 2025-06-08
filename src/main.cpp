@@ -1,13 +1,13 @@
-#include "Scheduler.hpp"
-#include "raylib.h"
-#include <raylib-cpp.hpp>
-#include <fmt/base.h>
-#include <fmt/format.h>
 #include <thread>
 #include <atomic>
 
+#include <raylib-cpp.hpp>
+#include <fmt/base.h>
+#include <fmt/format.h>
+
 #include "Data.hpp"
 #include "Sprite.hpp"
+#include "Scheduler.hpp"
 
 std::atomic<bool> stopUpdate(false);
 int main() {
