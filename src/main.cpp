@@ -1,5 +1,3 @@
-#define SUPPORT_CUSTOM_FRAME_CONTROL 1
-
 #include "raylib.h"
 #include <raylib-cpp.hpp>
 #include <fmt/base.h>
@@ -9,7 +7,7 @@
 #include "Sprite.hpp"
 
 int main() {
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     raylib::InitWindow(720, 480);
 
     auto spr = Sprite::createFromFile("resources/kitty.png");

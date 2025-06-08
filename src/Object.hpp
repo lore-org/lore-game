@@ -51,7 +51,7 @@ protected:
     
     inline std::vector<EVENT_CALLBACK*> _getOrCreateListeners(std::string name) {
         auto _listeners = m_callbacks.find(name);
-        if (_listeners == m_callbacks.end()) m_callbacks.insert(name, {});
+        if (_listeners == m_callbacks.end()) m_callbacks[name] = {};
         return m_callbacks[name];
     };
 };
