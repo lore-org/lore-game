@@ -18,7 +18,15 @@ public:
         return this->isEqual(object);
     };
 
-    virtual void update(float dt) {};
+    static Object* createWithUpdate(std::function<void(float)> update) {
+        auto ret = new Object();
+        ret->m_updateCallback = update;
+        return ret;
+    }
+
+    virtual void update(float dt) {
+        if (m_updateCallback) m_updateCallback(dt);
+    };
 
     // event is case-insensitive
     virtual void registerEventListener(std::string name, EVENT_CALLBACK* callback) {
@@ -35,6 +43,7 @@ public:
 
 protected:
     std::unordered_map<std::string, std::vector<EVENT_CALLBACK*>> m_callbacks;
+    std::function<void(float)> m_updateCallback;
 
     inline virtual void _callEventListener(std::string name, void* data = nullptr) {
         auto _listeners = m_callbacks.find(name);
