@@ -17,8 +17,19 @@
  */
 class Touchable : public Node {
 public:
-    Touchable() {
+    inline virtual bool init() {
         Scheduler::sharedScheduler()->scheduleUpdate(this, INT32_MIN);
+        return true;
+    }
+
+    static Touchable* create() {
+        auto ret = new Touchable();
+        if (!ret->init()) {
+            ret->release();
+            return nullptr;
+        }
+        
+        return ret;
     }
 
     virtual void update(float dt) {

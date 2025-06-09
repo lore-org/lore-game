@@ -10,25 +10,27 @@
 class Node : public Object
 {
 public:
-    Node() : m_rotation(.0f), m_scale(1.f), m_position(0, 0),
-    m_anchorPoint(.5f, .5f), m_contentSize(0, 0), m_zOrder(0),
+    Node() : m_rotation(.0f), m_scale(1.f), m_position(0),
+    m_anchorPoint(.5f), m_contentSize(0), m_zOrder(0),
     m_parent(nullptr), m_tag(0), m_userData(nullptr), m_visible(true) {};
     virtual ~Node() {
         this->removeAllChildren();
         delete this;
     };
     
-    virtual bool init() {
+    inline virtual bool init() {
         return true;
     };
+
     static Node* create() {
-        Node* ret = new Node();
-        if (!ret->init()) return ret;
-        else {
-            return nullptr;
+        auto ret = new Node();
+        if (!ret->init()) {
             ret->release();
+            return nullptr;
         }
-    };
+        
+        return ret;
+    }
     
 
     inline virtual void setZOrder(int zOrder) {
@@ -101,7 +103,7 @@ public:
     inline virtual void addChild(Node* child) {
         this->addChild(
             child,
-            m_children.at(m_children.size() - 1)->getZOrder()
+            m_children.back()->getZOrder()
         );
     };
     inline virtual void addChild(Node* child, int zOrder) {
@@ -192,11 +194,11 @@ public:
         Scheduler::sharedScheduler()->unscheduleUpdate(this);
         this->removeAllChildren();
     };
-    inline virtual void draw() {
+    inline virtual void draw(float dt) {
         std::for_each(
             m_children.begin(),
             m_children.end(),
-            [](Node* child) { child->draw(); }
+            [dt](Node* child) { child->draw(dt); }
         );
     };
 
@@ -236,4 +238,37 @@ protected:
     void* m_userData;
 
     bool m_visible;
+};
+
+class ColorNode : public Node {
+public:
+    ColorNode() : m_color(WHITE) {}
+
+    inline void setOpacity(int8_t opacity) {
+        m_color.a = opacity;
+    }
+    inline int8_t getOpacity() {
+        return m_color.a;
+    }
+
+    struct Color3 {
+        unsigned char r;
+        unsigned char g;
+        unsigned char b;
+    };
+
+    inline void setColor(Color3 color) {
+        m_color.r = color.r;
+        m_color.g = color.g;
+        m_color.b = color.b;
+    }
+    inline void setColor(Color color) {
+        m_color = color;
+    }
+    inline Color3 getColor() {
+        return { m_color.r, m_color.g, m_color.b };
+    }
+
+protected:
+    Color m_color;
 };

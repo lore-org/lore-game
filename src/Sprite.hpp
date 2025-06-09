@@ -9,12 +9,8 @@
 #include "Node.hpp"
 #include "raylib.h"
 
-class Sprite : public Node {
+class Sprite : public ColorNode {
 public:
-    Sprite(Texture2D texture) : m_texture(texture) {
-        this->setContentSize(Size(texture.width, texture.height));
-    };
-
     virtual void release() {
         if (--m_refCount <= 0) {
             UnloadTexture(m_texture);
@@ -22,16 +18,40 @@ public:
         }
     };
 
+    inline virtual bool init(Texture2D texture) {
+        this->setContentSize(Size(texture.width, texture.height));
+        m_texture = texture;
+        return true;
+    }
+
     static Sprite* createFromFile(const std::string file) {
-        return new Sprite(LoadTexture(file.c_str()));
+        auto ret = new Sprite();
+        if (!ret->init(LoadTexture(file.c_str()))) {
+            ret->release();
+            return nullptr;
+        }
+        
+        return ret;
     };
     static Sprite* createWithImage(const Image image) {
-        auto spr = new Sprite(LoadTextureFromImage(image));
+        auto ret = new Sprite();
+        if (!ret->init(LoadTextureFromImage(image))) {
+            ret->release();
+            UnloadImage(image);
+            return nullptr;
+        }
+        
         UnloadImage(image);
-        return spr;
+        return ret;
     };
     static Sprite* createWithTexture(const Texture texture) {
-        return new Sprite(texture);
+        auto ret = new Sprite();
+        if (!ret->init(texture)) {
+            ret->release();
+            return nullptr;
+        }
+        
+        return ret;
     };
 
     inline operator Image() const {
@@ -55,7 +75,7 @@ public:
         return m_texture;
     }
 
-    virtual void draw() const {
+    virtual void draw(float dt) const {
         auto xOffset = IsZero(m_anchorPoint.x) ? 0 : m_texture.width * m_anchorPoint.x;
         auto yOffset = IsZero(m_anchorPoint.y) ? 0 : m_texture.height * m_anchorPoint.y;
         DrawTexturePro(
@@ -70,13 +90,13 @@ public:
             ),
             { xOffset, yOffset },
             m_rotation,
-            WHITE
+            m_color
         );
 
         std::for_each(
             m_children.begin(),
             m_children.end(),
-            [](Node* child) { child->draw(); }
+            [dt](Node* child) { child->draw(dt); }
         );
     }
 

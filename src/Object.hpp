@@ -18,9 +18,28 @@ public:
         return this->isEqual(object);
     };
 
+    inline virtual bool init(std::function<void(float)> update = [](auto) {}) {
+        this->m_updateCallback = update;
+        return true;
+    }
+
+    static Object* create() {
+        auto ret = new Object();
+        if (!ret->init()) {
+            ret->release();
+            return nullptr;
+        }
+        
+        return ret;
+    }
+
     static Object* createWithUpdate(std::function<void(float)> update) {
         auto ret = new Object();
-        ret->m_updateCallback = update;
+        if (!ret->init(update)) {
+            ret->release();
+            return nullptr;
+        }
+        
         return ret;
     }
 
@@ -43,7 +62,6 @@ public:
 
 protected:
     std::unordered_map<std::string, std::vector<EVENT_CALLBACK*>> m_callbacks;
-    std::function<void(float)> m_updateCallback;
 
     inline virtual void _callEventListener(std::string name, void* data = nullptr) {
         auto _listeners = m_callbacks.find(name);
@@ -63,4 +81,7 @@ protected:
         if (_listeners == m_callbacks.end()) m_callbacks[name] = {};
         return m_callbacks[name];
     };
+
+private:
+    std::function<void(float)> m_updateCallback;
 };

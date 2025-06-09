@@ -8,6 +8,8 @@
 #include "Data.hpp"
 #include "Sprite.hpp"
 #include "Scheduler.hpp"
+#include "Director.hpp"
+#include "raylib.h"
 
 std::atomic<bool> stopUpdate(false);
 int main() {
@@ -18,21 +20,19 @@ int main() {
 
     int hue = 0;
 
-    auto scheduler = Scheduler::sharedScheduler();
-
     auto updateLoop = Object::createWithUpdate([&spr](float dt) {
         spr->setRotation(spr->getRotation() + (1.f * dt));
         spr->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2);
     });
-    scheduler->scheduleUpdate(updateLoop);
+    Scheduler::sharedScheduler()->scheduleUpdate(updateLoop);
 
     constexpr double ticksPerSecond = 240.f;
     constexpr double secondsPerTicks = 1.f / ticksPerSecond;
-    std::thread updateThread([&scheduler]() {
+    std::thread updateThread([]() {
         while (!::stopUpdate) {
             auto startTime = GetTime();
 
-            scheduler->update(GetFrameTime() * ticksPerSecond);
+            Scheduler::sharedScheduler()->update(GetFrameTime() * ticksPerSecond);
 
             auto endTime = GetTime();
 
@@ -45,12 +45,10 @@ int main() {
         if (hue >= 360) hue %= 360;
 
         BeginDrawing();
+        
+        Director::sharedDirector()->draw(GetFrameTime());
 
-        ClearBackground(BLACK);
-        raylib::DrawText(fmt::format("{} FPS", GetFPS()), 5, 5, 20, WHITE);
-
-        // TODO - SceneManager to run draw calls
-        spr->draw();
+        // raylib::DrawText(fmt::format("{} FPS", GetFPS()), 5, 5, 20, WHITE);
 
         EndDrawing();
     }
