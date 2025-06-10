@@ -13,7 +13,7 @@ inline Director* g_director;
 
 class Director : public Object {
 public:
-    Director() : m_transitionStart(GetTime()), m_transitionDuration(0), m_clearColor(WHITE) {}
+    Director() : m_transitionStart(GetTime()), m_transitionDuration(0), m_clearColor(WHITE), m_entering(true) {}
     virtual ~Director() {
         this->release();
         delete this;
@@ -106,7 +106,7 @@ public:
         
         m_transitionFader->setContentSize(Size(GetScreenWidth(), GetScreenHeight()) / 2);
 
-        auto normalisedOpacity = entering ?
+        auto normalisedOpacity = m_entering ?
             this->_lerpTime(m_transitionStart, m_transitionDuration, GetTime()) :
             std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, GetTime()));
         m_transitionFader->setOpacity(normalisedOpacity * 255);
@@ -122,7 +122,7 @@ protected:
     RectangleNode* m_transitionFader;
     double m_transitionStart;
     double m_transitionDuration;
-    bool entering = true;
+    bool m_entering;
 
     Color m_clearColor;
 
@@ -131,13 +131,13 @@ private:
         new std::thread([this, duration]() {
             m_transitionDuration = duration;
 
-            entering = true;
+            m_entering = true;
             m_transitionStart = GetTime();
 
             WaitTime(m_transitionDuration);
             this->_replaceSceneWithNext();
 
-            entering = false;
+            m_entering = false;
             m_transitionStart = GetTime();
         });
     }
