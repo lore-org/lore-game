@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thread>
+
 #include "Geometry.hpp"
 #include "Object.hpp"
 #include "Scene.hpp"
@@ -46,25 +48,49 @@ public:
     // duration is in seconds
     inline void pushSceneWithTransition(Scene* scene, float duration = 5) {
         m_nextScene = scene;
-        this->_replaceSceneWithNext();
+        this->_transitionBetweenScenes(duration);
     }
 
     inline void popScene(unsigned int depth = 1) {
-        m_sceneStack.pop_back();
+        if (depth > m_sceneStack.size()) depth = m_sceneStack.size();
+        m_nextScene = *(m_sceneStack.end() - depth);
+
+        while (depth > 0 && m_sceneStack.size() > 0) {
+            --depth;
+            m_sceneStack.pop_back();
+        }
+
+        this->_replaceSceneWithNext();
+    }
+    inline void popSceneWithTransition(unsigned int depth = 1, float duration = 5) {
+        if (depth > m_sceneStack.size()) depth = m_sceneStack.size();
+        m_nextScene = *(m_sceneStack.end() - depth);
+
+        while (depth > 0 && m_sceneStack.size() > 0) {
+            --depth;
+            m_sceneStack.pop_back();
+        }
+
+        this->_transitionBetweenScenes(duration);
     }
 
     inline void replaceTopScene(Scene* scene) {
-        m_displayedScene = scene;
-        m_sceneStack.back() = m_displayedScene;
+        m_nextScene = scene;
+        m_sceneStack.pop_back();
+        this->_replaceSceneWithNext();
     }
     // duration is in seconds
     inline void replaceTopSceneWithTransition(Scene* scene, float duration = 5) {
-        m_displayedScene = scene;
-        m_sceneStack.back() = m_displayedScene;
+        m_nextScene = scene;
+        m_sceneStack.pop_back();
+        this->_transitionBetweenScenes(duration);
     }
 
     inline Scene* getTopScene() {
         return m_sceneStack.back();
+    }
+    inline Scene* getDisplayedScene() {
+        return m_displayedScene;
     }
     inline size_t getNumberOfScenes() {
         return m_sceneStack.size();
@@ -79,7 +105,12 @@ public:
         if (m_displayedScene) m_displayedScene->draw(dt);
         
         m_transitionFader->setContentSize(Size(GetScreenWidth(), GetScreenHeight()) / 2);
-        m_transitionFader->setOpacity(this->_lerpTime(m_transitionStart, m_transitionDuration, GetTime()) * 255);
+
+        auto normalisedOpacity = entering ?
+            this->_lerpTime(m_transitionStart, m_transitionDuration, GetTime()) :
+            std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, GetTime()));
+        m_transitionFader->setOpacity(normalisedOpacity * 255);
+
         m_transitionFader->draw(dt);
     };
 protected:
@@ -91,10 +122,26 @@ protected:
     RectangleNode* m_transitionFader;
     double m_transitionStart;
     double m_transitionDuration;
+    bool entering = true;
 
     Color m_clearColor;
 
 private:
+    inline void _transitionBetweenScenes(float duration = 5) {
+        new std::thread([this, duration]() {
+            m_transitionDuration = duration;
+
+            entering = true;
+            m_transitionStart = GetTime();
+
+            WaitTime(m_transitionDuration);
+            this->_replaceSceneWithNext();
+
+            entering = false;
+            m_transitionStart = GetTime();
+        });
+    }
+
     inline void _replaceSceneWithNext() {
         if (m_nextScene) {
             m_sceneStack.push_back(m_nextScene);

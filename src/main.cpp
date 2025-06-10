@@ -18,13 +18,13 @@ int main() {
 
     auto spr = Sprite::createFromFile("resources/kitty.png");
 
-    int hue = 0;
-
     auto updateLoop = Object::createWithUpdate([&spr](float dt) {
         spr->setRotation(spr->getRotation() + (1.f * dt));
         spr->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2);
     });
     Scheduler::sharedScheduler()->scheduleUpdate(updateLoop);
+
+    // !SECTION engine code
 
     constexpr double ticksPerSecond = 240.f;
     constexpr double secondsPerTicks = 1.f / ticksPerSecond;
@@ -42,8 +42,6 @@ int main() {
     });
 
     while (!WindowShouldClose()) {
-        if (hue >= 360) hue %= 360;
-
         BeginDrawing();
         
         Director::sharedDirector()->draw(GetFrameTime());
@@ -56,4 +54,6 @@ int main() {
     stopUpdate = true;
     updateThread.join();
     CloseWindow();
+
+    // !SECTION
 }
