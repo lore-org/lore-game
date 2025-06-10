@@ -7,7 +7,6 @@
 
 #include "Data.hpp"
 #include "Node.hpp"
-#include "raylib.h"
 
 class Sprite : public ColorNode {
 public:

@@ -5,11 +5,10 @@
 #include <fmt/base.h>
 #include <fmt/format.h>
 
-#include "Data.hpp"
-#include "Sprite.hpp"
-#include "Scheduler.hpp"
-#include "Director.hpp"
-#include "raylib.h"
+#include "engine/Data.hpp"
+#include "engine/Sprite.hpp"
+#include "engine/Scheduler.hpp"
+#include "engine/Director.hpp"
 
 std::atomic<bool> stopUpdate(false);
 int main() {

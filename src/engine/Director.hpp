@@ -5,7 +5,6 @@
 #include "Geometry.hpp"
 #include "Object.hpp"
 #include "Scene.hpp"
-#include "raylib.h"
 
 class Director;
 

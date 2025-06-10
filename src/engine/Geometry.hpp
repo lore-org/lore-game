@@ -5,7 +5,6 @@
 
 #include "Data.hpp"
 #include "Node.hpp"
-#include "raylib.h"
 
 class RectangleNode : public ColorNode {
 public:

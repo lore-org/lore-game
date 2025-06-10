@@ -4,7 +4,6 @@
 
 #include "Node.hpp"
 #include "Scheduler.hpp"
-#include "raylib.h"
 
 /**
  * adds events:
