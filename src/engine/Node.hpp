@@ -103,7 +103,7 @@ public:
     inline virtual void addChild(Node* child) {
         this->addChild(
             child,
-            m_children.back()->getZOrder()
+            m_children.empty() ? 0 : m_children.back()->getZOrder()
         );
     };
     inline virtual void addChild(Node* child, int zOrder) {
@@ -242,9 +242,22 @@ protected:
 
 class ColorNode : public Node {
 public:
-    ColorNode() : m_color(WHITE) {}
+    inline virtual bool init() {
+        this->setColor(WHITE);
+        return true;
+    };
 
-    inline void setOpacity(int8_t opacity) {
+    static ColorNode* create() {
+        auto ret = new ColorNode();
+        if (!ret->init()) {
+            ret->release();
+            return nullptr;
+        }
+        
+        return ret;
+    }
+
+    inline void setOpacity(unsigned char opacity) {
         m_color.a = opacity;
     }
     inline int8_t getOpacity() {

@@ -18,6 +18,9 @@ objects := $(patsubst src/%, $(buildDir)/%, $(patsubst %.cpp, %.o, $(sources)))
 depends := $(patsubst %.o, %.d, $(objects))
 compileFlags := -std=c++17 -I include
 linkFlags = -L lib/$(platform) -l raylib -l format
+CXXFLAGS := -g3
+
+
 
 # Check for Windows
 ifeq ($(OS), Windows_NT)
@@ -54,11 +57,15 @@ else
 	COPY = cp $1$(PATHSEP)$3 $2
 endif
 
+
+
 # Lists phony targets for Makefile
 .PHONY: all setup submodules execute clean
 
 # Default target, compiles, executes and cleans
 all: $(target) execute clean
+
+compile: clean $(target)
 
 # Sets up the project for compiling, generates includes and libs
 setup: include lib

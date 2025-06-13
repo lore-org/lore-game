@@ -5,7 +5,6 @@
 
 int main() {
     SetupEngine();
-
     auto scene = Scene::create();
     auto kitty = Sprite::createFromFile("resources/kitty.png");
     scene->addChild(kitty);

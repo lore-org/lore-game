@@ -19,7 +19,7 @@ public:
     };
 
     inline virtual bool init() {
-        if (!m_transitionFader) m_transitionFader = RectangleNode::create();
+        m_transitionFader = RectangleNode::create();
         m_transitionFader->setColor(BLACK);
         m_transitionFader->setAnchorPoint({ 0 });
         return true;
