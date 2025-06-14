@@ -18,7 +18,7 @@ objects := $(patsubst src/%, $(buildDir)/%, $(patsubst %.cpp, %.o, $(sources)))
 depends := $(patsubst %.o, %.d, $(objects))
 compileFlags := -std=c++17 -I include
 linkFlags = -L lib/$(platform) -l raylib -l format
-CXXFLAGS := -g3
+CXXFLAGS += -g3 -ofast
 
 
 
