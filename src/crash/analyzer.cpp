@@ -2,6 +2,7 @@
 
 #include <fmt/base.h>
 #include <fmt/format.h>
+#include <processthreadsapi.h>
 
 #include "exception-codes.hpp"
 #include "memory.hpp"
@@ -45,14 +46,14 @@ namespace analyzer {
             auto threadHandle = OpenThread(THREAD_QUERY_LIMITED_INFORMATION, FALSE, threadId);
             if (threadHandle != nullptr) {
                 wchar_t *threadName = nullptr;
-                if (GetThreadDescription(threadHandle, &threadName) != 0) {
+                try {
                     std::wstring threadNameWStr(threadName);
                     std::string threadNameStr(threadNameWStr.begin(), threadNameWStr.end());
                     threadInfo = fmt::format("\"{}\" (ID: {})", threadNameStr, threadId);
 
                     // Check if the crash happened on the main thread
                     mainThreadCrash = threadNameStr == "Main";
-                } else {
+                } catch (void()) {
                     threadInfo = fmt::format("(ID: {})", threadId);
                 }
             } else {
