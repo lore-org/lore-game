@@ -20,7 +20,7 @@ public:
 
     inline virtual bool init() {
         m_transitionFader = RectangleNode::create();
-        m_transitionFader->setColor(BLACK);
+        m_transitionFader->setColor({ 0, 0, 0, 0 });
         m_transitionFader->setAnchorPoint({ 0 });
         return true;
     }
@@ -103,12 +103,16 @@ public:
         
         if (m_displayedScene) m_displayedScene->draw(dt);
         
-        m_transitionFader->setContentSize(Size(GetScreenWidth(), GetScreenHeight()) / 2);
+        m_transitionFader->setContentSize(Size(GetScreenWidth(), GetScreenHeight()));
 
         auto normalisedOpacity = m_entering ?
             this->_lerpTime(m_transitionStart, m_transitionDuration, GetTime()) :
             std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, GetTime()));
-        m_transitionFader->setOpacity(normalisedOpacity * 255);
+        // m_transitionFader->setOpacity(normalisedOpacity * 255);
+
+        // debug
+            fmt::println("{}", normalisedOpacity * 255);
+        // debug
 
         m_transitionFader->draw(dt);
     };

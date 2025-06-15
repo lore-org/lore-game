@@ -3,7 +3,6 @@ lib
 bin
 .idea
 .DS_Store
-.vscodeake
 compile_commands.json
 .cache
-.vscode
+.vscode/settings.json
