@@ -12,6 +12,10 @@ int main() {
 
     auto kitty = Sprite::createFromFile("resources/kitty.png");
     kitty->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2);
+    kitty->setUpdate([&kitty](auto dt) {
+        kitty->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2); // make sure kitty is in the center of the screen
+    });
+    kitty->scheduleSelf();
 
     scene->addChild(kitty);
 
