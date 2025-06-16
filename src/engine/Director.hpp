@@ -14,9 +14,11 @@ class Director : public Object {
 public:
     Director() : m_transitionStart(GetTime()), m_transitionDuration(0), m_clearColor(WHITE), m_entering(false) {}
 
-    inline virtual bool init() {
+    virtual bool init() {
+        if (!Object::init()) return false;
+
         m_transitionFader = RectangleNode::create();
-        m_transitionFader->setColor({ 0, 0, 0, 0 });
+        m_transitionFader->setRayColor({ 0, 0, 0, 0 });
         m_transitionFader->setAnchorPoint({ 0 });
         return true;
     }
@@ -95,10 +97,9 @@ public:
         return m_sceneStack;
     }
     
-    inline virtual void draw(float dt) {
+    virtual void draw(float dt) {
         ClearBackground(m_clearColor);
         
-        fmt::println("{}", fmt::ptr(m_displayedScene));
         if (m_displayedScene) m_displayedScene->draw(dt);
         
         m_transitionFader->setContentSize(Size(GetScreenWidth(), GetScreenHeight()));

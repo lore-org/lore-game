@@ -18,10 +18,6 @@ public:
         this->release();
         delete this;
     };
-    
-    inline virtual bool init() {
-        return true;
-    };
 
     static Node* create() {
         auto ret = new Node();
@@ -198,7 +194,7 @@ public:
         this->removeAllChildren();
         this->release();
     };
-    inline virtual void draw(float dt) {
+    virtual void draw(float dt) {
         std::for_each(
             m_children.begin(),
             m_children.end(),
@@ -210,8 +206,6 @@ public:
     inline Rect getRect() {
         return Rect(m_position, m_contentSize);
     };
-    
-    inline virtual void update(float dt) {};
 
 private:    
     // returns -1 if child does not exist
@@ -246,10 +240,7 @@ protected:
 
 class ColorNode : public Node {
 public:
-    inline virtual bool init() {
-        this->setColor(WHITE);
-        return true;
-    };
+    ColorNode() : m_color(WHITE) {};
 
     static ColorNode* create() {
         auto ret = new ColorNode();
@@ -279,11 +270,16 @@ public:
         m_color.g = color.g;
         m_color.b = color.b;
     }
-    inline void setColor(Color color) {
+    // use Raylib's 'Color' struct
+    inline void setRayColor(Color color) {
         m_color = color;
     }
     inline Color3 getColor() {
         return { m_color.r, m_color.g, m_color.b };
+    }
+    // use Raylib's 'Color' struct
+    inline Color getRayColor() {
+        return m_color;
     }
 
 protected:
@@ -294,7 +290,9 @@ protected:
 
 class RectangleNode : public ColorNode {
 public:
-    inline virtual bool init(Point origin, Size size) {
+    virtual bool init(Point origin, Size size) {
+        if (!ColorNode::init()) return false;
+
         this->setPosition(origin);
         this->setContentSize(size);
         return true;
@@ -330,7 +328,7 @@ public:
         return ret;
     }
 
-    virtual void draw(float dt) const {
+    virtual void draw(float dt) override {
         auto xOffset = IsZero(m_anchorPoint.x) ? 0 : m_contentSize.width * m_anchorPoint.x;
         auto yOffset = IsZero(m_anchorPoint.y) ? 0 : m_contentSize.height * m_anchorPoint.y;
         DrawRectangleV(
@@ -339,10 +337,6 @@ public:
             m_color
         );
 
-        std::for_each(
-            m_children.begin(),
-            m_children.end(),
-            [dt](Node* child) { child->draw(dt); }
-        );
+        ColorNode::draw(dt);
     }
 };

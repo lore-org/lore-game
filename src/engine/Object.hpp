@@ -18,7 +18,11 @@ public:
         return this->isEqual(object);
     };
 
-    inline virtual bool init(std::function<void(float)> update = [](auto) {}) {
+    virtual bool init() {
+        return true;
+    }
+
+    virtual bool init(std::function<void(float)> update) {
         this->m_updateCallback = update;
         return true;
     }
@@ -43,6 +47,13 @@ public:
         return ret;
     }
 
+    virtual void setUpdate(std::function<void(float)> update) {
+        m_updateCallback = update;
+    }
+    // run Scheduler::scheduleUpdate on self
+    virtual void scheduleSelf();
+    // run Scheduler::unscheduleUpdate on self
+    virtual void unscheduleSelf();
     virtual void update(float dt) {
         if (m_updateCallback) m_updateCallback(dt);
     };
@@ -85,3 +96,12 @@ protected:
 private:
     std::function<void(float)> m_updateCallback;
 };
+
+#include "Scheduler.hpp"
+
+inline void Object::scheduleSelf() {
+    Scheduler::sharedScheduler()->scheduleUpdate(this);
+}
+inline void Object::unscheduleSelf() {
+    Scheduler::sharedScheduler()->unscheduleUpdate(this);
+}

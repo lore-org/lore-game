@@ -16,7 +16,9 @@
  */
 class Touchable : public Node {
 public:
-    inline virtual bool init() {
+    virtual bool init() override {
+        if (!Node::init()) return false;
+
         Scheduler::sharedScheduler()->scheduleUpdate(this, INT32_MIN);
         return true;
     }
@@ -31,7 +33,7 @@ public:
         return ret;
     }
 
-    virtual void update(float dt) {
+    virtual void update(float dt) override {
         auto rect = this->getRect();
         auto containsLastMouse = rect.containsPoint(m_lastMousePoint);
 
@@ -50,6 +52,8 @@ public:
         m_isActive = (m_isActive ? true : m_isHovered) && IsMouseButtonDown(MOUSE_BUTTON_LEFT);
 
         m_lastMousePoint = Point(GetMouseX(), GetMouseY());
+
+        Object::update(dt);
     }
 protected:
     bool m_isHovered;

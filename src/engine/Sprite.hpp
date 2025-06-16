@@ -10,14 +10,16 @@
 
 class Sprite : public ColorNode {
 public:
-    virtual void release() {
+    virtual void release() override {
         if (--m_refCount <= 0) {
             UnloadTexture(m_texture);
             delete this;
         }
     };
 
-    inline virtual bool init(Texture2D texture) {
+    virtual bool init(Texture2D texture) {
+        if (!ColorNode::init()) return false;
+
         this->setContentSize(Size(texture.width, texture.height));
         m_texture = texture;
         return true;
@@ -74,7 +76,7 @@ public:
         return m_texture;
     }
 
-    virtual void draw(float dt) const {
+    virtual void draw(float dt) override {
         auto xOffset = IsZero(m_anchorPoint.x) ? 0 : m_texture.width * m_anchorPoint.x;
         auto yOffset = IsZero(m_anchorPoint.y) ? 0 : m_texture.height * m_anchorPoint.y;
         DrawTexturePro(
@@ -92,11 +94,7 @@ public:
             m_color
         );
 
-        std::for_each(
-            m_children.begin(),
-            m_children.end(),
-            [dt](Node* child) { child->draw(dt); }
-        );
+        ColorNode::draw(dt);
     }
 
 protected:

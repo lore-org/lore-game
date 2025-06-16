@@ -38,7 +38,7 @@ public:
         m_timeScale = timeScale;
     }
 
-    void update(float dt) {
+    virtual void update(float dt) override {
         if (m_timeScale != 1.f) dt *= m_timeScale;
 
         std::for_each(
@@ -60,6 +60,8 @@ public:
                 if (entry.willDelete) m_entries.erase(m_entries.begin() + _i);
             }
         );
+
+        Object::update(dt);
     };
 
     void scheduleUpdate(Object* target, int priority = 0, bool paused = false) {
