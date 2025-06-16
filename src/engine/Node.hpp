@@ -4,17 +4,18 @@
 #include <vector>
 
 #include "Object.hpp"
-#include "Data.hpp"
+#include "Geometry.hpp"
 #include "Scheduler.hpp"
+#include "utils.hpp"
 
-class Node : public Object
-{
+class Node : public Object {
 public:
     Node() : m_rotation(.0f), m_scale(1.f), m_position(0),
     m_anchorPoint(.5f), m_contentSize(0), m_zOrder(0),
     m_parent(nullptr), m_tag(0), m_userData(nullptr), m_visible(true) {};
     virtual ~Node() {
         this->removeAllChildren();
+        this->release();
         delete this;
     };
     
@@ -108,6 +109,7 @@ public:
     };
     inline virtual void addChild(Node* child, int zOrder) {
         child->setZOrder(zOrder);
+        child->m_parent = this;
         m_children.push_back(child);
         this->sortAllChildren();
     };
@@ -135,6 +137,8 @@ public:
     };
     
     inline virtual void setParent(Node* parent) {
+        if (m_parent) m_parent->removeChild(this);
+        parent->addChild(this);
         m_parent = parent;
     };
     inline virtual Node* getParent() {
@@ -146,7 +150,6 @@ public:
         this->cleanup();
     };
     virtual void removeChild(Node* child) {
-        child->cleanup();
         child->removeFromParent();
         auto idx = this->_getIndexOfChild(child);
         if (idx > 0) m_children.erase(m_children.begin() + idx);
@@ -193,6 +196,7 @@ public:
     inline virtual void cleanup() {
         Scheduler::sharedScheduler()->unscheduleUpdate(this);
         this->removeAllChildren();
+        this->release();
     };
     inline virtual void draw(float dt) {
         std::for_each(
@@ -284,4 +288,61 @@ public:
 
 protected:
     Color m_color;
+};
+
+
+
+class RectangleNode : public ColorNode {
+public:
+    inline virtual bool init(Point origin, Size size) {
+        this->setPosition(origin);
+        this->setContentSize(size);
+        return true;
+    }
+
+    static RectangleNode* create() {
+        auto ret = new RectangleNode();
+        if (!ret->init(0, 0)) {
+            ret->release();
+            return nullptr;
+        }
+        
+        return ret;
+    }
+
+    static RectangleNode* createWithVec(Point origin, Size size) {
+        auto ret = new RectangleNode();
+        if (!ret->init(origin, size)) {
+            ret->release();
+            return nullptr;
+        }
+        
+        return ret;
+    }
+
+    static RectangleNode* createWithRect(Rect rectangle) {
+        auto ret = new RectangleNode();
+        if (!ret->init(rectangle.origin, rectangle.size)) {
+            ret->release();
+            return nullptr;
+        }
+        
+        return ret;
+    }
+
+    virtual void draw(float dt) const {
+        auto xOffset = IsZero(m_anchorPoint.x) ? 0 : m_contentSize.width * m_anchorPoint.x;
+        auto yOffset = IsZero(m_anchorPoint.y) ? 0 : m_contentSize.height * m_anchorPoint.y;
+        DrawRectangleV(
+            m_position - Point(xOffset, yOffset),
+            m_contentSize,
+            m_color
+        );
+
+        std::for_each(
+            m_children.begin(),
+            m_children.end(),
+            [dt](Node* child) { child->draw(dt); }
+        );
+    }
 };

@@ -1,5 +1,11 @@
 #pragma once
 
+#include <string>
+#include <typeinfo>
+
+#include <fmt/base.h>
+#include <fmt/format.h>
+
 class Ref {
 protected:
     unsigned int m_refCount;
@@ -11,6 +17,10 @@ protected:
     }
 
 public:
+    inline operator std::string() const {
+        return fmt::format("( {}, {} )", typeid(this).name(), fmt::ptr(this));
+    }
+
     inline virtual void retain() {
         ++m_refCount;
     };

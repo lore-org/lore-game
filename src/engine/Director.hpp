@@ -12,11 +12,7 @@ inline Director* g_director;
 
 class Director : public Object {
 public:
-    Director() : m_transitionStart(GetTime()), m_transitionDuration(0), m_clearColor(WHITE), m_entering(true) {}
-    virtual ~Director() {
-        this->release();
-        delete this;
-    };
+    Director() : m_transitionStart(GetTime()), m_transitionDuration(0), m_clearColor(WHITE), m_entering(false) {}
 
     inline virtual bool init() {
         m_transitionFader = RectangleNode::create();
@@ -56,7 +52,7 @@ public:
 
         while (depth > 0 && m_sceneStack.size() > 0) {
             --depth;
-            m_sceneStack.pop_back();
+            if (m_sceneStack.size() > 0) m_sceneStack.pop_back();
         }
 
         this->_replaceSceneWithNext();
@@ -67,7 +63,7 @@ public:
 
         while (depth > 0 && m_sceneStack.size() > 0) {
             --depth;
-            m_sceneStack.pop_back();
+            if (m_sceneStack.size() > 0) m_sceneStack.pop_back();
         }
 
         this->_transitionBetweenScenes(duration);
@@ -75,18 +71,19 @@ public:
 
     inline void replaceTopScene(Scene* scene) {
         m_nextScene = scene;
-        m_sceneStack.pop_back();
+        if (m_sceneStack.size() > 0) m_sceneStack.pop_back();
         this->_replaceSceneWithNext();
     }
     // duration is in seconds
     inline void replaceTopSceneWithTransition(Scene* scene, float duration = 5) {
         m_nextScene = scene;
-        m_sceneStack.pop_back();
+        if (m_sceneStack.size() > 0) m_sceneStack.pop_back();
         this->_transitionBetweenScenes(duration);
     }
 
     inline Scene* getTopScene() {
-        return m_sceneStack.back();
+        if (m_sceneStack.size() > 0) return m_sceneStack.back();
+        return nullptr;
     }
     inline Scene* getDisplayedScene() {
         return m_displayedScene;
@@ -101,6 +98,7 @@ public:
     inline virtual void draw(float dt) {
         ClearBackground(m_clearColor);
         
+        fmt::println("{}", fmt::ptr(m_displayedScene));
         if (m_displayedScene) m_displayedScene->draw(dt);
         
         m_transitionFader->setContentSize(Size(GetScreenWidth(), GetScreenHeight()));
@@ -108,11 +106,7 @@ public:
         auto normalisedOpacity = m_entering ?
             this->_lerpTime(m_transitionStart, m_transitionDuration, GetTime()) :
             std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, GetTime()));
-        // m_transitionFader->setOpacity(normalisedOpacity * 255);
-
-        // debug
-            fmt::println("{}", normalisedOpacity * 255);
-        // debug
+        m_transitionFader->setOpacity(normalisedOpacity * 255);
 
         m_transitionFader->draw(dt);
     };
@@ -154,7 +148,7 @@ private:
     }
 
     template<typename T>
-    inline T _lerpTime(T start, T duration, T current) {
+    T _lerpTime(T start, T duration, T current) {
         auto elapsed = current - start;
         return std::clamp(elapsed / duration, (T)0, (T)1);
     }
