@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <raylib-cpp.hpp>
+#include <raylib.h>
 
 #include "Geometry.hpp"
 #include "Node.hpp"

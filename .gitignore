@@ -6,3 +6,4 @@ bin
 compile_commands.json
 .cache
 .vscode/settings.json
+build/

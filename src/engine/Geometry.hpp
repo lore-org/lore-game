@@ -4,7 +4,7 @@
 #include <cmath>
 #include <tuple>
 
-#include <raylib-cpp.hpp>
+#include <raylib.h>
 #include <fmt/base.h>
 #include <fmt/format.h>
 
@@ -65,7 +65,7 @@ public:
         return fmt::format("Point {{ {}, {} }}", x, y);
     }
 
-    void setPoint(float x, float y) {
+    inline void setPoint(float x, float y) {
         this->x = x;
         this->y = y;
     };

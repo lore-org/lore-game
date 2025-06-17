@@ -1,7 +1,7 @@
 #include <thread>
 #include <atomic>
 
-#include <raylib-cpp.hpp>
+#include <raylib.h>
 #include <fmt/base.h>
 #include <fmt/format.h>
 
@@ -10,12 +10,11 @@
 
 inline void SetupEngine() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
-    raylib::InitWindow(720, 480);
+    InitWindow(720, 480, "lore-game");
 }
 
 inline std::atomic<bool> stopUpdate(false);
 inline void RunEngine() {
-
     constexpr double ticksPerSecond = 240.f;
     constexpr double secondsPerTicks = 1.f / ticksPerSecond;
     std::thread updateThread([]() {
