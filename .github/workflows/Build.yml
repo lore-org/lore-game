@@ -15,11 +15,11 @@ jobs:
         config:
         - name: Windows
           os: windows-latest
-          id: linux
+          id: win
 
         - name: Linux
           os: ubuntu-latest
-          id: win
+          id: linux
 
         - name: macOS
           os: macos-latest
