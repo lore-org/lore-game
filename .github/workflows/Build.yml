@@ -64,5 +64,4 @@ jobs:
         with:
           name: build-${{ matrix.config.id }}
           path: |
-            build/*.exe
-            build/*.pdb
+            build/lore-game*
