@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update -y
-          sudo apt-get install xorg openbox -y
+          sudo apt-get install xorg-dev -y
       
       - name: Run CMake and Build
         run: |
