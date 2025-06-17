@@ -15,7 +15,7 @@ int main() {
     kitty->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2);
     kitty->setUpdate([&kitty](auto dt) {
         kitty->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2); // make sure kitty is in the center of the screen
-        kitty->setRotation(kitty->getRotation() + (45 * dt)); // spit kitty 45deg / second
+        kitty->setRotation(kitty->getRotation() + (45 * dt)); // spin kitty 45deg / second
     });
     kitty->scheduleSelf();
 
