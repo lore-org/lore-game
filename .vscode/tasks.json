@@ -18,7 +18,7 @@
                 "detail": "Build the project"
             },
             {
-                "label": "(cmake) compile",
+                "label": "(cmake) configure",
                 "type": "shell",
                 "command": "cmake",
                 "args": [
@@ -28,6 +28,24 @@
                     "-S", "${workspaceFolder}",
                     "-B", "build",
                     "-G", "Unix Makefiles"
+                ],
+                "group": {
+                    "kind": "build",
+                    "isDefault": true
+                },
+                "problemMatcher": [
+                    "$gcc"
+                ],
+                "detail": "Build the project"
+            },
+            {
+                "label": "(cmake) compile",
+                "type": "shell",
+                "command": "cmake",
+                "args": [
+                    "--build", "build",
+                    "--config", "Debug",
+                    "--target", "all"
                 ],
                 "group": {
                     "kind": "build",

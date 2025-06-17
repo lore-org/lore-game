@@ -97,7 +97,7 @@ public:
         return m_sceneStack;
     }
     
-    virtual void draw(float dt) {
+    virtual void draw(double dt) {
         ClearBackground(m_clearColor);
         
         if (m_displayedScene) m_displayedScene->draw(dt);

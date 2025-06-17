@@ -76,7 +76,7 @@ public:
         return m_texture;
     }
 
-    virtual void draw(float dt) override {
+    virtual void draw(double dt) override {
         auto xOffset = IsZero(m_anchorPoint.x) ? 0 : m_texture.width * m_anchorPoint.x;
         auto yOffset = IsZero(m_anchorPoint.y) ? 0 : m_texture.height * m_anchorPoint.y;
         DrawTexturePro(

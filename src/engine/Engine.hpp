@@ -1,3 +1,5 @@
+#pragma once
+
 #include <thread>
 #include <atomic>
 
@@ -13,20 +15,25 @@ inline void SetupEngine() {
     InitWindow(720, 480, "lore-game");
 }
 
+constexpr double ticksPerSecond = 240.f;
+constexpr double secondsPerTicks = 1.f / ticksPerSecond;
+
+inline double lastTime = GetTime();
 inline std::atomic<bool> stopUpdate(false);
+
 inline void RunEngine() {
-    constexpr double ticksPerSecond = 240.f;
-    constexpr double secondsPerTicks = 1.f / ticksPerSecond;
     std::thread updateThread([]() {
         while (!::stopUpdate) {
-            auto startTime = GetTime();
+            double startTime = GetTime();
 
-            Scheduler::sharedScheduler()->update(GetFrameTime() * ticksPerSecond);
+            Scheduler::sharedScheduler()->update(startTime - ::lastTime);
 
-            auto endTime = GetTime();
+            ::lastTime = startTime;
 
-            if (endTime - startTime < secondsPerTicks)
-                WaitTime((startTime + secondsPerTicks) - endTime);
+            double endTime = GetTime();
+
+            if (endTime - startTime < ::secondsPerTicks)
+                WaitTime((startTime + ::secondsPerTicks) - endTime);
         }
     });
 

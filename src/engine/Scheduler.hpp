@@ -38,7 +38,7 @@ public:
         m_timeScale = timeScale;
     }
 
-    virtual void update(float dt) override {
+    virtual void update(double dt) override {
         if (m_timeScale != 1.f) dt *= m_timeScale;
 
         std::for_each(

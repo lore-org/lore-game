@@ -33,7 +33,7 @@ public:
         return ret;
     }
 
-    virtual void update(float dt) override {
+    virtual void update(double dt) override {
         auto rect = this->getRect();
         auto containsLastMouse = rect.containsPoint(m_lastMousePoint);
 

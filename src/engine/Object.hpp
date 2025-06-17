@@ -47,14 +47,14 @@ public:
         return ret;
     }
 
-    virtual void setUpdate(std::function<void(float)> update) {
+    virtual void setUpdate(std::function<void(double)> update) {
         m_updateCallback = update;
     }
     // run Scheduler::scheduleUpdate on self
     virtual void scheduleSelf();
     // run Scheduler::unscheduleUpdate on self
     virtual void unscheduleSelf();
-    virtual void update(float dt) {
+    virtual void update(double dt) {
         if (m_updateCallback) m_updateCallback(dt);
     };
 

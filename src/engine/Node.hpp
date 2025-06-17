@@ -194,7 +194,7 @@ public:
         this->removeAllChildren();
         this->release();
     };
-    virtual void draw(float dt) {
+    virtual void draw(double dt) {
         std::for_each(
             m_children.begin(),
             m_children.end(),
@@ -328,7 +328,7 @@ public:
         return ret;
     }
 
-    virtual void draw(float dt) override {
+    virtual void draw(double dt) override {
         auto xOffset = IsZero(m_anchorPoint.x) ? 0 : m_contentSize.width * m_anchorPoint.x;
         auto yOffset = IsZero(m_anchorPoint.y) ? 0 : m_contentSize.height * m_anchorPoint.y;
         DrawRectangleV(
