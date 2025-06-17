@@ -41,17 +41,10 @@ jobs:
             cpm-${{ matrix.config.id }}-v1-
 
       - name: Install Ninja
-        shell: bash
-        run: |
-            curl -L https://github.com/ninja-build/ninja/releases/latest/download/ninja-${{ matrix.config.id }}.zip -o ninja.zip
-            7z x ninja.zip -o"$GITHUB_WORKSPACE/ninja"
-            echo "$GITHUB_WORKSPACE/ninja" >> $GITHUB_PATH
-      
-      - name: Set up GCC
-        uses: egor-tensin/setup-gcc@v1
+        uses: seanmiddleditch/gha-setup-ninja@master
       
       - name: Run CMake and Build
-        run: cmake -DCMAKE_BUILD_TYPE=RelWithDebugInfo -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -B build -G "Unix Makefiles"
+        run: cmake -DCMAKE_BUILD_TYPE=RelWithDebugInfo -B build -G Ninja
 
       - name: Print Build for Debugging
         shell: bash
