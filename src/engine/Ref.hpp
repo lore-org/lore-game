@@ -1,10 +1,8 @@
 #pragma once
+#include "Default.hpp"
 
 #include <string>
 #include <typeinfo>
-
-#include <fmt/base.h>
-#include <fmt/format.h>
 
 class Ref {
 protected:

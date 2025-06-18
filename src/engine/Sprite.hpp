@@ -1,8 +1,7 @@
 #pragma once
+#include "Default.hpp"
 
 #include <string>
-
-#include <raylib.h>
 
 #include "Geometry.hpp"
 #include "Node.hpp"

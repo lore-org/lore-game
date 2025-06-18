@@ -6,6 +6,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(lore-game VERSION 1.0.0)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp)
 
 include(FetchContent)
 
@@ -17,8 +18,25 @@ FetchContent_Declare(
     fmt
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
 )
+FetchContent_Declare(
+    discord-rpc
+    GIT_REPOSITORY https://github.com/EclipseMenu/discord-presence.git
+    GIT_TAG main
+)
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG develop
+)
 
-FetchContent_MakeAvailable(raylib fmt)
+set(DEPENDENCIES raylib fmt discord-rpc nlohmann_json)
 
-add_executable(${PROJECT_NAME} src/main.cpp)
-target_link_libraries(${PROJECT_NAME} fmt raylib)
+FetchContent_MakeAvailable(${DEPENDENCIES})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCIES})
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${PROJECT_SOURCE_DIR}/resources
+    ${PROJECT_BINARY_DIR}/resources
+    COMMENT "Copying /resources to Build directory"
+)

@@ -1,12 +1,9 @@
 #pragma once
+#include "Default.hpp"
 
 #include <math.h>
 #include <cmath>
 #include <tuple>
-
-#include <raylib.h>
-#include <fmt/base.h>
-#include <fmt/format.h>
 
 class Size;
 

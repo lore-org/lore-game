@@ -1,17 +1,15 @@
 #pragma once
+#include "Default.hpp"
 
 #include <string>
 #include <algorithm>
 #include <vector>
-#include <functional>
 
 #define MakePoint(x, y) Point((float)x, (float)y)
 #define MakeSize(width, height) Size((float)width, (float)height)
 #define MakeRect(x, y, width, height) Rect((float)x, (float)y, (float)width, (float)height)
 
-#ifndef EPSILON
 #define EPSILON 0.000001f
-#endif
 #define IsZero(f) std::fabs((float)f) < EPSILON
 
 namespace utils {

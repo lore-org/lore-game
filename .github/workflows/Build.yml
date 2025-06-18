@@ -57,10 +57,6 @@ jobs:
         run: |
           cmake -DCMAKE_BUILD_TYPE=RelWithDebugInfo -B build -G Ninja
           ninja -C build
-      
-      - name: Copy Resources to Build
-        shell: bash
-        run: cp -R resources build
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -68,4 +64,4 @@ jobs:
           name: build-${{ matrix.config.id }}
           path: |
             build/lore-game*
-            build/resources
+            resources

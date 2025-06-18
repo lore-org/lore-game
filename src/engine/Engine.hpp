@@ -1,18 +1,26 @@
 #pragma once
+#include "Default.hpp"
 
 #include <thread>
 #include <atomic>
 
-#include <raylib.h>
-#include <fmt/base.h>
-#include <fmt/format.h>
-
 #include "Scheduler.hpp"
 #include "Director.hpp"
+#include "discord-rpc.hpp"
 
 inline void SetupEngine() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(720, 480, "lore-game");
+
+    discord::RPCManager::get()
+        .setClientID(config.value("DISCORD_CLIENT_ID", "0"))
+        .onReady([](auto) {
+            fmt::println("Discord Presence initialised");
+        })
+        .onErrored([](auto, auto) {
+            fmt::println("Failed to initialise Discord presence");
+        })
+        .initialize();
 }
 
 constexpr double ticksPerSecond = 240.f;
