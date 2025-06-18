@@ -6,21 +6,27 @@
 
 #include "Scheduler.hpp"
 #include "Director.hpp"
-#include "discord-rpc.hpp"
+#include "presence.hpp"
+
+extern bool rpcIsActive;
 
 inline void SetupEngine() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
     InitWindow(720, 480, "lore-game");
 
-    discord::RPCManager::get()
-        .setClientID(config.value("DISCORD_CLIENT_ID", "0"))
-        .onReady([](auto) {
-            fmt::println("Discord Presence initialised");
-        })
-        .onErrored([](auto, auto) {
-            fmt::println("Failed to initialise Discord presence");
-        })
-        .initialize();
+    if (presence::isEnabled()) {
+        rpcIsActive = false;
+        discord::RPCManager::get()
+            .setClientID(config.value("DISCORD_CLIENT_ID", "0"))
+            .onReady([](auto) {
+                rpcIsActive = true;
+                fmt::println("Discord Presence initialised");
+            })
+            .onErrored([](auto, auto) {
+                fmt::println("Failed to initialise Discord presence");
+            })
+            .initialize();
+    }
 }
 
 constexpr double ticksPerSecond = 240.f;
