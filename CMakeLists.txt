@@ -20,7 +20,7 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 add_executable(${PROJECT_NAME} src/main.cpp)
 
 if (APPLE)
-    target_compile_options(${PROJECT_NAME} PRIVATE -fexperimental-library)
+    add_compile_options(-fexperimental-library)
 endif()
 
 include(FetchContent)
