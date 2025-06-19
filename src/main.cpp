@@ -15,12 +15,23 @@ int main() {
     engine->showFPS(true);
     engine->showTPS(true);
     engine->setTimeDisplaySampleSize(25);
+    engine->setScreenSize({ 480, 320 });
 
     presence->enableRPC(true);
 
     // -----------------------------
 
-    engine->setupEngine();
+    /**
+     * This function will initialise the Game Window along with the Discord RPC manager
+     * if enabled.
+     * 
+     * It must be called before any graphics are created, otherwise the RAM and VRAM
+     * buffers will not be initialised.
+     * 
+     * Only the PresenceManager and the Screen Size must be set before setup.
+     * Running this more than once will print a warning, but will not crash the program.
+     */
+    Engine::sharedInstance()->setupEngine();
 
     // ---- User-Defined Code ----
 
@@ -39,5 +50,27 @@ int main() {
 
     // ---------------------------
 
-    engine->runEngine();
+    /**
+     * This function creates the thread used by the Scheduler, and runs the main loop
+     * each frame.
+     * 
+     * If this is called before the engine is set up, the program will crash, as the
+     * window will not be initialised.
+     * 
+     * This will pause all execution on the main thread until the window is closed and
+     * the background threads are finished. Any code after this should be designated to
+     * data saving and cleanup.
+     */
+    Engine::sharedInstance()->runEngine(); // Run Engine
+
+    // ---- Cleanup ----
+
+    /**
+     * Technically, freeing the parent scene is not required as memory should be freed by
+     * the operating system when execution is finished, but it's good practice to remove
+     * any heap-allocated variables.
+     */
+    delete scene;
+
+    // -----------------
 }
