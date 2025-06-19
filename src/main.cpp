@@ -61,7 +61,7 @@ int main() {
      * the background threads are finished. Any code after this should be designated to
      * data saving and cleanup.
      */
-    Engine::sharedInstance()->runEngine(); // Run Engine
+    Engine::sharedInstance()->runEngine();
 
     // ---- Cleanup ----
 
