@@ -19,8 +19,8 @@ inline const nlohmann::json config = nlohmann::json::parse(R\"(${CONFIG_FILE})\"
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 add_executable(${PROJECT_NAME} src/main.cpp)
 
-if (APPLE)
-    add_compile_options(-fexperimental-library)
+if (NOT APPLE)
+    add_compile_definitions(PARALLEL=true)
 endif()
 
 include(FetchContent)

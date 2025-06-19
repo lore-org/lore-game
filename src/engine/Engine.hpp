@@ -4,7 +4,12 @@
 #include <stdexcept>
 #include <thread>
 #include <atomic>
-#include <execution>
+#if PARALLEL
+    #include <execution>
+    #define par_unseq std::execution::par_unseq,
+#else
+    #define par_unseq
+#endif
 
 #include "Scheduler.hpp"
 #include "Director.hpp"
@@ -138,7 +143,7 @@ public:
 
                 m_frameAvg = m_showFPS ?
                     std::reduce(
-                        std::execution::par_unseq,
+                        par_unseq
                         m_frameDeltas.begin(),
                         m_frameDeltas.end()
                     ) / m_sampleSize :
@@ -146,7 +151,7 @@ public:
 
                 m_tickAvg = m_showTPS ?
                     std::reduce(
-                        std::execution::par_unseq,
+                        par_unseq
                         m_tickDeltas.begin(),
                         m_tickDeltas.end()
                     ) / m_sampleSize :
