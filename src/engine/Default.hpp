@@ -4,7 +4,9 @@
     #define NOGDI
     #define NOUSER
     #define MMNOSOUND
-    
+
+    #include <Windows.h>
+
     typedef struct tagMSG {
         HWND   hwnd;
         UINT   message;
@@ -14,8 +16,6 @@
         POINT  pt;
         DWORD  lPrivate;
     } MSG, *PMSG, *NPMSG, *LPMSG;
-
-    #include <Windows.h>
 #endif
 
 #include <raylib.h>
