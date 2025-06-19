@@ -1,5 +1,5 @@
 #pragma once
-#include "Default.hpp"
+#include "Default.hpp" // IWYU pragma: keep
 
 #include <stdexcept>
 #include <thread>
@@ -88,12 +88,12 @@ public:
             presenceManager->setActive(false);
             discord::RPCManager::get()
                 .setClientID(config.value("DISCORD_CLIENT_ID", "0"))
-                .onReady([&presenceManager](auto& user) {
-                    presenceManager->setActive(true);
-                    fmt::println("Discord Presence initialised: {}", user.username);
+                .onReady([](auto) {
+                    utils::PresenceManager::sharedManager()->setActive(true);
+                    fmt::println("Discord Presence initialised.");
                 })
-                .onErrored([](auto code, auto msg) {
-                    fmt::println("Failed to initialise Discord presence: {} ({})", msg, code);
+                .onErrored([](auto, auto) {
+                    fmt::println("Failed to initialise Discord presence.");
                 })
                 .initialize();
         }
@@ -180,6 +180,7 @@ public:
 
         m_stopUpdate = true;
         updateThread.join();
+        backgroundThread.join();
         CloseWindow();
     }
 

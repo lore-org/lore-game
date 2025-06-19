@@ -1,19 +1,22 @@
-#include "engine/Default.hpp"
+#include "engine/Default.hpp" // IWYU pragma: keep
 
 #include "engine/Director.hpp"
-#define ENGINE_DELTA_SAMPLESIZE 20
 #include "engine/Engine.hpp"
+#include "engine/PresenceManager.hpp"
 #include "engine/Scene.hpp"
 #include "engine/Sprite.hpp"
 
 int main() {
     auto engine = Engine::sharedInstance();
+    auto presence = utils::PresenceManager::sharedManager();
 
-    // ---- Engine Config Setup ----
+    // ---- Config Setup ----
 
     engine->showFPS(true);
     engine->showTPS(true);
     engine->setTimeDisplaySampleSize(25);
+
+    presence->enableRPC(true);
 
     // -----------------------------
 

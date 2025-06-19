@@ -1,5 +1,5 @@
 #pragma once
-#include "Default.hpp"
+#include "Default.hpp" // IWYU pragma: keep
 
 #include <cstdint>
 
