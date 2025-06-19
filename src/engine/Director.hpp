@@ -13,7 +13,8 @@ inline Director* g_director;
 
 class Director : public Object {
 public:
-    Director() : m_transitionStart(GetTime()), m_transitionDuration(0), m_clearColor(WHITE), m_entering(false) {}
+    Director() : m_transitionStart(GetTime()), m_transitionDuration(0),
+        m_clearColor(WHITE), m_entering(false) {}
 
     virtual bool init() {
         if (!Object::init()) return false;
@@ -98,7 +99,7 @@ public:
         return m_sceneStack;
     }
     
-    virtual void draw(double dt) {
+    virtual void draw(const double dt) {
         ClearBackground(m_clearColor);
         
         if (m_displayedScene) m_displayedScene->draw(dt);

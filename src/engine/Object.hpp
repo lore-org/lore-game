@@ -55,7 +55,7 @@ public:
     virtual void scheduleSelf();
     // run Scheduler::unscheduleUpdate on self
     virtual void unscheduleSelf();
-    virtual void update(double dt) {
+    virtual void update(const double dt) {
         if (m_updateCallback) m_updateCallback(dt);
     };
 

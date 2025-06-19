@@ -12,8 +12,8 @@
 class Node : public Object {
 public:
     Node() : m_rotation(.0f), m_scale(1.f), m_position(0),
-    m_anchorPoint(.5f), m_contentSize(0), m_zOrder(0),
-    m_parent(nullptr), m_tag(0), m_userData(nullptr), m_visible(true) {};
+        m_anchorPoint(.5f), m_contentSize(0), m_zOrder(0),
+        m_parent(nullptr), m_tag(0), m_userData(nullptr), m_visible(true) {};
     virtual ~Node() {
         this->removeAllChildren();
         this->release();
@@ -195,7 +195,7 @@ public:
         this->removeAllChildren();
         this->release();
     };
-    virtual void draw(double dt) {
+    virtual void draw(const double dt) {
         std::for_each(
             m_children.begin(),
             m_children.end(),
@@ -329,7 +329,7 @@ public:
         return ret;
     }
 
-    virtual void draw(double dt) override {
+    virtual void draw(const double dt) override {
         auto xOffset = IsZero(m_anchorPoint.x) ? 0 : m_contentSize.width * m_anchorPoint.x;
         auto yOffset = IsZero(m_anchorPoint.y) ? 0 : m_contentSize.height * m_anchorPoint.y;
         DrawRectangleV(

@@ -1,12 +1,25 @@
 #include "engine/Default.hpp"
 
 #include "engine/Director.hpp"
+#define ENGINE_DELTA_SAMPLESIZE 20
 #include "engine/Engine.hpp"
 #include "engine/Scene.hpp"
 #include "engine/Sprite.hpp"
 
 int main() {
-    SetupEngine();
+    auto engine = Engine::sharedInstance();
+
+    // ---- Engine Config Setup ----
+
+    engine->showFPS(true);
+    engine->showTPS(true);
+    engine->setTimeDisplaySampleSize(25);
+
+    // -----------------------------
+
+    engine->setupEngine();
+
+    // ---- User-Defined Code ----
 
     auto scene = Scene::create();
 
@@ -21,5 +34,7 @@ int main() {
 
     Director::sharedDirector()->pushScene(scene);
 
-    RunEngine();
+    // ---------------------------
+
+    engine->runEngine();
 }

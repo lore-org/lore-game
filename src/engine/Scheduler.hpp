@@ -16,11 +16,12 @@ typedef struct _entry {
 
 class Scheduler;
 
-inline Scheduler* g_scheduler;
+namespace {
+    inline Scheduler* g_scheduler;
+}
 
 class Scheduler : public Object {
 public:
-    Scheduler() : m_timeScale(1.f) {};
     virtual ~Scheduler() {
         this->unscheduleAll();
         this->release();
@@ -140,6 +141,8 @@ protected:
     std::vector<_entry> m_entries;
 
 private:
+    Scheduler() : m_timeScale(1.f) {};
+
     // returns -1 if target does not exist
     inline size_t _getIndexOfTarget(Object* target) {
         auto find = std::find_if(
