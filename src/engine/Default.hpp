@@ -5,6 +5,9 @@
     #define NOUSER
     #define MMNOSOUND
 
+    struct tagMSG;
+    typedef tagMSG MSG, *PMSG, *NPMSG, *LPMSG;
+
     #include <Windows.h>
 
     typedef struct tagMSG {
