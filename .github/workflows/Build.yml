@@ -35,13 +35,13 @@ jobs:
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v2
 
-      - name: Setup CPM Cache
+      - name: Setup Cache
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/cpm-cache
-          key: cpm-${{ matrix.config.id }}-v1-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
+          path: build/_deps
+          key: buildcache-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}-${{ matrix.config.id }}
           restore-keys: |
-            cpm-${{ matrix.config.id }}-v1-
+            buildcache-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}-
 
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
