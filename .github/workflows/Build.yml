@@ -38,10 +38,10 @@ jobs:
       - name: Setup Cache
         uses: actions/cache@v4
         with:
-          path: build/_deps
-          key: buildcache-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}-${{ matrix.config.id }}
+          path: build
+          key: buildcache-${{ hashFiles('**/CMakeLists.txt') }}-${{ matrix.config.id }}
           restore-keys: |
-            buildcache-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}-
+            buildcache-${{ hashFiles('**/CMakeLists.txt') }}-
 
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
