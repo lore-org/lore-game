@@ -53,31 +53,36 @@ FetchContent_Declare(
     GIT_TAG master
 )
 FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG master
+)
+FetchContent_Declare(
     discord-rpc
     GIT_REPOSITORY https://github.com/EclipseMenu/discord-presence.git
     GIT_TAG main
 )
 
 FetchContent_MakeAvailable(
-    discord-rpc
     raylib
+    fmt
+    discord-rpc
 )
 
 # Adding vcpkg packages
 
 find_package(CURL REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
 
 # Add libraries to project
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-    discord-rpc
     raylib
+    fmt
+    discord-rpc
 
     CURL::libcurl
     nlohmann_json::nlohmann_json
-    fmt
 )
 
 # Copy /resources
