@@ -5,6 +5,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(lore-game VERSION 1.0.0)
 
+if ("$ENV{VCPKG_ROOT}" STREQUAL "")
+    message(FATAL_ERROR "`VCPKG_ROOT` is not a defined environment variable. Please install vcpkg and define the VCPKG_ROOT variable.")
+endif()
+
+include($ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
+
 file(READ ${CMAKE_SOURCE_DIR}/config.json CONFIG_FILE)
 file(GENERATE
     OUTPUT ${CMAKE_SOURCE_DIR}/src/engine/config.hpp
@@ -44,10 +50,13 @@ FetchContent_Declare(
     GIT_TAG develop
 )
 
-set(DEPENDENCIES raylib fmt discord-rpc nlohmann_json)
+FetchContent_MakeAvailable(raylib fmt discord-rpc nlohmann_json)
 
-FetchContent_MakeAvailable(${DEPENDENCIES})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${DEPENDENCIES})
+execute_process(COMMAND vcpkg install curl)
+find_package(CURL REQUIRED)
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${VCPKG_INSTALLED_DIR}${VCPKG_TARGET_TRIPLET}/include)
+target_link_libraries(${PROJECT_NAME} PUBLIC raylib fmt discord-rpc nlohmann_json CURL::libcurl)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory

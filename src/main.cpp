@@ -1,5 +1,7 @@
 #include "engine/Default.hpp" // IWYU pragma: keep
 
+#include <curl/curl.h>
+
 #include "engine/Director.hpp"
 #include "engine/Engine.hpp"
 #include "engine/PresenceManager.hpp"
@@ -47,6 +49,8 @@ int main() {
     scene->addChild(kitty);
 
     Director::sharedDirector()->pushScene(scene);
+
+    
 
     // ---------------------------
 
