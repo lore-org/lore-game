@@ -77,7 +77,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 
     CURL::libcurl
     nlohmann_json::nlohmann_json
-    fmt::fmt
+    fmt
 )
 
 # Copy /resources
