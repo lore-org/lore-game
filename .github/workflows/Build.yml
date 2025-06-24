@@ -42,7 +42,6 @@ jobs:
           key: buildcache-${{ matrix.config.id }}-${{ hashFiles('**/CMakeLists.txt') }}
           restore-keys: |
             buildcache-${{ matrix.config.id }}-
-            buildcache-
 
       - name: Setup vcpkg Cache
         uses: actions/cache@v4
