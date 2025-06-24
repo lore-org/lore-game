@@ -58,6 +58,10 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install xorg-dev -y
+
+      - name: debug
+        shell: bash
+        run: ls -R ${{ github.workspace }}/vcpkg
       
       - name: Run CMake and Build
         run: |
