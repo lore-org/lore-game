@@ -5,6 +5,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# MacOS-specific declarations
+
+if (NOT APPLE)
+    add_compile_definitions(PARALLEL=true)
+else()
+    set(CMAKE_OSX_ARCHITECTURES arm64)
+endif()
+
 # Setup vcpkg
 
 execute_process(COMMAND git submodule update --init --recursive)
@@ -34,14 +42,6 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 # Set entrypoint for project
 
 add_executable(${PROJECT_NAME} src/main.cpp)
-
-# MacOS-specific declarations
-
-if (NOT APPLE)
-    add_compile_definitions(PARALLEL=true)
-else()
-    set(CMAKE_OSX_ARCHITECTURES arm64)
-endif()
 
 # Adding non-vcpkg packages
 
