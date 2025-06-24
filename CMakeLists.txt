@@ -62,11 +62,16 @@ FetchContent_MakeAvailable(
 find_package(CURL REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(raylib REQUIRED)
+find_package(raylib CONFIG REQUIRED)
 
-# Add static libraries to project
+# Set up shared libraries
 
-set(VCPKG_LIB_DIR ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib)
+# set(VCPKG_TARGET_DIR ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET})
+
+# add_library(glfw3 SHARED IMPORTED)
+# set_target_properties(glfw3 PROPERTIES IMPORTED_LOCATION ${VCPKG_TARGET_DIR}/bin/glfw3${CMAKE_SHARED_LIBRARY_SUFFIX})
+
+# Add libraries to project
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
     discord-rpc
@@ -74,8 +79,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     CURL::libcurl
     nlohmann_json::nlohmann_json
     fmt::fmt
-    ${VCPKG_LIB_DIR}/glfw3dll.lib
     raylib
+    
+    # glfw3
 )
 
 # Copy /resources
