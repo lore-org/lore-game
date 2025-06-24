@@ -48,6 +48,11 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 include(FetchContent)
 
 FetchContent_Declare(
+    raylib
+    GIT_REPOSITORY https://github.com/raysan5/raylib.git
+    GIT_TAG master
+)
+FetchContent_Declare(
     discord-rpc
     GIT_REPOSITORY https://github.com/EclipseMenu/discord-presence.git
     GIT_TAG main
@@ -55,6 +60,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(
     discord-rpc
+    raylib
 )
 
 # Adding vcpkg packages
@@ -62,26 +68,16 @@ FetchContent_MakeAvailable(
 find_package(CURL REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(raylib CONFIG REQUIRED)
-
-# Set up shared libraries
-
-# set(VCPKG_TARGET_DIR ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET})
-
-# add_library(glfw3 SHARED IMPORTED)
-# set_target_properties(glfw3 PROPERTIES IMPORTED_LOCATION ${VCPKG_TARGET_DIR}/bin/glfw3${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 # Add libraries to project
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
     discord-rpc
+    raylib
 
     CURL::libcurl
     nlohmann_json::nlohmann_json
     fmt::fmt
-    raylib
-    
-    # glfw3
 )
 
 # Copy /resources
