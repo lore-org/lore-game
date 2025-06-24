@@ -66,12 +66,15 @@ find_package(raylib REQUIRED)
 
 # Add static libraries to project
 
+set(VCPKG_LIB_DIR ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib)
+
 target_link_libraries(${PROJECT_NAME} PUBLIC
     discord-rpc
 
     CURL::libcurl
     nlohmann_json::nlohmann_json
     fmt::fmt
+    ${VCPKG_LIB_DIR}/glfw3dll.lib
     raylib
 )
 
