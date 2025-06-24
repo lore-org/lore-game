@@ -35,10 +35,12 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 
-# Disable execution policies on MacOS
+# MacOS-specific declarations
 
 if (NOT APPLE)
     add_compile_definitions(PARALLEL=true)
+else()
+    set(CMAKE_OSX_ARCHITECTURES arm64)
 endif()
 
 # Adding non-vcpkg packages
