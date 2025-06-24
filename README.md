@@ -10,7 +10,7 @@ To build this project, it is recommended you have CMake installed, as it manages
 
 This guide also assumes you have a compiler installed such as msvc, clang, or gcc. 
 
-This project requires vcpkg. To install it, run either `./setup/setup-vcpkg.bat` for Windows, or `. setup/setup-vcpkg.bat` for Linux or MacOS.
+This project requires vcpkg. To install it, run either `./setup/setup-vcpkg.bat` for Windows, or `. setup/setup-vcpkg.sh` for Linux or MacOS.
 
 ### VSCode
 
