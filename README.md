@@ -30,7 +30,7 @@ After configuring, run `cmake --build build` to build the project. Your executab
 
 ### GitHub Actions
 
-This repo also provides commands for cross-platform building when a commit is pushed. Visit the [actions](actions/workflows/Build.yml) tab to view recent builds, and download the proper artifacts for your system.
+This repo also provides commands for cross-platform building when a commit is pushed. Visit the [actions](https://github.com/lore-org/lore-game/actions/workflows/Build.yml) tab to view recent builds, and download the proper artifacts for your system.
 
 ## Debugging
 

@@ -43,13 +43,10 @@ jobs:
           restore-keys: |
             buildcache-${{ hashFiles('**/CMakeLists.txt') }}-
       
-      - name: Setup vcpkg (Windows)
-        if: ${{ matrix.config.id == 'win' }}
-        run: ./setup-vcpkg.bat
-      
-      - name: Setup vcpkg (UNIX)
-        if: ${{ matrix.config.id != 'win' }}
-        run: . setup/setup-vcpkg.sh
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          runVcpkgInstall: false
 
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
