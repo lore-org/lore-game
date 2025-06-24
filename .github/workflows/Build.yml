@@ -39,9 +39,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: build
-          key: buildcache-${{ hashFiles('**/CMakeLists.txt') }}-${{ matrix.config.id }}
+          key: buildcache-${{ matrix.config.id }}-${{ hashFiles('**/CMakeLists.txt') }}
           restore-keys: |
-            buildcache-${{ hashFiles('**/CMakeLists.txt') }}-
+            buildcache-${{ matrix.config.id }}-
+            buildcache-
 
       - name: Setup vcpkg Cache
         uses: actions/cache@v4
@@ -51,6 +52,7 @@ jobs:
           restore-keys: |
             vcpkgcache-${{ hashFiles('**/vcpkg-configuration.json') }}-${{ hashFiles('**/vcpkg.json') }}-
             vcpkgcache-${{ hashFiles('**/vcpkg-configuration.json') }}-
+            vcpkgcache-
 
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
@@ -65,12 +67,12 @@ jobs:
       - name: Run CMake and Build
         run: |
           cmake -DCMAKE_BUILD_TYPE=RelWithDebugInfo -B build -G Ninja
-          ninja -C build
+          cmake --build build
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.config.id }}
           path: |
-            build/lore-game*
+            **lore-game*
             resources
