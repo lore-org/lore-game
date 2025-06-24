@@ -46,7 +46,7 @@ If you have vcpkg installed to your system path, run `vcpkg add port <dependency
 
 If you don't have vcpkg installed to your system path, instead add the dependency name to [vcpkg.json](vcpkg.json), as shown below.
 
-```json
+```jsonc
 {
   "dependencies": [
     "curl",
