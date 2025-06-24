@@ -51,9 +51,6 @@ jobs:
           restore-keys: |
             vcpkgcache-${{ hashFiles('**/vcpkg-configuration.json') }}-${{ hashFiles('**/vcpkg.json') }}-
             vcpkgcache-${{ hashFiles('**/vcpkg-configuration.json') }}-
-      
-      - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v11
 
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
