@@ -35,13 +35,22 @@ jobs:
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v2
 
-      - name: Setup Cache
+      - name: Setup Build Cache
         uses: actions/cache@v4
         with:
           path: build
           key: buildcache-${{ hashFiles('**/CMakeLists.txt') }}-${{ matrix.config.id }}
           restore-keys: |
             buildcache-${{ hashFiles('**/CMakeLists.txt') }}-
+
+      - name: Setup vcpkg Cache
+        uses: actions/cache@v4
+        with:
+          path: vcpkg
+          key: vcpkgcache-${{ hashFiles('**/vcpkg-configuration.json') }}-${{ hashFiles('**/vcpkg.json') }}-${{ matrix.config.id }}
+          restore-keys: |
+            vcpkgcache-${{ hashFiles('**/vcpkg-configuration.json') }}-${{ hashFiles('**/vcpkg.json') }}-
+            vcpkgcache-${{ hashFiles('**/vcpkg-configuration.json') }}-
       
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11

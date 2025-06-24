@@ -1,5 +1,8 @@
 {
   "dependencies": [
-    "curl"
+    "curl",
+    "nlohmann-json",
+    "fmt",
+    "raylib"
   ]
 }

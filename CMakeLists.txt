@@ -1,18 +1,20 @@
+# Setup
+
 cmake_minimum_required(VERSION 4.0)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if ("$ENV{VCPKG_ROOT}" STREQUAL "")
-    if (WIN32)
-        message(FATAL_ERROR "`VCPKG_ROOT` is not defined. Please run \"${CMAKE_SOURCE_DIR}/setup/setup-vcpkg.bat\".")
-    else()
-        message(FATAL_ERROR "`VCPKG_ROOT` is not defined. Please run \". ${CMAKE_SOURCE_DIR}/setup/setup-vcpkg.sh\".")
-    endif()
-endif()
-set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+# Setup vcpkg
+
+execute_process(COMMAND git submodule update --init --recursive)
+set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+
+# Create project
 
 project(lore-game VERSION 1.0.0)
+
+# Generate config.hpp from config.json
 
 file(READ ${CMAKE_SOURCE_DIR}/config.json CONFIG_FILE)
 file(GENERATE
@@ -25,40 +27,53 @@ inline const nlohmann::json config = nlohmann::json::parse(R\"(${CONFIG_FILE})\"
     TARGET ${PROJECT_NAME}
 )
 
+# Add all .cpp files as sources
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
+
+# Set entrypoint for project
+
 add_executable(${PROJECT_NAME} src/main.cpp)
+
+# Disable execution policies on MacOS
 
 if (NOT APPLE)
     add_compile_definitions(PARALLEL=true)
 endif()
 
+# Adding non-vcpkg packages
+
 include(FetchContent)
 
-FetchContent_Declare(
-    raylib
-    GIT_REPOSITORY https://github.com/raysan5/raylib.git
-)
-FetchContent_Declare(
-    fmt
-    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-)
 FetchContent_Declare(
     discord-rpc
     GIT_REPOSITORY https://github.com/EclipseMenu/discord-presence.git
     GIT_TAG main
 )
-FetchContent_Declare(
-    nlohmann_json
-    GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG develop
+
+FetchContent_MakeAvailable(
+    discord-rpc
 )
 
-FetchContent_MakeAvailable(raylib fmt discord-rpc nlohmann_json)
+# Adding vcpkg packages
 
 find_package(CURL REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(raylib REQUIRED)
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${VCPKG_INSTALLED_DIR}${VCPKG_TARGET_TRIPLET}/include)
-target_link_libraries(${PROJECT_NAME} PUBLIC raylib fmt discord-rpc nlohmann_json CURL::libcurl)
+# Add static libraries to project
+
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    discord-rpc
+
+    CURL::libcurl
+    nlohmann_json::nlohmann_json
+    fmt::fmt
+    raylib
+)
+
+# Copy /resources
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
