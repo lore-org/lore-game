@@ -53,20 +53,20 @@ FetchContent_Declare(
     GIT_TAG master
 )
 FetchContent_Declare(
-    fmt
-    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-    GIT_TAG master
-)
-FetchContent_Declare(
     discord-rpc
     GIT_REPOSITORY https://github.com/EclipseMenu/discord-presence.git
     GIT_TAG main
 )
+FetchContent_Declare(
+    fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG master
+)
 
 FetchContent_MakeAvailable(
     raylib
-    fmt
     discord-rpc
+    fmt
 )
 
 # Adding vcpkg packages

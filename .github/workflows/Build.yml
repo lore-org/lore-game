@@ -67,11 +67,15 @@ jobs:
         run: |
           cmake -DCMAKE_BUILD_TYPE=RelWithDebugInfo -B build -G Ninja
           cmake --build build
+      
+      - name: Move executable to Build Folder
+        shell: bash
+        run: mv build/lore-game* .
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.config.id }}
           path: |
-            **lore-game*
+            lore-game*
             resources
