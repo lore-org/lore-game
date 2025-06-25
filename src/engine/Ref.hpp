@@ -5,15 +5,6 @@
 #include <typeinfo>
 
 class Ref {
-protected:
-    unsigned int m_refCount;
-
-    Ref() : m_refCount(1) {};
-    virtual ~Ref() {
-        this->release();
-        delete this;
-    }
-
 public:
     inline operator std::string() const {
         return fmt::format("( {}, {} )", typeid(this).name(), fmt::ptr(this));
@@ -39,4 +30,9 @@ public:
     inline virtual unsigned int retainCount() {
         return m_refCount;
     };
+
+protected:
+    Ref() : m_refCount(1) {};
+    
+    int m_refCount;
 };

@@ -24,8 +24,6 @@ class Scheduler : public Object {
 public:
     virtual ~Scheduler() {
         this->unscheduleAll();
-        this->release();
-        delete this;
     };
 
     static Scheduler* sharedScheduler() {
@@ -136,13 +134,12 @@ public:
     };
 
 protected:
-    float m_timeScale;
+    Scheduler() : m_timeScale(1.f) {};
 
+    float m_timeScale;
     std::vector<_entry> m_entries;
 
 private:
-    Scheduler() : m_timeScale(1.f) {};
-
     // returns -1 if target does not exist
     inline size_t _getIndexOfTarget(Object* target) {
         auto find = std::find_if(

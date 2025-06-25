@@ -194,7 +194,7 @@ protected:
         m_showFPS(false), m_showTPS(false), m_displayPrecision(0), m_sampleSize(10),
         m_deltaAverageMult(1.f / m_sampleSize), m_frameAvg(9), m_tickAvg(0),
         m_screenSize(720, 480) {};
-    
+
     double m_lastTime;
     std::atomic<bool> m_stopUpdate;
 

@@ -56,6 +56,7 @@ public:
 
         Object::update(dt);
     }
+
 protected:
     bool m_isHovered;
     bool m_isActive;

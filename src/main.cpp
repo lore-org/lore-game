@@ -1,6 +1,7 @@
 #include "engine/Default.hpp" // IWYU pragma: keep
 
-#include <curl/curl.h>
+#include <cpr/cpr.h>
+#include <exif.h>
 
 #include "engine/Director.hpp"
 #include "engine/Engine.hpp"
@@ -50,7 +51,10 @@ int main() {
 
     Director::sharedDirector()->pushScene(scene);
 
-    
+    auto response = cpr::Get(cpr::Url {"https://offload.tnktok.com/generate/image/7518323666090806536?index=0"});
+    auto exif = easyexif::EXIFInfo();
+    exif.parseFrom(response.text);
+    fmt::println("{}", exif.ImageWidth);
 
     // ---------------------------
 

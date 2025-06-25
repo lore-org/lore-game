@@ -5,8 +5,6 @@
 
 class Scene : public Node {
 public:
-    Scene() {}
-
     virtual bool init() override {
         if (!Node::init()) return false;
 

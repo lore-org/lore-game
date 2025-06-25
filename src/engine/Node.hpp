@@ -11,13 +11,8 @@
 
 class Node : public Object {
 public:
-    Node() : m_rotation(.0f), m_scale(1.f), m_position(0),
-        m_anchorPoint(.5f), m_contentSize(0), m_zOrder(0),
-        m_parent(nullptr), m_tag(0), m_userData(nullptr), m_visible(true) {};
     virtual ~Node() {
-        this->removeAllChildren();
-        this->release();
-        delete this;
+        this->cleanup();
     };
 
     static Node* create() {
@@ -144,12 +139,11 @@ public:
     
     virtual void removeFromParent() {
         m_parent->removeChild(this);
-        this->cleanup();
     };
     virtual void removeChild(Node* child) {
-        child->removeFromParent();
         auto idx = this->_getIndexOfChild(child);
         if (idx > 0) m_children.erase(m_children.begin() + idx);
+        child->m_parent = nullptr;
     };
     virtual void removeChildByTag(int tag) {
         auto child = this->getChildByTag(tag);
@@ -193,7 +187,6 @@ public:
     inline virtual void cleanup() {
         Scheduler::sharedScheduler()->unscheduleUpdate(this);
         this->removeAllChildren();
-        this->release();
     };
     virtual void draw(const double dt) {
         std::for_each(
@@ -208,7 +201,7 @@ public:
         return Rect(m_position, m_contentSize);
     };
 
-private:    
+private:
     // returns -1 if child does not exist
     inline virtual size_t _getIndexOfChild(Node* child) {
         auto find = std::find(
@@ -222,6 +215,10 @@ private:
     }
 
 protected:
+    Node() : m_rotation(.0f), m_scale(1.f), m_position(0),
+        m_anchorPoint(.5f), m_contentSize(0), m_zOrder(0),
+        m_parent(nullptr), m_tag(0), m_userData(nullptr), m_visible(true) {};
+
     float m_rotation;
     float m_scale;
     Point m_position;

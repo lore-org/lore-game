@@ -32,50 +32,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v2
-
-      - name: Setup Build Cache
-        uses: actions/cache@v4
+      - name: Setup xmake
+        uses: xmake-io/github-action-setup-xmake@v1
         with:
-          path: build
-          key: buildcache-${{ matrix.config.id }}-${{ hashFiles('**/CMakeLists.txt') }}
-          restore-keys: |
-            buildcache-${{ matrix.config.id }}-
-
-      - name: Setup vcpkg Cache
-        uses: actions/cache@v4
-        with:
-          path: vcpkg
-          key: vcpkgcache-${{ hashFiles('**/vcpkg-configuration.json') }}-${{ hashFiles('**/vcpkg.json') }}-${{ matrix.config.id }}
-          restore-keys: |
-            vcpkgcache-${{ hashFiles('**/vcpkg-configuration.json') }}-${{ hashFiles('**/vcpkg.json') }}-
-            vcpkgcache-${{ hashFiles('**/vcpkg-configuration.json') }}-
-            vcpkgcache-
-
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
-
-      - name: Install X11
-        if: ${{ matrix.config.id == 'linux' }}
-        shell: bash
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install xorg-dev -y
+          xmake-version: dev
       
-      - name: Run CMake and Build
+      - name: Build
         run: |
-          cmake -DCMAKE_BUILD_TYPE=RelWithDebugInfo -B build -G Ninja
-          cmake --build build
-      
-      - name: Move executable to Build Folder
-        shell: bash
-        run: mv build/lore-game* .
+          xmake -y
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.config.id }}
-          path: |
-            lore-game*
-            resources
+          path: build/**/**/**/release/

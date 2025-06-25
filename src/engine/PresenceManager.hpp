@@ -32,6 +32,8 @@ namespace utils {
         }
 
     protected:
+        PresenceManager() : m_rpcIsEnabled(false), m_rpcIsActive(false) {};
+    
         bool m_rpcIsEnabled;
         bool m_rpcIsActive;
 
@@ -40,8 +42,5 @@ namespace utils {
         }
 
         friend class ::Engine;
-
-    private:
-        PresenceManager() : m_rpcIsEnabled(false), m_rpcIsActive(false) {};
     };
 }

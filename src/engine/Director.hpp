@@ -13,10 +13,7 @@ inline Director* g_director;
 
 class Director : public Object {
 public:
-    Director() : m_transitionStart(GetTime()), m_transitionDuration(0),
-        m_clearColor(WHITE), m_entering(false) {}
-
-    virtual bool init() {
+    virtual bool init() override {
         if (!Object::init()) return false;
 
         m_transitionFader = RectangleNode::create();
@@ -114,6 +111,9 @@ public:
         m_transitionFader->draw(dt);
     };
 protected:
+    Director() : m_transitionStart(GetTime()), m_transitionDuration(0),
+        m_clearColor(WHITE), m_entering(false) {}
+
     std::vector<Scene*> m_sceneStack;
 
     Scene* m_displayedScene;
