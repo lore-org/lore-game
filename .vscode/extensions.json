@@ -2,6 +2,6 @@
     "recommendations": [
         "ms-vscode.cpptools",
         "llvm-vs-code-extensions.vscode-clangd",
-        "twxs.cmake"
+        "tboox.xmake-vscode"
     ]
 }

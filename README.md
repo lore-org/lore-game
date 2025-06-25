@@ -6,7 +6,7 @@ This is the base repository for the special funky furry game being made. When fi
 
 ## Building
 
-To build this project, it is recommended you have CMake installed, as it manages dependencies for you. The Makefile is outdated and should not be used.
+To build this project, you need to have [xmake](https://xmake.io/) installed.
 
 This guide also assumes you have a compiler installed such as msvc, clang, or gcc.
 
@@ -14,17 +14,11 @@ This guide also assumes you have a compiler installed such as msvc, clang, or gc
 
 To build the project in VSCode, make sure you have the recommended extensions installed.
 
-After you install those extensions, press `F1` and run `CMake: Configure` to configure the project.
-
-You may have to select a kit and variant. It is recommended to use `Clang x86_64` as the kit and `Release` or `RelWithDebInfo` for the variant.
-
-After the project is configured, press `F1` again and run `CMake: Build`. Your executable will be located in the build directory along with the required resources.
+After you install those extensions, press `F1` and run `XMake: Build` to build the project. Your executable will be located in the build directory along with the required resources and libraries.
 
 ### Command Line
 
-To configure, run `cmake -D CMAKE_BUILD_TYPE=<build_type> -B build`, replacing `<build_type>` with one `Debug`, `Release`, `MinSizeRel`, or `RelWithDebInfo` (e.g. `cmake -D CMAKE_BUILD_TYPE=RelWithDebInfo -B build`).  Either `Release` or `RelWithDebInfo` are recommended.
-
-After configuring, run `cmake --build build` to build the project. Your executable will be located in the build directory along with the required resources.
+To build, run `xmake` to build the project. Your executable will be located in the build directory along with the required resources.
 
 ### GitHub Actions
 
@@ -34,177 +28,106 @@ This repo also provides commands for cross-platform building when a commit is pu
 
 The described debugging method requires VSCode. Visual Studio and some other IDEs have a built-in debugging method.
 
-Currently, the base debug system is broken and does not parse symbols correctly. Instead, press `F1` and run `CMake: Debug`, or press `Shift + F5` if the CMake debug hotkey is registered.
+To debug the program, press `F1` and run `XMake: Debug`, or press `F5` if the xmake debug hotkey is registered.
 
 ## Adding Dependencies
 
-When adding a dependency, first look for it on [vcpkg.io/packages](https://vcpkg.io/en/packages). If you can't find it there, a git repository that can be built with CMake works fine.
+When adding a dependency, first look for it on [xrepo](https://xrepo.xmake.io/). If you can't find it there, you can use another source
 
-### vcpkg Dependencies
+### xrepo Dependencies
 
-If you have vcpkg installed to your system path, run `vcpkg add port <dependency>`, replacing `<dependency>` with the name of the dependency you want to install with the project (e.g. [`vcpkg add port pugixml`](https://vcpkg.io/en/package/pugixml)).
+To find your package, search for it on the command line with `xrepo search <dependency>`, where `<dependency>` is the name of the package you want to install.
 
-If you don't have vcpkg installed to your system path, instead add the dependency name to [vcpkg.json](vcpkg.json), as shown below.
+If no results are found, skip to the next section.
 
-```jsonc
-{
-  "dependencies": [
-    "curl",
-    "nlohmann-json",
-    // more dependencies...
-    "pugixml"
-  ]
-}
+Next, copy the name of the dependency you want from the list (e.g. `pugixml` from `  -> pugixml-v1.15: Light-weight, simple and fast XML parser for C++ with XPath support (in xmake-repo)`), then add that dependency to [xmake.lua](xmake.lua) with `add_requires("<dependency>")` (e.g. `add_requires("pugixml")`)
+
+After declaring the dependency, add it to the list in `add_packages` under 
+`target("<project>")`, project in this case being `lore-game`.
+
+When finished, your [xmake.lua](xmake.lua) should look something like this:
+
+```lua
+set_languages("cxx20")
+
+add_requireconfs("*", {configs = {shared = true}})
+add_requires("raylib")
+add_requires("fmt")
+add_requires("pugixml") -- our package
+
+target("lore-game")
+    set_kind("binary")
+    add_files("src/*.cpp")
+    add_packages("raylib", "fmt", "pugixml") -- added to `add_packages`
 ```
 
-> [!NOTE]  
-> If you have configured CMake once already, vcpkg will have been bootstrapped, and you can run it with `./vcpkg/vcpkg.exe` or `./vcpkg/vcpkg`, respective of your system. For ease of access, you can add `/vcpkg` to your path. [Read here for more info](https://gist.github.com/nex3/c395b2f8fd4b02068be37c961301caa7).
+### Non-xrepo but Remote Dependencies
 
-After adding the dependency to [vcpkg.json](vcpkg.json), you have to link it to the binary in [CMakeLists.txt](CMakeLists.txt).
-
-To do so, open [CMakeLists.txt](CMakeLists.txt) and scroll down until you see `# Adding vcpkg packages`, and add the dependency to the list of `find_package`s, as shown below.
-
-```cmake
-# Adding vcpkg packages
-
-find_package(CURL REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
-# more dependencies...
-find_package(pugixml REQUIRED)
-```
-
-Then, add add the dependency name to `target_link_libraries`.
-
-```cmake
-# Add static libraries to project
-
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    CURL::libcurl
-    nlohmann_json::nlohmann_json
-    # more dependencies...
-    pugixml
-)
-```
-
-When finished, your [CMakeLists.txt](CMakeLists.txt) should look like this, granted you're installing the [`pugixml`](https://vcpkg.io/en/package/pugixml) dependency:
-
-```cmake
-# Adding vcpkg packages
-
-find_package(CURL REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
-find_package(pugixml CONFIG REQUIRED)
-
-# Add static libraries to project
-
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    CURL::libcurl
-    nlohmann_json::nlohmann_json
-    pugixml
-)
-```
-
-> [!WARNING]  
-> If you run into an error after adding a package, try reading back the configuration logs. vcpkg will print a short guide on how to add each library to your project, such as `pugixml provides CMake targets:`. These may not always be correct, however, so it's important to look online for solutions.
+Some dependencies may not be available through xrepo, but are available elsewhere. to use these, prefix the library with the source's name, e.g. `vcpkg::easyexif`, `brew::pcre2`.
 
 ### Git Repository
 
-If the dependency is not available in the vcpkg package directory, but the dependency does have a git repository (github, gitlab, etc.), you can add it with CMake's [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)
+If the dependency is not available on a package manager, but the dependency does have a git repository (github, gitlab, etc.), you can add it with xmake's [`package`](https://xmake.io/#/manual/package_dependencies)
 
-To do so, open [CMakeLists.txt](CMakeLists.txt) and scroll down until you see `# Adding non-vcpkg packages`, and add the dependency to the list of `FetchContent_Declare`s, as shown below.
+For this section, we're going to be creating a package for [geode-sdk/json](https://github.com/geode-sdk/json). Here's our base:
 
-```cmake
-# Adding non-vcpkg packages
+```lua
+package("matjson")
+    set_homepage("https://github.com/geode-sdk/json") -- doesn't affect build process.
 
-include(FetchContent)
+    set_urls("https://github.com/geode-sdk/json.git")
+    -- set_urls("https://github.com/geode-sdk/json/archive/refs/heads/main.zip") -- both methods work, however using a git repository is easier and shorter.
+    -- set_urls("https://github.com/geode-sdk/json/archive/refs/tags/v$(version).zip") -- is another option for selecting a version, but going with the latest is generally recommended.
 
-FetchContent_Declare(
-    discord-rpc
-    GIT_REPOSITORY https://github.com/EclipseMenu/discord-presence.git
-    GIT_TAG main
-)
-# more dependencies...
-FetchContent_Declare(
-    spotify-api-plusplus
-    GIT_REPOSITORY https://github.com/smaltby/spotify-api-plusplus.git
-    GIT_TAG master # will default to master, but can still be set for clarity
-)
+    add_rules("utils.symbols.export_all", {export_classes = true}) -- required for windows libraries that don't use __dllspec, which is most.
+    add_includedirs("include") -- allows for global access to included files, like `#include <matjson.hpp>`.
+    add_files("src/**.cpp", "src/**.c") -- compiles all .c and .cpp files in all directories inside, however most projects only require one cpp file to be built.
+
+    add_deps("result") -- this package relies on geode-sdk/result, which can be defined a similar way.
 ```
 
-Then, add add the dependency name to `FetchContent_MakeAvailable`.
+> [!NOTE]  
+> For more detailed information, please refer to the [guide](https://xmake.io/#/manual/package_dependencies).
 
-```cmake
-FetchContent_MakeAvailable(
-    discord-rpc
-    # more dependencies...
-    spotify-api-plusplus
-)
+---
+
+In addition to [`package`](https://xmake.io/#/manual/package_dependencies), you can also define a library from an existing source.
+
+To make sure the source is loaded, add it to your git submodules with `git submodule add <git repo>`.
+
+Here's an example of how to use an external library, using [EclipseMenu/discord-presence](https://github.com/EclipseMenu/discord-presence.git):
+
+```lua
+target("discord-presence")
+    set_kind("shared") -- library can be shared or static. Defaults to static.
+
+    on_load(function ()
+        os.exec("git submodule update --init --recursive")
+    end) -- updates the submodules to ensure the repository is downloaded.
+
+    add_rules("utils.symbols.export_all", {export_classes = true}) -- required for windows libraries that don't use __dllspec, which is most.
+    add_files("discord-presence/src/**.cpp", "discord-presence/src/**.c") -- compiles all .c and .cpp files in all directories inside src, however most projects only require one cpp file to be built.
+    add_includedirs("discord-presence/include") -- allows for global access to included files, like `#include <discord-rpc.hpp>`.
+
+    add_packages("glaze", "fmt") -- these are added with `add_requires`, and are not defined in xmake.lua.
+    set_languages("cxx23") -- c++23 is required to build this library.
 ```
 
-After this, the dependency must now be added to `target_link_libraries` to be included in the binary.
+---
 
-```cmake
-# Add static libraries to project
+After defining a library, it must be linked to your binary to function properly.
 
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    discord-rpc
-    # more dependencies...
-    spotify-api-plusplus
+To do this, use `add_deps`, NOT `add_packages`.
 
-    CURL::libcurl
-    nlohmann_json::nlohmann_json
-    pugixml
-)
+```lua
+target("lore-game")
+    set_kind("binary")
+
+    add_files("src/*.cpp")
+
+    add_deps("matjson", "discord-rpc")
 ```
-
-When finished, your [CMakeLists.txt](CMakeLists.txt) should look like this, granted you're installing the [`spotify-api-plusplus`](https://github.com/smaltby/spotify-api-plusplus) dependency:
-
-```cmake
-# Adding non-vcpkg packages
-
-include(FetchContent)
-
-FetchContent_Declare(
-    discord-rpc
-    GIT_REPOSITORY https://github.com/EclipseMenu/discord-presence.git
-    GIT_TAG main
-)
-FetchContent_Declare(
-    spotify-api-plusplus
-    GIT_REPOSITORY https://github.com/smaltby/spotify-api-plusplus.git
-    GIT_TAG master # will default to master, but can still be set for clarity
-)
-
-FetchContent_MakeAvailable(
-    discord-rpc
-    spotify-api-plusplus
-)
-
-# Adding vcpkg packages...
-
-# Add static libraries to project
-
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    discord-rpc
-    spotify-api-plusplus
-
-    CURL::libcurl
-    nlohmann_json::nlohmann_json
-    pugixml
-)
-```
-
-> [!WARNING]  
-> Not all repositories will work with FetchContent. If you run into an error when configuring, it is likely that the library 's CMakeLists.txt does not contain `add_library`. Please continue reading for a solution.
-
-### Non-CMake, Non-vcpkg Library
-
-If neither of the above guides work for you, please try the guide at [learn.microsoft.com/vcpkg](https://learn.microsoft.com/vcpkg/examples/packaging-github-repos), or add custom build steps in your [CMakeLists.txt](CMakeLists.txt) to compile the library. If needed, please create an issue describing your problem.
 
 ## Troubleshooting
 
-```
-Could NOT find X11 (missing: X11_X11_INCLUDE_PATH X11_X11_LIB)
-```
-
-Install X11 developer tools with `sudo apt-get install xorg-dev`. You may need to update your repositories with `sudo apt-get update`
+¯\_(ツ)_/¯
