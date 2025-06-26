@@ -130,4 +130,4 @@ target("lore-game")
 
 ## Troubleshooting
 
-¯\_(ツ)_/¯
+¯\\\_(ツ)_/¯
