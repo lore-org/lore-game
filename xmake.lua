@@ -29,10 +29,6 @@ end
 
 add_requireconfs("*", {configs = {shared = not has_config("static")}})
 
-if not is_plat("windows") then
-    add_requires("libpng", {system = true})
-    add_requires("bzip2", {system = true})
-end
 add_requires("zlib")
 add_requires("libpng")
 add_requires("bzip2")
