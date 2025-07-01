@@ -4,14 +4,20 @@ set_languages("c23", "c++20")
 set_optimize("fastest")
 
 set_installdir("$(projectdir)/$(builddir)")
+
 add_cxflags(
-    "-Wold-style-cast", -- clang
-    "-g", "-ggdb", -- gcc
-    "-Zi", "-FS" -- cl
+    "-Wold-style-cast" -- gcc / clang
 )
-add_ldflags(
-    "-DEBUG" -- cl
-)
+
+if is_mode("debug") then
+    add_cxflags(
+        "-g3", "-ggdb3", -- gcc / clang
+        "-Zi", "-FS" -- msvc
+    )
+    add_ldflags(
+        "-DEBUG" -- msvc
+    )
+end
 
 -- add_requireconfs("*", {configs = {shared = false}}) -- static
 add_requireconfs("*", {configs = {shared = true}}) -- shared

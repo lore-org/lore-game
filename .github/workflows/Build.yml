@@ -38,6 +38,14 @@ jobs:
       - name: Setup xmake
         uses: xmake-io/github-action-setup-xmake@v1
       
+      - name: Install Linux Dependencies
+        if: matrix.config.id == 'linux'
+        run: sudo apt install zlib1g-dev -y
+      
+      - name: Install MacOS Dependencies
+        if: matrix.config.id == 'mac'
+        run: brew install bzip2
+      
       - name: Build
         run: xmake -y
       
