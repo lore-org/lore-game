@@ -1,13 +1,12 @@
-#include "engine/Default.hpp" // IWYU pragma: keep
+#include <engine/Default.h>
 
 #include <cpr/cpr.h>
-#include <exif.h>
 
-#include "engine/Director.hpp"
-#include "engine/Engine.hpp"
-#include "engine/PresenceManager.hpp"
-#include "engine/Scene.hpp"
-#include "engine/Sprite.hpp"
+#include <engine/PresenceManager.h>
+#include <engine/Scene.h>
+#include <engine/Sprite.h>
+#include <engine/Director.h>
+#include <engine/utils.hpp>
 
 int main() {
     auto engine = Engine::sharedInstance();
@@ -18,7 +17,7 @@ int main() {
     engine->showFPS(true);
     engine->showTPS(true);
     engine->setTimeDisplaySampleSize(25);
-    engine->setScreenSize({ 480, 320 });
+    // engine->setFramesPerSecond(30);
 
     presence->enableRPC(true);
 
@@ -28,8 +27,7 @@ int main() {
      * This function will initialise the Game Window along with the Discord RPC manager
      * if enabled.
      * 
-     * It must be called before any graphics are created, otherwise the RAM and VRAM
-     * buffers will not be initialised.
+     * It must be called before any graphics are created, otherwise the buffers will not be initialised.
      * 
      * Only the PresenceManager and the Screen Size must be set before setup.
      * Running this more than once will print a warning, but will not crash the program.
@@ -41,10 +39,10 @@ int main() {
     auto scene = Scene::create();
 
     auto kitty = Sprite::createFromFile("resources/kitty.png");
-    kitty->setUpdate([&kitty](auto dt) {
-        kitty->setPosition(Point(GetScreenWidth(), GetScreenHeight()) / 2); // make sure kitty is in the center of the screen
-        kitty->setRotation(kitty->getRotation() + (45 * dt)); // spin kitty 45deg / second
-    });
+    kitty->setUpdate(std::make_shared<Update_Callback>([&kitty](auto dt) {
+        kitty->setPosition(Engine::sharedInstance()->getStaticWindowSize() / 2.f); // Make sure kitty is in the center of the screen
+        kitty->setRotation(kitty->getRotation() + (45 * dt)); // Spin kitty 45deg / second
+    }));
     kitty->scheduleSelf();
 
     scene->addChild(kitty);
@@ -52,9 +50,6 @@ int main() {
     Director::sharedDirector()->pushScene(scene);
 
     auto response = cpr::Get(cpr::Url {"https://offload.tnktok.com/generate/image/7518323666090806536?index=0"});
-    auto exif = easyexif::EXIFInfo();
-    exif.parseFrom(response.text);
-    fmt::println("{}", exif.ImageWidth);
 
     // ---------------------------
 
@@ -70,15 +65,4 @@ int main() {
      * data saving and cleanup.
      */
     Engine::sharedInstance()->runEngine();
-
-    // ---- Cleanup ----
-
-    /**
-     * Technically, freeing the parent scene is not required as memory should be freed by
-     * the operating system when execution is finished, but it's good practice to remove
-     * any heap-allocated variables.
-     */
-    delete scene;
-
-    // -----------------
 }

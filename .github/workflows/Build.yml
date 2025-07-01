@@ -32,10 +32,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Upgrade CMake
+        uses: jwlawson/actions-setup-cmake@v2
+
       - name: Setup xmake
         uses: xmake-io/github-action-setup-xmake@v1
-        with:
-          xmake-version: dev
       
       - name: Build
         run: xmake -y

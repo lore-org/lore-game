@@ -1,0 +1,19 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "xmake",
+            "request": "launch",
+            "name": "Debug XMake target",
+            "target": "lore-game.exe",
+            "cwd": "${workspaceFolder}/build/bin",
+            "stopAtEntry": false,
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": "Build and Install"
+        }
+    ]
+}
