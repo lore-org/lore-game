@@ -1,3 +1,5 @@
+option("static", {default = false, description = "Compile Static Libraries"})
+
 set_policy("check.auto_ignore_flags", true)
 
 set_languages("c23", "c++20")
@@ -19,11 +21,13 @@ if is_mode("debug") then
     )
 end
 
-add_requires("zlib", {system = true})
-add_requires("bzip2", {system = true})
+add_requireconfs("*", {configs = {shared = not has_config("static")}})
 
--- add_requireconfs("*", {configs = {shared = false}}) -- static
-add_requireconfs("*", {configs = {shared = true}}) -- shared
+if not is_plat("windows") then
+    add_requires("zlib", {system = true})
+    add_requires("libpng", {system = true})
+    add_requires("bzip2", {system = true})
+end
 add_requires("libsdl3")
 add_requires("libsdl3_ttf")
 add_requires("libsdl3_image")
@@ -33,12 +37,15 @@ add_requires("cpr")
 add_requires("glaze")
 
 target("discord-presence")
-    -- set_kind("static") -- static
-    set_kind("shared") -- shared
+    if has_config("static") then
+        set_kind("static")
+    else
+        set_kind("shared")
+        add_rules("utils.symbols.export_all", {export_classes = true})
+    end
     after_load(function ()
         os.exec("git submodule update --init --recursive")
     end)
-    add_rules("utils.symbols.export_all", {export_classes = true}) -- shared
     add_files("discord-presence/src/*.cpp")
     if is_plat("windows") then
         add_files("discord-presence/src/platform/windows.cpp")
@@ -51,8 +58,6 @@ target("lore-game")
     set_kind("binary")
     add_files("src/**.cpp")
     add_includedirs("discord-presence/include", "include")
-    -- add_includedirs("C:/Program Files (x86)/Visual Leak Detector/include") -- debugging
-    -- add_linkdirs("C:/Program Files (x86)/Visual Leak Detector/lib/Win64") -- debugging
     add_packages("libsdl3", "libsdl3_ttf", "libsdl3_image", "fmt", "nlohmann_json", "cpr")
     add_deps("discord-presence")
     on_load(function ()
