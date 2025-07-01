@@ -19,6 +19,9 @@ if is_mode("debug") then
     )
 end
 
+add_requires("zlib", {system = true})
+add_requires("bzip2", {system = true})
+
 -- add_requireconfs("*", {configs = {shared = false}}) -- static
 add_requireconfs("*", {configs = {shared = true}}) -- shared
 add_requires("libsdl3")
