@@ -26,7 +26,7 @@ jobs:
           os: macos-latest
           id: mac
 
-    name: ${{ matrix.config.name }}
+    name: ${{ matrix.config.name }} (${{ matrix.libs }})
     runs-on: ${{ matrix.config.os }}
 
     steps:
