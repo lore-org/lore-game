@@ -29,11 +29,12 @@ end
 
 add_requireconfs("*", {configs = {shared = not has_config("static")}})
 
-add_requires("zlib")
-add_requires("libpng")
-add_requires("bzip2")
 add_requires("libsdl3")
-add_requires("libsdl3_ttf")
+if is_plat("windows") then
+    add_requires("brew::sdl3_ttf", {alias = "libsdl3_ttf"})
+else
+    add_requires("libsdl3_ttf")
+end
 add_requires("libsdl3_image")
 add_requires("fmt")
 add_requires("nlohmann_json")
@@ -62,7 +63,7 @@ target("lore-game")
     set_kind("binary")
     add_files("src/**.cpp")
     add_includedirs("discord-presence/include", "include")
-    add_packages("zlib", "libpng", "bzip2", "libsdl3", "libsdl3_ttf", "libsdl3_image", "fmt", "nlohmann_json", "cpr")
+    add_packages("libsdl3", "libsdl3_ttf", "libsdl3_image", "fmt", "nlohmann_json", "cpr")
     add_deps("discord-presence")
     on_load(function ()
         local config = io.open("$(projectdir)/config.json", "r")
