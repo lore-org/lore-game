@@ -12,21 +12,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        libs: [static, shared]
         config:
         - name: Windows
           os: windows-latest
           id: win
+          libs: shared
 
         - name: Linux
           os: ubuntu-latest
           id: linux
+          libs: static
 
         - name: macOS
           os: macos-latest
           id: mac
+          libs: static
 
-    name: ${{ matrix.config.name }} (${{ matrix.libs }})
+    name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
 
     steps:
@@ -39,12 +41,8 @@ jobs:
       - name: Setup xmake
         uses: xmake-io/github-action-setup-xmake@v1
 
-      - name: Set up Homebrew
-        if: matrix.config.id != 'win'
-        uses: Homebrew/actions/setup-homebrew@main
-
       - name: Config
-        run: xmake config -m release --static=${{ matrix.libs == 'static' && 'y' || 'n' }} -vy
+        run: xmake config -m release --static=${{ matrix.config.libs == 'static' && 'y' || 'n' }} -vy
       
       - name: Build
         run: xmake -vy
@@ -55,5 +53,5 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.config.id }}-${{ matrix.libs }}
+          name: build-${{ matrix.config.id }}-${{ matrix.config.libs }}
           path: build/bin
