@@ -3,6 +3,9 @@
 #include <engine/Sprite.h>
 
 #include <memory>
+#include <regex>
+
+#include <cpr/cpr.h>
 
 #include <engine/Geometry.h>
 #include <engine/ColorNode.h>
@@ -65,12 +68,32 @@ std::shared_ptr<Sprite> Sprite::createFromSurface(SDL_Surface* surface) {
     return ret;
 };
 
+std::shared_ptr<Sprite> Sprite::createFromURL(std::string url) {
+    auto ret = utils::protected_make_shared<Sprite>();
+
+    auto tex = Sprite::loadFromURL(url);
+    if (!tex) {
+        PrintSDLError();
+        return nullptr;
+    };
+
+    if (!ret->init(tex)) return nullptr;
+    return ret;
+};
+
+std::shared_ptr<Sprite> Sprite::createFromSprite(std::shared_ptr<Sprite> sprite) {
+    auto ret = utils::protected_make_shared<Sprite>();
+
+    if (!ret->init(sprite->getTexture())) return nullptr;
+    return ret;
+};
+
 void Sprite::setTexture(SDL_Texture* texture) {
     SDL_DestroyTexture(m_texture);
     m_texture = texture;
 };
 
-auto Sprite::getTexture() {
+SDL_Texture* Sprite::getTexture() {
     return m_texture;
 };
 
@@ -107,4 +130,36 @@ void Sprite::draw(const double dt) {
         &rotationalAxis,
         SDL_FLIP_NONE // Todo - implement
     )) PrintSDLError();
+};
+
+// May be nullptr, use PrintSDLError()
+SDL_Texture* Sprite::loadFromURL(std::string url) {
+    auto response = cpr::Get(cpr::Url { url });
+    if (response.status_code != 200) {
+        PrintError(fmt::format("Image returned status code '{}'", response.status_code));
+        return nullptr;
+    }
+    auto stream = SDL_IOFromConstMem(response.text.data(), response.text.size());
+    if (!stream) {
+        PrintSDLError();
+        return nullptr;
+    }
+
+    std::string fileType = {};
+    if (response.header.contains("Content-Type")) {
+        auto type = response.header.at("Content-Type");
+        auto split = utils::splitString(type, std::regex {"/"});
+
+        if (utils::caseInsensitiveCompare(split[1], "jpeg")) split[1] = "jpg";
+
+        if (utils::caseInsensitiveCompare(split[0], "image"))
+            fileType = utils::toUpperCase(split[1]).c_str();
+        else PrintError("Content-Type is not an Image");
+    }
+
+    return IMG_LoadTextureTyped_IO(
+        Engine::sharedInstance()->getRenderer(),
+        stream, true,
+        fileType.empty() ? NULL : fileType.c_str()
+    );
 };

@@ -6,3 +6,4 @@ include/engine/config.hpp
 .xmake/
 compile_commands.json
 *.pdb
+.vscode/c_cpp_properties.json

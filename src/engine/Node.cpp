@@ -18,9 +18,7 @@ Node::Node() :
     m_zOrder(0),
     m_parent(nullptr), m_tag(0), m_userData(nullptr), m_visible(true) {};
 
-Node::~Node() {
-    Object::~Object();
-    
+Node::~Node() {    
     this->cleanup();
 };
 
@@ -129,9 +127,8 @@ void Node::addChild(std::shared_ptr<Node> child, int zOrder, int tag) {
 };
 
 std::shared_ptr<Node> Node::getChildByTag(int tag) {
-    auto find = std::find_if(
-        m_children.begin(),
-        m_children.end(),
+    auto find = std::ranges::find_if(
+        m_children,
         [tag](std::shared_ptr<Node> node) { return node->m_tag == tag; }
     );
 
@@ -173,9 +170,8 @@ void Node::removeChildByTag(int tag) {
 };
 
 void Node::removeAllChildren() {
-    std::for_each(
-        m_children.begin(),
-        m_children.end(),
+    std::ranges::for_each(
+        m_children,
         [this](std::shared_ptr<Node> child) { this->removeChild(child); }
     );
 };
@@ -187,9 +183,8 @@ void Node::reorderChild(std::shared_ptr<Node> child, int zOrder) {
 };
 
 void Node::sortAllChildren() {
-    std::sort(
-        m_children.begin(),
-        m_children.end(),
+    std::ranges::sort(
+        m_children,
         [](std::shared_ptr<Node> a, std::shared_ptr<Node> b) { return a->getZOrder() < b->getZOrder(); }
     );
 };
@@ -212,9 +207,8 @@ void Node::cleanup() {
 };
 
 void Node::draw(const double dt) {
-    std::for_each(
-        m_children.begin(),
-        m_children.end(),
+    std::ranges::for_each(
+        m_children,
         [dt](std::shared_ptr<Node> child) { child->draw(dt); }
     );
 };
@@ -224,9 +218,8 @@ Rect Node::getRect() {
 };
 
 size_t Node::_getIndexOfChild(std::shared_ptr<Node> child) {
-    auto find = std::find(
-        m_children.begin(),
-        m_children.end(),
+    auto find = std::ranges::find(
+        m_children,
         child
     );
 

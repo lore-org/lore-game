@@ -4,6 +4,8 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <regex>
+#include <cctype>
 
 #include "Object.h"
 
@@ -15,22 +17,35 @@
 #define IsZero(f) std::fabs(static_cast<float>(f)) < EPSILON
 
 #define PrintLN() fmt::println("{}:{}", __FILE__, __LINE__)
-#define PrintSDLError() fmt::println("[ERROR]: '{}:{}': {}", __FILE__, __LINE__, SDL_GetError())
+#define PrintError(x) fmt::println("[ERROR]: '{}:{}': {}", __FILE__, __LINE__, x)
+#define PrintSDLError() PrintError(SDL_GetError())
 
 #define __Quote__(...) #__VA_ARGS__
 #define CreateEventDecl(prefix, event) inline static const char* event = __Quote__(prefix ## __ ## event)
 
+inline std::locale _locale;
+
 namespace utils {
     inline std::string toLowerCase(std::string str) {
-        std::string ret;
-        std::transform(str.begin(), str.end(), ret.begin(), ::tolower);
+        std::ranges::transform(
+            str, str.begin(),
+            [&](char ch) { return std::use_facet<std::ctype<char>>(::_locale).tolower(ch); }
+        );
+        return str;
+    }
+
+    inline std::string toUpperCase(std::string str) {
+        std::ranges::transform(
+            str, str.begin(),
+            [&](char ch) { return std::use_facet<std::ctype<char>>(::_locale).toupper(ch); }
+        );
         return str;
     }
 
     template<typename T, typename U, typename F>
     inline std::vector<T> mapVector(std::vector<U> vec, F replace) {
         std::vector<T> newVec;
-        std::transform(vec.begin(), vec.end(), newVec.begin(), replace);
+        std::ranges::transform(vec, newVec.begin(), replace);
         return newVec;
     }
 
@@ -45,5 +60,19 @@ namespace utils {
         struct helper : public Object {};
 
         return std::make_shared<helper>();
+    }    
+
+    inline std::vector<std::string> splitString(std::string string, std::regex delimiter = std::regex {""}) {
+        std::vector<std::string> tokens;
+        std::sregex_token_iterator iter(string.begin(), string.end(), delimiter, -1);
+        std::sregex_token_iterator end;
+        while (end != iter) {
+            tokens.push_back(*iter++);
+        }
+        return tokens;
+    }
+
+    inline bool caseInsensitiveCompare(std::string first, std::string second) {
+        return std::ranges::equal(first, second, [](char a, char b) { return tolower(a) == tolower(b); });
     }
 }

@@ -31,9 +31,9 @@ add_requireconfs("*", {configs = {shared = not has_config("static")}})
 
 add_requires("libsdl3")
 if is_plat("windows") then
-    add_requires("brew::sdl3_ttf", {alias = "libsdl3_ttf"})
-else
     add_requires("libsdl3_ttf")
+else
+    add_requires("brew::sdl3_ttf", {alias = "libsdl3_ttf"})
 end
 add_requires("libsdl3_image")
 add_requires("fmt")
@@ -57,7 +57,7 @@ target("discord-presence")
     end
     add_includedirs("discord-presence/include")
     add_packages("glaze", "fmt")
-    set_languages("cxx23")
+    set_languages("c23", "c++23")
 
 target("lore-game")
     set_kind("binary")
@@ -73,3 +73,4 @@ target("lore-game")
     after_install(function (target)        
         os.cp("$(projectdir)/resources/", "$(projectdir)/$(builddir)/bin")
     end)
+    set_languages("c23", "c++23")

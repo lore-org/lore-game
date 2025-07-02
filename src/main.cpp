@@ -1,6 +1,7 @@
 #include <engine/Default.h>
 
 #include <cpr/cpr.h>
+#include <SDL3_image/SDL_image.h>
 
 #include <engine/PresenceManager.h>
 #include <engine/Scene.h>
@@ -38,18 +39,20 @@ int main() {
 
     auto scene = Scene::create();
 
-    auto kitty = Sprite::createFromFile("resources/kitty.png");
-    kitty->setUpdate(std::make_shared<Update_Callback>([&kitty](auto dt) {
-        kitty->setPosition(Engine::sharedInstance()->getStaticWindowSize() / 2.f); // Make sure kitty is in the center of the screen
-        kitty->setRotation(kitty->getRotation() + (45 * dt)); // Spin kitty 45deg / second
-    }));
-    kitty->scheduleSelf();
+    // auto kitty = Sprite::createFromFile("resources/kitty.png");
+    // kitty->setUpdate(std::make_shared<Update_Callback>([&kitty](auto dt) {
+    //     kitty->setPosition(Engine::sharedInstance()->getStaticWindowSize() / 2.f); // Make sure kitty is in the center of the screen
+    //     kitty->setRotation(kitty->getRotation() + (45 * dt)); // Spin kitty 45deg / second
+    // }));
+    // kitty->scheduleSelf();
 
-    scene->addChild(kitty);
+    // scene->addChild(kitty);
+
+    auto furries = Sprite::createFromURL("https://offload.tnktok.com/generate/image/7518323666090806536?index=0");
+    scene->setAnchorPoint(0);
+    scene->addChild(furries);
 
     Director::sharedDirector()->pushScene(scene);
-
-    auto response = cpr::Get(cpr::Url {"https://offload.tnktok.com/generate/image/7518323666090806536?index=0"});
 
     // ---------------------------
 

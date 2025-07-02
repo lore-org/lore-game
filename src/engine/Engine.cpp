@@ -116,11 +116,11 @@ void Engine::setTimeDisplaySampleSize(unsigned int size) {
 
     if (m_frameDeltas.capacity() > size) m_frameDeltas.resize(m_sampleSize);
     else m_frameDeltas.resize(m_sampleSize, 0);
-    std::fill(m_frameDeltas.begin(), m_frameDeltas.end(), 0);
+    std::ranges::fill(m_frameDeltas, 0);
 
     if (m_tickDeltas.capacity() > size) m_tickDeltas.resize(m_sampleSize);
     else m_tickDeltas.resize(m_sampleSize, 0);
-    std::fill(m_tickDeltas.begin(), m_tickDeltas.end(), 0);
+    std::ranges::fill(m_tickDeltas, 0);
 }
 
 void Engine::setWindowSize(Size size) {
@@ -243,7 +243,7 @@ void Engine::runEngine() {
 
             const double dt = (startTime - lastTickTime) * Nanosecond_Constant;
             if (m_showTPS) {
-                std::rotate(m_tickDeltas.begin(), m_tickDeltas.begin() + 1, m_tickDeltas.end());
+                std::ranges::rotate(m_tickDeltas, m_tickDeltas.begin() + 1);
                 m_tickDeltas.back() = 1.f / dt;
             }
 
@@ -267,10 +267,10 @@ void Engine::runEngine() {
             if (m_tickDeltas.size() == 0) return;
 
             m_frameAvg = m_showFPS ?
-                std::reduce(
-                    std::execution::par_unseq,
-                    m_frameDeltas.begin(),
-                    m_frameDeltas.end()
+                 std::ranges::fold_left(
+                    m_frameDeltas,
+                    0,
+                    std::plus<double>()
                 ) / m_sampleSize :
                 0;
 
@@ -308,7 +308,7 @@ void Engine::runEngine() {
 
         const double dt = (startTime - lastFrameTime) * Nanosecond_Constant;
         if (m_showFPS) {
-            std::rotate(m_frameDeltas.begin(), m_frameDeltas.begin() + 1, m_frameDeltas.end());
+            std::ranges::rotate(m_frameDeltas, m_frameDeltas.begin() + 1);
             m_frameDeltas.back() = 1.f / dt;
         }
         Director::sharedDirector()->draw(dt);
@@ -366,9 +366,8 @@ void Engine::runEngine() {
     SDL_DestroyWindow(m_sdlWindow);
     SDL_DestroyRenderer(m_sdlRenderer);
     TTF_DestroyRendererTextEngine(m_sdlTextEngine);
-    std::for_each(
-        m_fontMap.begin(),
-        m_fontMap.end(),
+    std::ranges::for_each(
+        m_fontMap,
         [](std::pair<std::string, TTF_Font*> font) {
             TTF_CloseFont(font.second);
         }

@@ -30,9 +30,8 @@ void Scheduler::setTimeScale(float timeScale) {
 void Scheduler::update(double dt) {
     if (m_timeScale != 1.f) dt *= m_timeScale;
 
-    std::for_each(
-        m_entries.begin(),
-        m_entries.end(),
+    std::ranges::for_each(
+        m_entries,
         [dt](std::shared_ptr<_entry> entry) {
             if (!entry->paused && !entry->willDelete) {
                 entry->target->update(dt);
@@ -41,9 +40,8 @@ void Scheduler::update(double dt) {
     );
 
     int _i = 0;
-    std::for_each(
-        m_entries.begin(),
-        m_entries.end(),
+    std::ranges::for_each(
+        m_entries,
         [this, &_i](std::shared_ptr<_entry> entry) {
             ++_i;
             if (entry->willDelete) m_entries.erase(m_entries.begin() + _i);
@@ -57,7 +55,7 @@ void Scheduler::scheduleUpdate(Object* target, int priority, bool paused) {
     if (this->_getIndexOfTarget(target) < 0) return;
 
     m_entries.push_back(std::make_shared<_entry>(target, priority, paused, false));
-    std::sort(m_entries.begin(), m_entries.end(), [](std::shared_ptr<_entry> a, std::shared_ptr<_entry> b) {
+    std::ranges::sort(m_entries, [](std::shared_ptr<_entry> a, std::shared_ptr<_entry> b) {
         return a->priority < b->priority;
     });
 };
@@ -67,17 +65,15 @@ void Scheduler::unscheduleUpdate(Object* target) {
 };
 
 void Scheduler::unscheduleUpdates(std::unordered_set<Object*> targets) {
-    std::for_each(
-        targets.begin(),
-        targets.end(),
+    std::ranges::for_each(
+        targets,
         [this](Object* target) { this->unscheduleUpdate(target); }
     );
 };
 
 void Scheduler::unscheduleAll() {
-    std::for_each(
-        m_entries.begin(),
-        m_entries.end(),
+    std::ranges::for_each(
+        m_entries,
         [this](std::shared_ptr<_entry> entry) { this->unscheduleUpdate(entry->target); }
     );
 };
@@ -91,33 +87,29 @@ void Scheduler::resumeTarget(Object* target) {
 };
 
 void Scheduler::pauseTargets(std::unordered_set<Object*> targets) {
-    std::for_each(
-        targets.begin(),
-        targets.end(),
+    std::ranges::for_each(
+        targets,
         [this](Object* target) { this->pauseTarget(target); }
     );
 };
 
 void Scheduler::resumeTargets(std::unordered_set<Object*> targets) {
-    std::for_each(
-        targets.begin(),
-        targets.end(),
+    std::ranges::for_each(
+        targets,
         [this](Object* target) { this->resumeTarget(target); }
     );
 };
 
 void Scheduler::pauseAll() {
-    std::for_each(
-        m_entries.begin(),
-        m_entries.end(),
+    std::ranges::for_each(
+        m_entries,
         [](std::shared_ptr<_entry> entry) { entry->paused = true; }
     );
 };
 
 void Scheduler::resumeAll() {
-    std::for_each(
-        m_entries.begin(),
-        m_entries.end(),
+    std::ranges::for_each(
+        m_entries,
         [](std::shared_ptr<_entry> entry) { entry->paused = false; }
     );
 };
@@ -128,9 +120,8 @@ bool Scheduler::isTargetPaused(Object* target) {
 };
 
 size_t Scheduler::_getIndexOfTarget(Object* target) {
-    auto find = std::find_if(
-        m_entries.begin(),
-        m_entries.end(),
+    auto find = std::ranges::find_if(
+        m_entries,
         [&target](std::shared_ptr<_entry> entry) { return entry->target == target; }
     );
 
@@ -139,9 +130,8 @@ size_t Scheduler::_getIndexOfTarget(Object* target) {
 };
 
 std::shared_ptr<_entry> Scheduler::_getEntryFromTarget(Object* target) {
-    auto find = std::find_if(
-        m_entries.begin(),
-        m_entries.end(),
+    auto find = std::ranges::find_if(
+        m_entries,
         [&target](std::shared_ptr<_entry> entry) { return entry->target == target; }
     );
 

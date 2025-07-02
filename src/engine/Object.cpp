@@ -66,7 +66,7 @@ void Object::registerEventListener(std::string name, std::shared_ptr<Event_Callb
 
 void Object::unregisterEventListener(std::string name, std::shared_ptr<Event_Callback> callback) {
     auto listeners = this->_getOrCreateListeners(name);
-    auto find = std::find(listeners.begin(), listeners.end(), callback);
+    auto find = std::ranges::find(listeners, callback);
 
     if (find != listeners.end()) listeners.erase(find);
 }
@@ -75,9 +75,8 @@ void Object::_callEventListener(std::string name, std::shared_ptr<void> data) {
     auto _listeners = m_callbacks.find(utils::toLowerCase(name));
     if (_listeners == m_callbacks.end()) return;
     auto listeners = _listeners->second;
-    std::for_each(
-        listeners.begin(),
-        listeners.end(),
+    std::ranges::for_each(
+        listeners,
         [&data](std::shared_ptr<Event_Callback> callback) {
             (*callback)(data);
         }
