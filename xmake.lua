@@ -40,12 +40,7 @@ add_requireconfs("*", {configs = {
     public = true
 }})
 
--- if not is_plat("windows") then
---     package("freetype")
---         add_links("z", "png", "stdc++", "bz2")
---     package_end()
--- end
-
+add_requires("freetype")
 add_requires("libsdl3")
 add_requires("libsdl3_ttf")
 add_requires("libsdl3_image")
