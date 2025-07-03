@@ -21,13 +21,13 @@ else
     end
 end
 
-if has_config("static") then
-    table.insert(runtimes, "c++_static")
-    table.insert(runtimes, "stdc++_static")
-else
-    table.insert(runtimes, "c++_shared")
-    table.insert(runtimes, "stdc++_shared")
-end
+-- if has_config("static") then
+--     table.insert(runtimes, "c++_static")
+--     table.insert(runtimes, "stdc++_static")
+-- else
+--     table.insert(runtimes, "c++_shared")
+--     table.insert(runtimes, "stdc++_shared")
+-- end
 
 set_runtimes(table.unpack(runtimes))
 
