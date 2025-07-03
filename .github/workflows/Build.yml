@@ -58,8 +58,8 @@ jobs:
         if: matrix.config.id != 'windows'
         id: gcc_out
         run: |
-          output_path=$(gcc --print-file-name libstdc++.a)
-          echo "libstdc++_path=${output_path:0:-12}" >> "$GITHUB_OUTPUT"
+          libstdc++_path=$(gcc --print-file-name libstdc++.a)
+          echo "libstdc++_path=${libstdc++_path:0:-12}" >> "$GITHUB_OUTPUT"
 
       - name: Config
         run: >
@@ -67,7 +67,8 @@ jobs:
           -p ${{ matrix.config.id }}
           -m release
           --static=${{ matrix.libs == 'static' && 'y' || 'n' }}
-          ${{ matrix.config.id != 'windows' && '--toolchain=gcc --ldflags="-L${{ steps.gcc_out.outputs.libstdc++_path }} -lz"' || '' }}
+          ${{ matrix.config.id != 'windows' && '--toolchain=gcc' || '' }}
+          ${{ matrix.config.id != 'windows' && '--ldflags="-L${libstdc++_path} -lz"' || '' }}
           --policies=build.ccache:y
           -vy
       
