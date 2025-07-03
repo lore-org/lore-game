@@ -1,7 +1,5 @@
 option("static", {default = false, description = "Compile Static Libraries"})
 
-set_policy("check.auto_ignore_flags", true)
-
 set_languages("c23", "c++20")
 set_optimize("fastest")
 set_warnings("more")
@@ -14,7 +12,6 @@ if is_mode("debug") then
         table.insert(runtimes, "MTd")
     else
         table.insert(runtimes, "MDd")
-        add_rules("utils.symbols.export_all", {export_classes = true})
     end
 else
     if has_config("static") then
@@ -39,6 +36,7 @@ set_installdir("$(projectdir)/$(builddir)")
 add_requireconfs("*", {configs = {
     shared = not has_config("static"),
     vs_runtime = runtimes[1],
+    runtimes = runtimes,
     debug = is_mode("debug")
 }})
 
@@ -55,6 +53,9 @@ target("discord-presence")
     after_load(function ()
         os.exec("git submodule update --init --recursive")
     end)
+    if not has_config("static") then
+        add_rules("utils.symbols.export_all", {export_classes = true})
+    end
     add_files("discord-presence/src/*.cpp")
     if is_plat("windows") then
         add_files("discord-presence/src/platform/windows.cpp")
