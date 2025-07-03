@@ -47,11 +47,11 @@ jobs:
           package-cache-key: ${{ matrix.config.name }}-${{ matrix.libs }}
 
       - name: Set up Homebrew
-        if: matrix.config.name != 'win'
+        if: matrix.config.id != 'win'
         uses: Homebrew/actions/setup-homebrew@main
       
       - name: Install GCC
-        if: matrix.config.name != 'win'
+        if: matrix.config.id != 'win'
         run: brew install gcc
 
       - name: Config
