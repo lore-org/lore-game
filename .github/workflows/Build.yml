@@ -50,9 +50,9 @@ jobs:
         if: matrix.config.id != 'windows'
         uses: Homebrew/actions/setup-homebrew@main
       
-      - name: Install GCC
-        if: matrix.config.id != 'windows'
-        run: brew install gcc
+      # - name: Install GCC
+      #   if: matrix.config.id != 'windows'
+      #   run: brew install gcc
 
       - name: Config
         run: >
@@ -60,7 +60,6 @@ jobs:
           -p ${{ matrix.config.id }}
           -m release
           --static=${{ matrix.libs == 'static' && 'y' || 'n' }}
-          ${{ matrix.config.id != 'windows' && '--toolchain=gcc' || '' }}
           --policies=build.ccache:y
           -vy
       
