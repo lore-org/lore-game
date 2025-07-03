@@ -36,9 +36,15 @@ set_installdir("$(projectdir)/$(builddir)")
 add_requireconfs("*", {configs = {
     shared = not has_config("static"),
     vs_runtime = runtimes[1],
-    runtimes = runtimes,
-    debug = is_mode("debug")
+    debug = is_mode("debug"),
+    public = true
 }})
+
+if not is_plat("windows") then
+    package("freetype")
+        add_links("z", "png", "stdc++", "bz2")
+    package_end()
+end
 
 add_requires("libsdl3")
 add_requires("libsdl3_ttf")
