@@ -16,7 +16,7 @@ jobs:
         config:
         - name: Windows
           os: windows-latest
-          id: win
+          id: windows
 
         - name: Linux
           os: ubuntu-latest
@@ -24,7 +24,7 @@ jobs:
 
         - name: macOS
           os: macos-latest
-          id: mac
+          id: macosx
 
     name: ${{ matrix.config.name }} (${{ matrix.libs }})
     runs-on: ${{ matrix.config.os }}
@@ -47,19 +47,27 @@ jobs:
           package-cache-key: ${{ matrix.config.name }}-${{ matrix.libs }}
 
       - name: Set up Homebrew
-        if: matrix.config.id != 'win'
+        if: matrix.config.id != 'windows'
         uses: Homebrew/actions/setup-homebrew@main
       
       - name: Install GCC
-        if: matrix.config.id != 'win'
+        if: matrix.config.id != 'windows'
         run: brew install gcc
+      
+      - name: Get libstdc++
+        if: matrix.config.id != 'windows'
+        id: gcc_out
+        run: |
+          output_path=$(gcc --print-file-name libstdc++.a)
+          echo "libstdc++_path=${output_path:0:-12}" >> "$GITHUB_OUTPUT"
 
       - name: Config
         run: >
           xmake config
+          -p ${{ matrix.config.id }}
           -m release
           --static=${{ matrix.libs == 'static' && 'y' || 'n' }}
-          ${{ matrix.config.id != 'win' && '--toolchain=gcc' || '' }}
+          ${{ matrix.config.id != 'windows' && '--toolchain=gcc --ldflags="-L${{ steps.gcc_out.outputs.libstdc++_path }} -lz"' || '' }}
           --policies=build.ccache:y
           -vy
       
