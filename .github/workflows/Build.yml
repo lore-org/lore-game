@@ -12,11 +12,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        libs: [shared, static]
         config:
         - name: Windows
           os: windows-latest
           id: win
-          libs: shared
 
         - name: Linux
           os: ubuntu-latest
@@ -28,7 +28,7 @@ jobs:
           id: mac
           libs: static
 
-    name: ${{ matrix.config.name }}
+    name: ${{ matrix.config.name }} (${{ matrix.libs }})
     runs-on: ${{ matrix.config.os }}
 
     steps:
@@ -42,7 +42,7 @@ jobs:
         uses: xmake-io/github-action-setup-xmake@v1
 
       - name: Config
-        run: xmake config -m release --static=${{ matrix.config.libs == 'static' && 'y' || 'n' }} -vy
+        run: xmake config -m release --static=${{ matrix.libs == 'static' && 'y' || 'n' }} -vy
       
       - name: Build
         run: xmake -vy
@@ -53,5 +53,5 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.config.id }}-${{ matrix.config.libs }}
+          name: build-${{ matrix.config.id }}-${{ matrix.libs }}
           path: build/bin

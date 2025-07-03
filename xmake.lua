@@ -4,30 +4,43 @@ set_policy("check.auto_ignore_flags", true)
 
 set_languages("c23", "c++20")
 set_optimize("fastest")
+set_warnings("more")
 
-set_installdir("$(projectdir)/$(builddir)")
-
-add_cxflags(
-    "-Wold-style-cast" -- gcc / clang
-)
+local runtimes = {}
 
 if is_mode("debug") then
-    add_cxflags(
-        "-g3", "-ggdb3", -- gcc / clang
-        "-Zi", "-FS" -- msvc
-    )
-    add_ldflags(
-        "-DEBUG" -- msvc
-    )
+    set_symbols("debug")
+    if has_config("static") then
+        table.insert(runtimes, "MTd")
+    else
+        table.insert(runtimes, "MDd")
+        add_rules("utils.symbols.export_all", {export_classes = true})
+    end
+else
+    if has_config("static") then
+        table.insert(runtimes, "MT")
+    else
+        table.insert(runtimes, "MD")
+    end
 end
 
 if has_config("static") then
-    add_cxflags(
-        "-MT" -- msvc
-    )
+    table.insert(runtimes, "c++_static")
+    table.insert(runtimes, "stdc++_static")
+else
+    table.insert(runtimes, "c++_shared")
+    table.insert(runtimes, "stdc++_shared")
 end
 
-add_requireconfs("*", {configs = {shared = not has_config("static")}})
+set_runtimes(table.unpack(runtimes))
+
+set_installdir("$(projectdir)/$(builddir)")
+
+add_requireconfs("*", {configs = {
+    shared = not has_config("static"),
+    vs_runtime = runtimes[1],
+    debug = is_mode("debug")
+}})
 
 add_requires("libsdl3")
 add_requires("libsdl3_ttf")
@@ -38,12 +51,7 @@ add_requires("cpr")
 add_requires("glaze")
 
 target("discord-presence")
-    if has_config("static") then
-        set_kind("static")
-    else
-        set_kind("shared")
-        add_rules("utils.symbols.export_all", {export_classes = true})
-    end
+    set_kind(has_config("static") and "static" or "shared")
     after_load(function ()
         os.exec("git submodule update --init --recursive")
     end)

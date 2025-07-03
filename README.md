@@ -67,31 +67,13 @@ Some dependencies may not be available through xrepo, but are available elsewher
 
 ### Git Repository
 
-If the dependency is not available on a package manager, but the dependency does have a git repository (github, gitlab, etc.), you can add it with xmake's [`package`](https://xmake.io/#/manual/package_dependencies)
+If the dependency is not available on a package manager, but the dependency does have a git repository (github, gitlab, etc.), you can add it with xmake's [`package`](https://xmake.io/guide/package-management/using-local-packages.html)
 
-For this section, we're going to be creating a package for [geode-sdk/json](https://github.com/geode-sdk/json). Here's our base:
-
-```lua
-package("matjson")
-    set_homepage("https://github.com/geode-sdk/json") -- doesn't affect build process.
-
-    set_urls("https://github.com/geode-sdk/json.git")
-    -- set_urls("https://github.com/geode-sdk/json/archive/refs/heads/main.zip") -- both methods work, however using a git repository is easier and shorter.
-    -- set_urls("https://github.com/geode-sdk/json/archive/refs/tags/v$(version).zip") -- is another option for selecting a version, but going with the latest is generally recommended.
-
-    add_rules("utils.symbols.export_all", {export_classes = true}) -- required for windows libraries that don't use __dllspec, which is most.
-    add_includedirs("include") -- allows for global access to included files, like `#include <matjson.hpp>`.
-    add_files("src/**.cpp", "src/**.c") -- compiles all .c and .cpp files in all directories inside, however most projects only require one cpp file to be built.
-
-    add_deps("result") -- this package relies on geode-sdk/result, which can be defined a similar way.
-```
-
-> [!NOTE]  
-> For more detailed information, please refer to the [guide](https://xmake.io/#/manual/package_dependencies).
+For detailed information, please refer to the [guide](https://xmake.io/guide/package-management/using-local-packages.html).
 
 ---
 
-In addition to [`package`](https://xmake.io/#/manual/package_dependencies), you can also define a library from an existing source.
+In addition to [`package`](https://xmake.io/guide/package-management/using-local-packages.html), you can also define a library from an existing source.
 
 To make sure the source is loaded, add it to your git submodules with `git submodule add <git repo>`.
 
