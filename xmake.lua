@@ -8,26 +8,26 @@ local runtimes = {}
 
 if is_mode("debug") then
     set_symbols("debug")
-    -- if has_config("static") then
-    --     table.insert(runtimes, "MTd")
-    -- else
-    --     table.insert(runtimes, "MDd")
-    -- end
+    if has_config("static") then
+        table.insert(runtimes, "MTd")
+    else
+        table.insert(runtimes, "MDd")
+    end
 else
-    -- if has_config("static") then
-    --     table.insert(runtimes, "MT")
-    -- else
-    --     table.insert(runtimes, "MD")
-    -- end
+    if has_config("static") then
+        table.insert(runtimes, "MT")
+    else
+        table.insert(runtimes, "MD")
+    end
 end
 
--- if has_config("static") then
---     table.insert(runtimes, "c++_static")
---     table.insert(runtimes, "stdc++_static")
--- else
---     table.insert(runtimes, "c++_shared")
---     table.insert(runtimes, "stdc++_shared")
--- end
+if has_config("static") then
+    table.insert(runtimes, "c++_static")
+    table.insert(runtimes, "stdc++_static")
+else
+    table.insert(runtimes, "c++_shared")
+    table.insert(runtimes, "stdc++_shared")
+end
 
 set_runtimes(table.unpack(runtimes))
 
@@ -35,16 +35,16 @@ set_installdir("$(projectdir)/$(builddir)")
 
 add_requireconfs("*", {configs = {
     shared = not has_config("static"),
-    -- vs_runtime = runtimes[1],
+    vs_runtime = runtimes[1],
     debug = is_mode("debug"),
     public = true
 }})
 
-if not is_plat("windows") then
-    package("freetype")
-        add_links("z", "png", "stdc++", "bz2")
-    package_end()
-end
+-- if not is_plat("windows") then
+--     package("freetype")
+--         add_links("z", "png", "stdc++", "bz2")
+--     package_end()
+-- end
 
 add_requires("libsdl3")
 add_requires("libsdl3_ttf")
