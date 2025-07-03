@@ -55,7 +55,13 @@ jobs:
         run: brew install gcc
 
       - name: Config
-        run: xmake config -m release --static=${{ matrix.libs == 'static' && 'y' || 'n' }} --policies=build.ccache:y -vy
+        run: >
+          xmake config
+          -m release
+          --static=${{ matrix.libs == 'static' && 'y' || 'n' }}
+          ${{ matrix.config.id != 'win' && '--toolchain=gcc' || '' }}
+          --policies=build.ccache:y
+          -vy
       
       - name: Build
         run: xmake -vy
