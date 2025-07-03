@@ -8,17 +8,17 @@ local runtimes = {}
 
 if is_mode("debug") then
     set_symbols("debug")
-    if has_config("static") then
-        table.insert(runtimes, "MTd")
-    else
-        table.insert(runtimes, "MDd")
-    end
+    -- if has_config("static") then
+    --     table.insert(runtimes, "MTd")
+    -- else
+    --     table.insert(runtimes, "MDd")
+    -- end
 else
-    if has_config("static") then
-        table.insert(runtimes, "MT")
-    else
-        table.insert(runtimes, "MD")
-    end
+    -- if has_config("static") then
+    --     table.insert(runtimes, "MT")
+    -- else
+    --     table.insert(runtimes, "MD")
+    -- end
 end
 
 -- if has_config("static") then
@@ -35,7 +35,7 @@ set_installdir("$(projectdir)/$(builddir)")
 
 add_requireconfs("*", {configs = {
     shared = not has_config("static"),
-    vs_runtime = runtimes[1],
+    -- vs_runtime = runtimes[1],
     debug = is_mode("debug"),
     public = true
 }})
