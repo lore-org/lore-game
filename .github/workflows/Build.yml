@@ -22,9 +22,10 @@ jobs:
           os: ubuntu-latest
           id: linux
 
-        - name: macOS
-          os: macos-latest
-          id: macosx
+        # macOS is broken with SDL3_image :(
+        # - name: macOS
+        #   os: macos-latest
+        #   id: macosx
 
     name: ${{ matrix.config.name }} (${{ matrix.libs }})
     runs-on: ${{ matrix.config.os }}
@@ -35,39 +36,46 @@ jobs:
 
       - name: Upgrade CMake
         uses: jwlawson/actions-setup-cmake@v2
-
-      - name: Setup xmake
-        uses: xmake-io/github-action-setup-xmake@v1
-        with:
-          actions-cache-folder: '.xmake-cache'
-          actions-cache-key: ${{ matrix.config.name }}-${{ matrix.libs }}
-          build-cache: true
-          build-cache-key: ${{ matrix.config.name }}-${{ matrix.libs }}
-          package-cache: true
-          package-cache-key: ${{ matrix.config.name }}-${{ matrix.libs }}
-
-      - name: Set up Homebrew
-        if: matrix.config.id != 'windows'
-        uses: Homebrew/actions/setup-homebrew@main
       
-      # - name: Install GCC
-      #   if: matrix.config.id != 'windows'
-      #   run: brew install gcc
+      - name: Setup GCC
+        uses: egor-tensin/setup-gcc@v1
+        
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
 
-      - name: Config
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: python -m pip install meson ninja
+      
+      - name: Setup
         run: >
-          xmake config
-          -p ${{ matrix.config.id }}
-          -m release
-          --static=${{ matrix.libs == 'static' && 'y' || 'n' }}
-          --policies=build.ccache:y
-          -vy
+          meson setup
+          build
+          --default-library ${{ matrix.libs }}
+          --optimization 3
+          --buildtype release
       
       - name: Build
-        run: xmake -vy
+        run: >
+          meson compile
+          -C build
+          -j 0
       
-      - name: Install
-        run: xmake install -vy
+      - name: Copy Binaries
+        shell: bash
+        run: |
+          cp build/$(meson introspect build --projectinfo -i | jq -r '.descriptive_name')* build/bin
+          cp build/*.{dll,so,dylib} build/bin
+          cp build/subprojects/*/*.{dll,so,dylib} build/bin
+          cp build/subprojects/*/*/*.{dll,so,dylib} build/bin
+          cp resources build/bin
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
