@@ -38,7 +38,12 @@ jobs:
         uses: jwlawson/actions-setup-cmake@v2
       
       - name: Setup GCC
+        if: matrix.config.os != 'windows'
         uses: egor-tensin/setup-gcc@v1
+      
+      - name: Setup MinGW
+        if: matrix.config.os == 'windows'
+        uses: egor-tensin/setup-mingw@v2
         
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
