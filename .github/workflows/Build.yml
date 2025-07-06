@@ -57,16 +57,16 @@ jobs:
       - name: Setup
         run: >
           meson setup
-            build
-            --default-library ${{ matrix.libs }}
-            --optimization 3
-            --buildtype release
+          build
+          --default-library ${{ matrix.libs }}
+          --optimization 3
+          --buildtype release
       
       - name: Build
         run: >
           meson compile
-            -C build
-            -j 0
+          -C build
+          -j 0
       
       - name: Copy Binaries
         shell: bash
