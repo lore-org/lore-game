@@ -213,13 +213,13 @@ void Engine::setupEngine() {
 
     auto presenceManager = utils::PresenceManager::sharedManager();
 
-    auto clientID = config["DISCORD_CLIENT_ID"].get<std::string>();
-    if (clientID.empty()) clientID = "0";
+    auto clientID = config->at("DISCORD_CLIENT_ID");
+    if (!clientID) clientID = "0";
 
     if (presenceManager->isEnabled()) {
         presenceManager->setActive(false);
         discord::RPCManager::get()
-            .setClientID(clientID)
+            .setClientID(clientID.get<std::string>())
             .onReady([](auto) {
                 utils::PresenceManager::sharedManager()->setActive(true);
                 fmt::println("Discord Presence initialised.");

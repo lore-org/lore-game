@@ -1,13 +1,13 @@
 with open('config.json', 'r') as f:
     config = f.read().strip()
 
-config_header = f'''\
+with open('include/engine/config.hpp', 'w') as f:
+    f.write(
+f'''\
 #pragma once
+
 #include <glaze/glaze.hpp>
 
-inline const glz::json_t config;
-glz::read_json(config, static_cast<std::string>(R"({config})"));\
+inline auto config = glz::read_json<glz::json_t>(R"({config})");\
 '''
-
-with open('include/engine/config.hpp', 'w') as f:
-    f.write(config_header)
+    )
