@@ -270,10 +270,10 @@ void Engine::runEngine() {
             if (m_tickDeltas.size() == 0) return;
 
             m_frameAvg = m_showFPS ?
-                 std::ranges::fold_left(
-                    m_frameDeltas,
-                    0,
-                    std::plus<double>()
+                std::reduce(
+                    std::execution::par_unseq,
+                    m_frameDeltas.begin(),
+                    m_frameDeltas.end()
                 ) / m_sampleSize :
                 0;
 
@@ -348,8 +348,8 @@ void Engine::runEngine() {
             if (!TTF_DrawRendererText(m_tpsText, 5, m_showFPS ? 30 : 5)) PrintSDLError();
 
         // Copy the renderTarget to the window
-        if (!SDL_SetRenderTarget(m_sdlRenderer, NULL)) PrintSDLError();
-        if (!SDL_RenderTexture(m_sdlRenderer, m_renderTarget, NULL, NULL)) PrintSDLError();
+        if (!SDL_SetRenderTarget(m_sdlRenderer, nullptr)) PrintSDLError();
+        if (!SDL_RenderTexture(m_sdlRenderer, m_renderTarget, nullptr, nullptr)) PrintSDLError();
         m_renderTarget = SDL_CreateTexture(m_sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, m_windowSize.width, m_windowSize.height);
         if (!m_renderTarget) PrintSDLError();
         if (!SDL_SetRenderTarget(m_sdlRenderer, m_renderTarget)) PrintSDLError();

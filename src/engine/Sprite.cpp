@@ -124,7 +124,7 @@ void Sprite::draw(const double dt) {
     if (!SDL_RenderTextureRotated(
         renderer,
         m_texture,
-        NULL, // Full texture
+        nullptr, // Full texture
         &destinationRect,
         m_rotation,
         &rotationalAxis,
@@ -160,6 +160,6 @@ SDL_Texture* Sprite::loadFromURL(std::string url) {
     return IMG_LoadTextureTyped_IO(
         Engine::sharedInstance()->getRenderer(),
         stream, true,
-        fileType.empty() ? NULL : fileType.c_str()
+        fileType.empty() ? nullptr : fileType.c_str()
     );
 };
