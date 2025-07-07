@@ -95,14 +95,15 @@ jobs:
       
       - name: Copy Binaries
         shell: bash
-        continue-on-error: true
         run: |
+          set +e
           mkdir build/bin
-          cp build/$(meson introspect build --projectinfo -i | jq -r '.descriptive_name')* build/bin
-          cp build/*.{dll,so,dylib} build/bin
-          cp build/subprojects/*/*.{dll,so,dylib} build/bin
-          cp build/subprojects/*/*/*.{dll,so,dylib} build/bin
-          cp resources build/bin
+          cp -r build/$(meson introspect build --projectinfo -i | jq -r '.descriptive_name'){,.exe} build/bin
+          cp -r build/*.{dll,so,dylib} build/bin
+          cp -r build/subprojects/*/*.{dll,so,dylib} build/bin
+          cp -r build/subprojects/*/*/*.{dll,so,dylib} build/bin
+          cp -r resources build/bin
+          set -e
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
