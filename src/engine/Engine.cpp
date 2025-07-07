@@ -29,10 +29,11 @@ Engine::Engine() :
     m_usingVsync(true),
     m_isStopped(false),
     m_isSetup(false), m_isStarted(false),
+    m_windowSize(720, 480),
     m_showFPS(false), m_showTPS(false),
-    m_displayPrecision(0), m_sampleSize(10), m_deltaAverageMult(1.f / m_sampleSize),
+    m_sampleSize(10), m_deltaAverageMult(1.f / m_sampleSize), 
     m_frameAvg(0), m_tickAvg(0),
-    m_windowSize(720, 480) {};
+    m_displayPrecision(0) {};
 
 std::shared_ptr<Engine> Engine::sharedInstance() {
     if (!m_instance) m_instance = utils::protected_make_shared<Engine>();
