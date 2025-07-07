@@ -55,6 +55,8 @@ jobs:
         
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
+        with:
+          disable_annotations: true
 
       - name: 'Setup jq'
         uses: dcarbone/install-jq-action@v3
@@ -93,6 +95,7 @@ jobs:
       
       - name: Copy Binaries
         shell: bash
+        continue-on-error: true
         run: |
           mkdir build/bin
           cp build/$(meson introspect build --projectinfo -i | jq -r '.descriptive_name')* build/bin
