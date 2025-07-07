@@ -11,8 +11,6 @@
 
 #include <discord-rpc.hpp>
 
-#include <nlohmann/json.hpp>
-
 #include "config.hpp" // IWYU pragma: keep
 #include "Engine.h" // IWYU pragma: keep
 #include "Geometry.h" // IWYU pragma: keep

@@ -9,13 +9,13 @@
 #include <thread>
 #include <atomic>
 #include <execution>
+#include <utility>
 
 #include <engine/PresenceManager.h>
 #include <engine/Scheduler.h>
 #include <engine/Director.h>
 #include <engine/config.hpp>
 #include <engine/utils.hpp>
-#include <utility>
 
 #define Nanosecond_Constant 1e-9
 
@@ -83,7 +83,6 @@ void Engine::setFramesPerSecond(double fps) {
 void Engine::resetFramesPerSecond() {
     this->setFramesPerSecond(0);
 };
-
 
 double Engine::getSecondsPerFrame() {
     return m_secondsPerFrame;
@@ -214,10 +213,13 @@ void Engine::setupEngine() {
 
     auto presenceManager = utils::PresenceManager::sharedManager();
 
+    auto clientID = config["DISCORD_CLIENT_ID"].get<std::string>();
+    if (clientID.empty()) clientID = "0";
+
     if (presenceManager->isEnabled()) {
         presenceManager->setActive(false);
         discord::RPCManager::get()
-            .setClientID(config.value("DISCORD_CLIENT_ID", "0"))
+            .setClientID(clientID)
             .onReady([](auto) {
                 utils::PresenceManager::sharedManager()->setActive(true);
                 fmt::println("Discord Presence initialised.");

@@ -10,5 +10,5 @@ sources += files(
     'Scene.cpp',
     'Scheduler.cpp',
     'Sprite.cpp',
-    'Touchable.cpp'
+    'Touchable.cpp',
 )

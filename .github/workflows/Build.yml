@@ -39,6 +39,10 @@ jobs:
       - name: Update Packages
         if: matrix.config.id == 'linux'
         run: sudo apt update
+
+      - name: Install Packages
+        if: matrix.config.id == 'linux'
+        run: sudo apt install libudev-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libwayland-bin libxkbcommon-dev libegl-dev libgl-dev
         
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
