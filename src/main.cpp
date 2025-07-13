@@ -49,7 +49,7 @@ int main() {
     // scene->addChild(kitty);
 
     auto furries = Sprite::createFromURL("https://offload.tnktok.com/generate/image/7518323666090806536?index=0");
-    scene->setAnchorPoint(0);
+    furries->setAnchorPoint(0);
     scene->addChild(furries);
 
     Director::sharedDirector()->pushScene(scene);

@@ -205,10 +205,6 @@ void Engine::setupEngine() {
 
     this->_updateDisplayData();
 
-    m_renderTarget = SDL_CreateTexture(m_sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, m_windowSize.width, m_windowSize.height);
-    if (!m_renderTarget) PrintSDLError();
-    if (!SDL_SetRenderTarget(m_sdlRenderer, m_renderTarget)) PrintSDLError();
-
     m_sdlTextEngine = TTF_CreateRendererTextEngine(m_sdlRenderer);
     if (!m_sdlTextEngine) PrintSDLError();
 
@@ -339,7 +335,7 @@ void Engine::runEngine() {
 
         if (!SDL_SetRenderDrawColor(
             m_sdlRenderer,
-            0, 0, 0, 255
+            255, 255, 255, 255
         )) PrintSDLError();
 
         if (m_showFPS && m_fpsText)
@@ -347,12 +343,7 @@ void Engine::runEngine() {
         if (m_showTPS && m_tpsText)
             if (!TTF_DrawRendererText(m_tpsText, 5, m_showFPS ? 30 : 5)) PrintSDLError();
 
-        // Copy the renderTarget to the window
-        if (!SDL_SetRenderTarget(m_sdlRenderer, nullptr)) PrintSDLError();
-        if (!SDL_RenderTexture(m_sdlRenderer, m_renderTarget, nullptr, nullptr)) PrintSDLError();
-        m_renderTarget = SDL_CreateTexture(m_sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, m_windowSize.width, m_windowSize.height);
-        if (!m_renderTarget) PrintSDLError();
-        if (!SDL_SetRenderTarget(m_sdlRenderer, m_renderTarget)) PrintSDLError();
+        if (!SDL_RenderPresent(m_sdlRenderer)) PrintSDLError();
         
         lastFrameTime = startTime;
 

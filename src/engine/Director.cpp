@@ -128,12 +128,7 @@ void Director::draw(const double dt) {
         std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<double>(Engine::getTime())));
     m_transitionFader->setOpacity(normalisedOpacity * 255);
 
-    // M_transitionFader->draw(dt);
-
-    if (!SDL_RenderPresent(renderer)) {
-        PrintSDLError();
-        return;
-    };
+    m_transitionFader->draw(dt);
 };
 
 void Director::_transitionBetweenScenes(float duration) {

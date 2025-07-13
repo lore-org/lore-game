@@ -5,8 +5,8 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "command": "xmake && xmake install",
-            "label": "Build and Install",
+            "command": "cmake --build build --config Debug",
+            "label": "Build",
             "type": "shell"
         }
     ]

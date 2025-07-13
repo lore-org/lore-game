@@ -125,7 +125,6 @@ protected:
     TTF_TextEngine* m_sdlTextEngine;
 
     std::unordered_map<std::string, TTF_Font*> m_fontMap;
-    SDL_Texture* m_renderTarget;
 
     // ------------------
 

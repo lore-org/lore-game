@@ -6,14 +6,13 @@
     "configurations": [
 
         {
-            "type": "xmake",
+            "type": "cppdbg",
             "request": "launch",
-            "name": "Debug XMake target",
-            "target": "lore-game.exe",
+            "name": "Debug target",
             "cwd": "${workspaceFolder}/build/bin",
-            "stopAtEntry": false,
-            "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "Build and Install"
+            "preLaunchTask": "Build",
+            // "internalConsoleOptions": "openOnSessionStart",
+            "program": "${workspaceFolder}/build/bin/lore-game.exe"
         }
     ]
 }

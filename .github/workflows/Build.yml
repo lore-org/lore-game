@@ -22,10 +22,9 @@ jobs:
           os: ubuntu-latest
           id: linux
 
-        # macOS is broken with SDL3_image :(
-        # - name: macOS
-        #   os: macos-latest
-        #   id: macosx
+        - name: macOS
+          os: macos-latest
+          id: macosx
 
     name: ${{ matrix.config.name }} (${{ matrix.libs }})
     runs-on: ${{ matrix.config.os }}
@@ -58,8 +57,13 @@ jobs:
         with:
           disable_annotations: true
 
-      - name: 'Setup jq'
-        uses: dcarbone/install-jq-action@v3
+      - name: Setup Submodule Cache
+        uses: actions/cache@v4
+        with:
+          path: build/submodules
+          key: submodulecache-${{ matrix.config.id }}-${{ hashFiles('**/.gitmodules') }}
+          restore-keys: |
+            submodulecache-${{ matrix.config.id }}-
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -75,35 +79,27 @@ jobs:
         uses: egor-tensin/setup-gcc@v1
         with:
           version: 12
-
-      - name: Install Python Dependencies
-        run: python -m pip install meson ninja
       
       - name: Setup
         run: >
-          meson setup
-          build
-          --default-library ${{ matrix.libs }}
-          --optimization 3
-          --buildtype release
+          cmake
+          -D CMAKE_BUILD_TYPE=RelWithDebInfo
+          -D CMAKE_EXPORT_COMPILE_COMMANDS=TRUE
+          -D BUILD_SHARED_LIBS=${{ matrix.libs == 'shared' && 'TRUE' || 'FALSE' }}
+          -B build
+          -G Ninja
       
       - name: Build
         run: >
-          meson compile
-          -C build
-          -j 0
+          cmake
+          --build build
+          --config RelWithDebInfo
+          --target all
       
-      - name: Copy Binaries
-        shell: bash
-        run: |
-          set +e
-          mkdir build/bin
-          cp -r build/$(meson introspect build --projectinfo -i | jq -r '.descriptive_name'){,.exe} build/bin
-          cp -r build/*.{dll,so,dylib} build/bin
-          cp -r build/subprojects/*/*.{dll,so,dylib} build/bin
-          cp -r build/subprojects/*/*/*.{dll,so,dylib} build/bin
-          cp -r resources build/bin
-          set -e
+      - name: Pack Bin
+        run: >
+          py ./install-bin.py
+          --searchdepth 5
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
