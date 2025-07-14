@@ -13,7 +13,7 @@
 std::shared_ptr<Director> Director::m_instance;
 
 Director::Director() :
-    m_transitionStart(Engine::getTime()), m_transitionDuration(0),
+    m_transitionStart(SDL_GetTicks()), m_transitionDuration(0),
     m_clearColor({ 0, 0, 0, 255 }),
     m_entering(false) {};
 
@@ -124,8 +124,8 @@ void Director::draw(const double dt) {
     m_transitionFader->setContentSize(Engine::sharedInstance()->getWindowSize());
 
     auto normalisedOpacity = m_entering ?
-        this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<double>(Engine::getTime())) :
-        std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<double>(Engine::getTime())));
+        this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<double>(SDL_GetTicks())) :
+        std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<double>(SDL_GetTicks())));
     m_transitionFader->setOpacity(normalisedOpacity * 255);
 
     m_transitionFader->draw(dt);
@@ -136,13 +136,13 @@ void Director::_transitionBetweenScenes(float duration) {
         m_transitionDuration = duration;
 
         m_entering = true;
-        m_transitionStart = Engine::getTime();
+        m_transitionStart = SDL_GetTicks();
 
         SDL_DelayPrecise(m_transitionDuration);
         this->_replaceSceneWithNext();
 
         m_entering = false;
-        m_transitionStart = Engine::getTime();
+        m_transitionStart = SDL_GetTicks();
     });
 }
 

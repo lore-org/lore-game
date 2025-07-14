@@ -72,12 +72,13 @@ public:
     SDL_Renderer* getRenderer();
     const SDL_DisplayMode* getDisplayMode();
 
-    static int64_t getTime();
+    // System time in nanoseconds. For a more performant method that doesn't rely on system time, use SDL_GetTicks
+    static SDL_Time getTime();
     // It is recommended to use Engine::getStaticWindowSize instead, as it is more performant and is considered fairly accurate
     //
-    // Be sure to run this in the main thread. You may need to use SDL_RunOnMainThread
+    // Be sure to run this in the main thread
     Size getWindowSize();
-    // Be sure to run this in the main thread. You may need to use SDL_RunOnMainThread
+    // Be sure to run this in the main thread
     static std::shared_ptr<MouseData> getMouseData();
 
     TTF_Font* getOrCreateFont(std::string file, float point = 100);

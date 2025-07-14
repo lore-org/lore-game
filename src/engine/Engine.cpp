@@ -233,12 +233,12 @@ void Engine::runEngine() {
     if (m_isStarted) return fmt::println("Engine is already running!");
     m_isStarted = true;
 
-    double lastTickTime = Engine::getTime();
+    double lastTickTime = SDL_GetTicks();
     std::thread updateThread([this, &lastTickTime]() {
         auto scheduler = Scheduler::sharedScheduler();
 
         while (!m_isStopped) {
-            double startTime = Engine::getTime();
+            double startTime = SDL_GetTicks();
 
             const double dt = (startTime - lastTickTime) * Nanosecond_Constant;
             if (m_showTPS) {
@@ -250,7 +250,7 @@ void Engine::runEngine() {
 
             lastTickTime = startTime;
 
-            double endTime = Engine::getTime();
+            double endTime = SDL_GetTicks();
 
             if (endTime - startTime < m_nanosecondsPerTick)
                 SDL_DelayPrecise((startTime + m_nanosecondsPerTick) - endTime);
@@ -260,7 +260,7 @@ void Engine::runEngine() {
     // Specifically for engine-related processes that may take up computational time
     std::thread backgroundThread([this]() {
         while (!m_isStopped) {
-            double startTime = Engine::getTime();
+            double startTime = SDL_GetTicks();
 
             if (m_frameDeltas.size() == 0) return;
             if (m_tickDeltas.size() == 0) return;
@@ -281,7 +281,7 @@ void Engine::runEngine() {
                 ) / m_sampleSize :
                 0;
             
-            double endTime = Engine::getTime();
+            double endTime = SDL_GetTicks();
 
             if (endTime - startTime < m_nanosecondsPerTick)
                 SDL_DelayPrecise((startTime + m_nanosecondsPerTick) - endTime);
@@ -289,9 +289,9 @@ void Engine::runEngine() {
     });
 
     SDL_Event event = {};
-    double lastFrameTime = Engine::getTime();
+    double lastFrameTime = SDL_GetTicks();
     while (!m_isStopped) {
-        double startTime = Engine::getTime();
+        double startTime = SDL_GetTicks();
 
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
@@ -347,7 +347,7 @@ void Engine::runEngine() {
         
         lastFrameTime = startTime;
 
-        double endTime = Engine::getTime();
+        double endTime = SDL_GetTicks();
 
         if (endTime - startTime < m_nanosecondsPerFrame)
             SDL_DelayPrecise((startTime + m_nanosecondsPerFrame) - endTime);

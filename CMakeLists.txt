@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.24)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -41,6 +41,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 set(SDLTTF_VENDORED ON)
 set(SDLIMAGE_VENDORED ON)
 set(SDLIMAGE_AVIF OFF)
+
+set(SDL_CCACHE ON)
+set(SDL_CLOCK_GETTIME ON)
 
 add_subdirectory(submodules/usb)
 add_subdirectory(submodules/brotli)

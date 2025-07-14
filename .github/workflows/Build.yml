@@ -57,11 +57,11 @@ jobs:
         with:
           disable_annotations: true
 
-      - name: Setup Submodule Cache
+      - name: Setup Build Cache
         uses: actions/cache@v4
         with:
-          path: build/submodules
-          key: submodulecache-${{ matrix.config.id }}-${{ hashFiles('**/.gitmodules') }}
+          path: build
+          key: submodulecache-${{ matrix.config.id }}-${{ hashFiles('**/CMakeLists.txt') }}
           restore-keys: |
             submodulecache-${{ matrix.config.id }}-
 
@@ -69,6 +69,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+      
+      - name: Install Python
+        run: python -m pip install meson ninja
+
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: 'latest'
+
+      - name: Setup Ninja
+        uses: ashutoshvarma/setup-ninja@master
 
       - name: Install MSYS2
         if: matrix.config.id == 'windows'
