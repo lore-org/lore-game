@@ -102,7 +102,8 @@ std::vector<std::shared_ptr<Scene>> Director::getSceneStack() {
 }
 
 void Director::draw(const double dt) {
-    auto renderer = Engine::sharedInstance()->getRenderer();
+    auto engine = Engine::sharedInstance();
+    auto renderer = engine->getRenderer();
 
     if (!SDL_SetRenderDrawColor(
         renderer,
@@ -121,7 +122,7 @@ void Director::draw(const double dt) {
     
     if (m_displayedScene) m_displayedScene->draw(dt);
     
-    m_transitionFader->setContentSize(Engine::sharedInstance()->getWindowSize());
+    m_transitionFader->setContentSize(engine->getWindowSize());
 
     auto normalisedOpacity = m_entering ?
         this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<double>(SDL_GetTicks())) :
@@ -133,12 +134,12 @@ void Director::draw(const double dt) {
 
 void Director::_transitionBetweenScenes(float duration) {
     std::thread _transitionThread([this, duration]() {
-        m_transitionDuration = duration;
+        m_transitionDuration = duration * 1000;
 
         m_entering = true;
         m_transitionStart = SDL_GetTicks();
 
-        SDL_DelayPrecise(m_transitionDuration);
+        SDL_DelayPrecise(m_transitionDuration * 1e6);
         this->_replaceSceneWithNext();
 
         m_entering = false;

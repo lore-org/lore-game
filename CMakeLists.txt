@@ -17,7 +17,6 @@ endif()
 if (NOT DEFINED BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS ON)
 endif()
-set(BUILD_SHARED_LIBS_SAVED ${BUILD_SHARED_LIBS})
 
 find_program(PYTHON py python3 python REQUIRED)
 execute_process(
@@ -38,12 +37,14 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
-set(SDLTTF_VENDORED ON)
+set(SDL_CCACHE ON)
+set(SDL_CLOCK_GETTIME ON)
+
 set(SDLIMAGE_VENDORED ON)
 set(SDLIMAGE_AVIF OFF)
 
-set(SDL_CCACHE ON)
-set(SDL_CLOCK_GETTIME ON)
+set(SDLTTF_VENDORED ON)
+
 
 add_subdirectory(submodules/usb)
 add_subdirectory(submodules/brotli)

@@ -105,12 +105,19 @@ void Sprite::draw(const double dt) {
     auto xOffset = IsZero(m_anchorPoint.x) ? 0 : m_contentSize.width * m_anchorPoint.x;
     auto yOffset = IsZero(m_anchorPoint.y) ? 0 : m_contentSize.height * m_anchorPoint.y;
 
-    if (!SDL_SetRenderDrawColor(
-        renderer,
+    if (!SDL_SetTextureColorMod(
+        m_texture,
         m_color.r,
         m_color.g,
-        m_color.b,
+        m_color.b
+    )) PrintSDLError();
+    if (!SDL_SetTextureAlphaMod(
+        m_texture,
         m_color.a
+    )) PrintSDLError();
+    if (!SDL_SetRenderDrawBlendMode(
+        renderer,
+        SDL_BLENDMODE_BLEND // TODO - implement
     )) PrintSDLError();
 
     SDL_FPoint rotationalAxis = { xOffset, yOffset };
@@ -128,7 +135,7 @@ void Sprite::draw(const double dt) {
         &destinationRect,
         m_rotation,
         &rotationalAxis,
-        SDL_FLIP_NONE // Todo - implement
+        SDL_FLIP_NONE // TODO - implement
     )) PrintSDLError();
 };
 

@@ -72,7 +72,7 @@ public:
     SDL_Renderer* getRenderer();
     const SDL_DisplayMode* getDisplayMode();
 
-    // System time in nanoseconds. For a more performant method that doesn't rely on system time, use SDL_GetTicks
+    // Gets the system time in nanoseconds. For a more performant method that doesn't rely on system time, use SDL_GetTicks
     static SDL_Time getTime();
     // It is recommended to use Engine::getStaticWindowSize instead, as it is more performant and is considered fairly accurate
     //
@@ -94,13 +94,13 @@ protected:
         
     double m_ticksPerSecond;
     double m_secondsPerTick;
-    double m_ticksPerNanosecond;
-    double m_nanosecondsPerTick;
+    double m_ticksPerMillisecond;
+    double m_millisecondsPerTick;
 
     double m_framesPerSecond;
     double m_secondsPerFrame;
-    double m_framesPerNanosecond;
-    double m_nanosecondsPerFrame;
+    double m_framesPerMillisecond;
+    double m_millisecondsPerFrame;
 
     bool m_usingVsync;
 

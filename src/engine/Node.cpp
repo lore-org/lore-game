@@ -31,7 +31,7 @@ std::shared_ptr<Node> Node::create() {
 
 void Node::setZOrder(int zOrder) {
     m_zOrder = zOrder;
-    if (m_parent) m_parent->reorderChild(utils::cast_shared<Node>(this), zOrder);
+    if (m_parent) m_parent->sortAllChildren();
 };
 
 int Node::getZOrder() {
@@ -84,7 +84,7 @@ Point Node::getAnchorPoint() const {
 };
 
 void Node::setContentSize(Size contentSize) {
-    m_contentSize = contentSize;
+    m_contentSize = contentSize;  // TODO - implement NULL for filling render target
 };
 
 Size Node::getContentSize() const {
@@ -108,17 +108,14 @@ float Node::getRotation() const {
 };
 
 void Node::addChild(std::shared_ptr<Node> child) {
-    this->addChild(
-        child,
-        m_children.empty() ? 0 : m_children.back()->getZOrder()
-    );
+    child->m_parent = utils::cast_shared<Node>(this);
+    m_children.push_back(child);
+    this->sortAllChildren();
 };
 
 void Node::addChild(std::shared_ptr<Node> child, int zOrder) {
     child->setZOrder(zOrder);
-    child->m_parent = utils::cast_shared<Node>(this);
-    m_children.push_back(child);
-    this->sortAllChildren();
+    this->addChild(child);
 };
 
 void Node::addChild(std::shared_ptr<Node> child, int zOrder, int tag) {

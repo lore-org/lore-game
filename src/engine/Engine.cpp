@@ -17,15 +17,15 @@
 #include <engine/config.hpp>
 #include <engine/utils.hpp>
 
-#define Nanosecond_Constant 1e-9
+#define Millisecond_Constant 1e-3
 
 std::shared_ptr<Engine> Engine::m_instance;
 
 Engine::Engine() :
     m_ticksPerSecond(240.f), m_secondsPerTick(1.f / m_ticksPerSecond),
-    m_ticksPerNanosecond(240.f * 1e9), m_nanosecondsPerTick(1e9 / m_ticksPerSecond),
+    m_ticksPerMillisecond(m_ticksPerSecond / 1e3), m_millisecondsPerTick(1.f / m_ticksPerMillisecond),
     m_framesPerSecond(60.f), m_secondsPerFrame(1.f / m_framesPerSecond),
-    m_framesPerNanosecond(60.f * 1e9), m_nanosecondsPerFrame(1e9 / m_framesPerSecond),
+    m_framesPerMillisecond(m_framesPerSecond / 1e3), m_millisecondsPerFrame(1.f / m_framesPerMillisecond),
     m_usingVsync(true),
     m_isStopped(false),
     m_isSetup(false), m_isStarted(false),
@@ -47,8 +47,8 @@ double Engine::getTicksPerSecond() {
 void Engine::setTicksPerSecond(double tps) {
     m_ticksPerSecond = tps;
     m_secondsPerTick = 1.f / tps;
-    m_ticksPerNanosecond = tps * 1e9;
-    m_nanosecondsPerTick = 1e9 / tps;
+    m_ticksPerMillisecond = tps / 1e3;
+    m_millisecondsPerTick = 1e3 / tps;
 }
 
 void Engine::resetTicksPerSecond() {
@@ -77,8 +77,8 @@ void Engine::setFramesPerSecond(double fps) {
 
     m_framesPerSecond = fps;
     m_secondsPerFrame = 1.f / fps;
-    m_framesPerNanosecond = fps * 1e9;
-    m_nanosecondsPerFrame = 1e9 / fps;
+    m_framesPerMillisecond = fps / 1e3;
+    m_millisecondsPerFrame = 1e3 / fps;
 };
 
 void Engine::resetFramesPerSecond() {
@@ -240,7 +240,7 @@ void Engine::runEngine() {
         while (!m_isStopped) {
             double startTime = SDL_GetTicks();
 
-            const double dt = (startTime - lastTickTime) * Nanosecond_Constant;
+            const double dt = (startTime - lastTickTime) * Millisecond_Constant;
             if (m_showTPS) {
                 std::ranges::rotate(m_tickDeltas, m_tickDeltas.begin() + 1);
                 m_tickDeltas.back() = 1.f / dt;
@@ -252,8 +252,8 @@ void Engine::runEngine() {
 
             double endTime = SDL_GetTicks();
 
-            if (endTime - startTime < m_nanosecondsPerTick)
-                SDL_DelayPrecise((startTime + m_nanosecondsPerTick) - endTime);
+            if (endTime - startTime < m_millisecondsPerTick)
+                SDL_DelayPrecise(((startTime + m_millisecondsPerTick) - endTime) * 1e6);
         }
     });
 
@@ -283,8 +283,8 @@ void Engine::runEngine() {
             
             double endTime = SDL_GetTicks();
 
-            if (endTime - startTime < m_nanosecondsPerTick)
-                SDL_DelayPrecise((startTime + m_nanosecondsPerTick) - endTime);
+            if (endTime - startTime < m_millisecondsPerTick)
+                SDL_DelayPrecise(((startTime + m_millisecondsPerTick) - endTime) * 1e6);
         }
     });
 
@@ -305,7 +305,7 @@ void Engine::runEngine() {
             }
         }
 
-        const double dt = (startTime - lastFrameTime) * Nanosecond_Constant;
+        const double dt = (startTime - lastFrameTime) * Millisecond_Constant;
         if (m_showFPS) {
             std::ranges::rotate(m_frameDeltas, m_frameDeltas.begin() + 1);
             m_frameDeltas.back() = 1.f / dt;
@@ -349,8 +349,8 @@ void Engine::runEngine() {
 
         double endTime = SDL_GetTicks();
 
-        if (endTime - startTime < m_nanosecondsPerFrame)
-            SDL_DelayPrecise((startTime + m_nanosecondsPerFrame) - endTime);
+        if (endTime - startTime < m_millisecondsPerFrame)
+            SDL_DelayPrecise(((startTime + m_millisecondsPerFrame) - endTime) * 1e6);
     }
 
     m_isStopped = true;
