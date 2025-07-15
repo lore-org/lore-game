@@ -111,11 +111,6 @@ jobs:
           cmake
           --build build
           --target all
-      
-      - name: Pack Bin
-        run: >
-          python ./install-bin.py
-          --search-depth 5
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
