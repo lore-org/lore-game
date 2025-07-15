@@ -57,10 +57,7 @@ set(SDLIMAGE_AVIF OFF)
 
 set(SDLTTF_VENDORED ON)
 
-find_library(LIBPSL_LIBRARY NAMES psl)
-if (LIBPSL_LIBRARY)
-    set(CPR_USE_SYSTEM_LIB_PSL ON)
-endif()
+set(CURL_USE_LIBPSL OFF)
 
 add_subdirectory(submodules/SDL3)
 add_subdirectory(submodules/SDL3_image)
