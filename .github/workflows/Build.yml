@@ -40,22 +40,89 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           install: >
-            mingw-w64-x86_64-sdl3
-            mingw-w64-x86_64-sdl3-image
-            mingw-w64-x86_64-sdl3-ttf
-            libcurl-devel
+            brotli-devel
+            heimdal-devel
+            libidn2-devel
+            libnghttp2-devel
+            libnghttp3-devel
+            libngtcp2-devel
+            libpsl-devel
+            libssh2-devel
+            libunistring-devel
+            openssl-devel
+            zlib-devel
+
+      - name: Update Linux Packages
+        if: matrix.config.id == 'linux'
+        run: sudo apt-get update
+
+      - name: Install Linux Packages
+        if: matrix.config.id == 'linux'
+        run: >
+          sudo apt-get install
+          libasound2-dev
+          libdbus-1-dev
+          libdecor-0-dev
+          libdrm-dev
+          libegl-dev
+          libgbm-dev
+          libgl-dev
+          libgles-dev
+          libibus-1.0-dev
+          libpipewire-0.3-dev
+          libpulse-dev
+          libsndio-dev
+          libudev-dev
+          libwayland-dev
+          libx11-dev
+          libxcursor-dev
+          libxext-dev
+          libxfixes-dev
+          libxi-dev
+          libxinerama-dev
+          libxkbcommon-dev
+          libxrandr-dev
+          libxss-dev
+          libxt-dev
+          libxv-dev
+          libxxf86vm-dev
+          libjpeg-dev
+          libpng-dev
+          libtiff-dev
+          libwebp-dev
+          libc6-dev
+          libfreetype-dev
+          libharfbuzz-dev
+          libbrotli-dev
+          libidn2-dev
+          libkrb5-dev
+          libldap-dev
+          libnghttp2-dev
+          libpsl-dev
+          librtmp-dev
+          libssh2-1-dev
+          libssl-dev
+          libzstd-dev
+          zlib1g-dev
 
       - name: Install Homebrew
+        if: matrix.config.id == 'macOS'
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Install Brew Packages
-        if: matrix.config.id != 'windows'
+      - name: Install MacOS Packages
+        if: matrix.config.id == 'macOS'
         run: >
           brew install
-          sdl3
-          sdl3_image
-          sdl3_ttf
-          curl
+          brotli
+          heimdal
+          libidn2
+          libnghttp2
+          libnghttp3
+          libpsl
+          libssh2
+          libunistring
+          openssl
+          zlib
         
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
