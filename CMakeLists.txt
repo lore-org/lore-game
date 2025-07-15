@@ -57,6 +57,7 @@ set(SDLIMAGE_AVIF OFF)
 
 set(SDLTTF_VENDORED ON)
 
+set(CPR_USE_SYSTEM_LIB_PSL ON) # otherwise CPR will try building libpsl
 set(CURL_USE_LIBPSL OFF)
 
 add_subdirectory(submodules/SDL3)
