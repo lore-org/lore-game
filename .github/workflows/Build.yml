@@ -114,7 +114,7 @@ jobs:
       
       - name: Pack Bin
         run: >
-          py ./install-bin.py
+          python ./install-bin.py
           --search-depth 5
 
       - name: Upload Artifacts
