@@ -22,7 +22,7 @@ jobs:
           os: ubuntu-24.04
           id: linux
 
-        - name: macOS
+        - name: MacOS
           os: macos-15
           id: macosx
 
@@ -34,6 +34,18 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+
+      - name: Install MSYS2
+        if: matrix.config.id == 'windows'
+        uses: msys2/setup-msys2@v2
+        
+
+      - name: Install Windows Packages
+        if: matrix.config.id == 'windows'
+        run: >
+          pacman -S
+          libpsl-devel
+          libunistring-devel
 
       - name: Update Linux Packages
         if: matrix.config.id == 'linux'
@@ -70,6 +82,7 @@ jobs:
         run: >
           brew install
           libunistring
+          libpsl
         
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -96,10 +109,6 @@ jobs:
 
       - name: Install Ninja
         uses: ashutoshvarma/setup-ninja@master
-
-      - name: Install MSYS2
-        if: matrix.config.id == 'windows'
-        uses: msys2/setup-msys2@v2
       
       - name: Setup
         run: >

@@ -47,6 +47,7 @@ set(SDLIMAGE_AVIF OFF)
 
 set(SDLTTF_VENDORED ON)
 
+set(CPR_USE_SYSTEM_LIB_PSL ON)
 
 add_subdirectory(submodules/usb)
 add_subdirectory(submodules/brotli)
