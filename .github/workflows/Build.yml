@@ -23,7 +23,7 @@ jobs:
           id: linux
 
         - name: macOS
-          os: macos-latest
+          os: macos-15
           id: macosx
 
     name: ${{ matrix.config.name }} (${{ matrix.libs }})
@@ -35,11 +35,11 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Update Packages
+      - name: Update Linux Packages
         if: matrix.config.id == 'linux'
         run: sudo apt update
 
-      - name: Install Packages
+      - name: Install Linux Packages
         if: matrix.config.id == 'linux'
         run: >
           sudo apt install
@@ -51,6 +51,18 @@ jobs:
           libxkbcommon-dev
           libegl-dev
           libgl-dev
+          libnghttp2-dev
+          libidn2-dev
+          libpsl-dev
+          libbrotli-dev
+          libjack-dev
+          libpulse-dev
+          libsndio-dev
+          libdrm-dev
+          libgbm-dev
+          libdecor-0-dev
+          libunwind-dev
+          libusb-dev
         
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -67,28 +79,28 @@ jobs:
           restore-keys: |
             submodulecache-${{ matrix.config.id }}-
 
-      - name: Setup Python
+      - name: Update Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       
-      - name: Install Python
-        run: python -m pip install meson ninja
+      - name: Install Meson
+        run: python -m pip install meson
 
-      - name: Setup cmake
+      - name: Update cmake
         uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: 'latest'
 
-      - name: Setup Ninja
+      - name: Install Ninja
         uses: ashutoshvarma/setup-ninja@master
 
       - name: Install MSYS2
         if: matrix.config.id == 'windows'
         uses: msys2/setup-msys2@v2
       
-      - name: Set up GCC
-        if: matrix.config.id != 'windows'
+      - name: Update GCC
+        if: matrix.config.id == 'linux'
         uses: egor-tensin/setup-gcc@v1
         with:
           version: 12
