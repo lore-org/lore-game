@@ -49,8 +49,16 @@ set(SDLTTF_VENDORED ON)
 
 set(CPR_USE_SYSTEM_LIB_PSL ON)
 
-add_subdirectory(submodules/usb)
-add_subdirectory(submodules/brotli)
+find_package(usb)
+if (NOT usb_FOUND)
+    add_subdirectory(submodules/usb)
+endif()
+
+find_package(brotli)
+if (NOT brotli_FOUND)
+    add_subdirectory(submodules/brotli)
+endif()
+
 add_subdirectory(submodules/SDL3)
 add_subdirectory(submodules/SDL3_image)
 add_subdirectory(submodules/SDL3_ttf)
@@ -58,11 +66,11 @@ add_subdirectory(submodules/discord-rpc)
 add_subdirectory(submodules/cpr)
 
 find_package(fmt)
-find_package(glaze)
-
 if (NOT fmt_FOUND)
     add_subdirectory(submodules/fmt)
 endif()
+
+find_package(glaze)
 if (NOT glaze_FOUND)
     add_subdirectory(submodules/glaze)
 endif()

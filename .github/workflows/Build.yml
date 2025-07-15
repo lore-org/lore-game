@@ -35,17 +35,13 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install MSYS2
+      - name: Install MSYS2 and Packages
         if: matrix.config.id == 'windows'
         uses: msys2/setup-msys2@v2
-        
-
-      - name: Install Windows Packages
-        if: matrix.config.id == 'windows'
-        run: >
-          pacman -S
-          libpsl-devel
-          libunistring-devel
+        with:
+          install: >
+            libpsl-devel
+            libunistring-devel
 
       - name: Update Linux Packages
         if: matrix.config.id == 'linux'
