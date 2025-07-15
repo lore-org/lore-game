@@ -123,6 +123,7 @@ jobs:
           libunistring
           openssl
           zlib
+          llvm
         
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -130,9 +131,6 @@ jobs:
           disable_annotations: true
         env:
           SCCACHE_GHA_ENABLED: "true"
-      
-      - name: Install Clang
-        uses: egor-tensin/setup-clang@v1
 
       - name: Setup Build Cache
         uses: actions/cache@v4
@@ -166,8 +164,6 @@ jobs:
           cmake
           -D CMAKE_BUILD_TYPE=RelWithDebInfo
           -D BUILD_SHARED_LIBS=${{ matrix.libs == 'shared' && 'TRUE' || 'FALSE' }}
-          -D CMAKE_C_COMPILER=clang
-          -D CMAKE_CXX_COMPILER=clang++
           -B build
           -G Ninja
       

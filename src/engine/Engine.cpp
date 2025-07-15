@@ -213,6 +213,19 @@ void Engine::setupEngine() {
     m_sdlTextEngine = TTF_CreateRendererTextEngine(m_sdlRenderer);
     if (!m_sdlTextEngine) PrintSDLError();
 
+    m_fpsText = TTF_CreateText(
+        m_sdlTextEngine, this->getOrCreateFont("resources/Noto Sans.ttf"),
+        "",
+        NULL
+    );
+    if (!m_fpsText) PrintSDLError();
+    m_tpsText = TTF_CreateText(
+        m_sdlTextEngine, this->getOrCreateFont("resources/Noto Sans.ttf"),
+        "",
+        NULL
+    );
+    if (!m_tpsText) PrintSDLError();
+
     auto presenceManager = utils::PresenceManager::sharedManager();
 
     auto clientID = config->at("DISCORD_CLIENT_ID");
@@ -238,10 +251,10 @@ void Engine::runEngine() {
     if (m_isStarted) return fmt::println("Engine is already running!");
     m_isStarted = true;
 
-    double lastTickTime = SDL_GetTicks();
-    std::thread updateThread([this, &lastTickTime]() {
+    std::thread updateThread([this]() {
         auto scheduler = Scheduler::sharedScheduler();
 
+        double lastTickTime = SDL_GetTicks();
         while (!m_isStopped) {
             double startTime = SDL_GetTicks();
 
@@ -293,7 +306,12 @@ void Engine::runEngine() {
         }
     });
 
+    
+    auto notoSans = this->getOrCreateFont("resources/Noto Sans.ttf");
+    auto director = Director::sharedDirector();
+    auto format = fmt::format("%.{}f", m_displayPrecision);
     SDL_Event event = {};
+
     double lastFrameTime = SDL_GetTicks();
     while (!m_isStopped) {
         double startTime = SDL_GetTicks();
@@ -315,27 +333,23 @@ void Engine::runEngine() {
             std::ranges::rotate(m_frameDeltas, m_frameDeltas.begin() + 1);
             m_frameDeltas.back() = 1.f / dt;
         }
-        Director::sharedDirector()->draw(dt);
+        director->draw(dt);
         
-        auto format = fmt::format("%.{}f", m_displayPrecision);
-        auto notoSans = this->getOrCreateFont("resources/Noto Sans.ttf");
         if (!TTF_SetFontSize(notoSans, 20)) PrintSDLError();
 
         if (m_showFPS) {
-            m_fpsText = TTF_CreateText(
-                m_sdlTextEngine, notoSans,
+            if (!TTF_SetTextString(
+                m_fpsText,
                 fmt::format("{} FPS", fmt::sprintf(format, m_frameAvg.load())).c_str(),
                 NULL
-            );
-            if (!m_fpsText) PrintSDLError();
+            )) PrintSDLError();
         }
         if (m_showTPS) {
-            m_tpsText = TTF_CreateText(
-                m_sdlTextEngine, notoSans,
+            if (!TTF_SetTextString(
+                m_tpsText,
                 fmt::format("{} TPS", fmt::sprintf(format, m_tickAvg.load())).c_str(),
                 NULL
-            );
-            if (!m_tpsText) PrintSDLError();
+            )) PrintSDLError();
         }
 
         if (!SDL_SetRenderDrawColor(
