@@ -15,11 +15,11 @@ jobs:
         libs: [shared, static]
         config:
         - name: Windows
-          os: windows-latest
+          os: windows-2025
           id: windows
 
         - name: Linux
-          os: ubuntu-latest
+          os: ubuntu-24.04
           id: linux
 
         - name: macOS
@@ -63,6 +63,13 @@ jobs:
           libdecor-0-dev
           libunwind-dev
           libusb-dev
+          libunistring-dev
+
+      - name: Install MacOS Packages
+        if: matrix.config.id == 'macosx'
+        run: >
+          brew install
+          libunistring
         
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -78,11 +85,6 @@ jobs:
           key: submodulecache-${{ matrix.config.id }}-${{ hashFiles('**/CMakeLists.txt') }}
           restore-keys: |
             submodulecache-${{ matrix.config.id }}-
-
-      - name: Update Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
       
       - name: Install Meson
         run: python -m pip install meson
@@ -99,17 +101,10 @@ jobs:
         if: matrix.config.id == 'windows'
         uses: msys2/setup-msys2@v2
       
-      - name: Update GCC
-        if: matrix.config.id == 'linux'
-        uses: egor-tensin/setup-gcc@v1
-        with:
-          version: 12
-      
       - name: Setup
         run: >
           cmake
           -D CMAKE_BUILD_TYPE=RelWithDebInfo
-          -D CMAKE_EXPORT_COMPILE_COMMANDS=TRUE
           -D BUILD_SHARED_LIBS=${{ matrix.libs == 'shared' && 'TRUE' || 'FALSE' }}
           -B build
           -G Ninja

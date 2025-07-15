@@ -39,6 +39,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 set(SDL_CCACHE ON)
 set(SDL_CLOCK_GETTIME ON)
+set(SDL_STATIC ON)
+set(SDL_SHARED ON)
 
 set(SDLIMAGE_VENDORED ON)
 set(SDLIMAGE_AVIF OFF)
