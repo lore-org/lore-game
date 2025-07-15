@@ -44,7 +44,7 @@ jobs:
             heimdal-devel
             libidn2-devel
             libnghttp2-devel
-            libnghttp3-devel
+            mingw-w64-x86_64-nghttp3
             libngtcp2-devel
             libpsl-devel
             libssh2-devel
@@ -106,11 +106,11 @@ jobs:
           zlib1g-dev
 
       - name: Install Homebrew
-        if: matrix.config.id == 'macOS'
+        if: matrix.config.id == 'macosx'
         uses: Homebrew/actions/setup-homebrew@main
 
       - name: Install MacOS Packages
-        if: matrix.config.id == 'macOS'
+        if: matrix.config.id == 'macosx'
         run: >
           brew install
           brotli
