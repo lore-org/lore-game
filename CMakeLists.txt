@@ -37,6 +37,10 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
+if (APPLE)
+    target_compile_options(${PROJECT_NAME} PRIVATE -fexperimental-library)
+endif()
+
 set(SDL_CCACHE ON)
 set(SDL_CLOCK_GETTIME ON)
 set(SDL_STATIC ON)

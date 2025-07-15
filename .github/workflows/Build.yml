@@ -42,6 +42,10 @@ jobs:
           install: >
             libpsl-devel
             libunistring-devel
+            mingw-w64-x86_64-libusb
+            brotli-
+            libnghttp2-devel
+            libnghttp3-devel
 
       - name: Update Linux Packages
         if: matrix.config.id == 'linux'
@@ -60,6 +64,7 @@ jobs:
           libegl-dev
           libgl-dev
           libnghttp2-dev
+          libnghttp3-dev
           libidn2-dev
           libpsl-dev
           libbrotli-dev
@@ -79,6 +84,10 @@ jobs:
           brew install
           libunistring
           libpsl
+          libusb
+          brotli
+          libnghttp2
+          libnghttp3
         
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -102,6 +111,11 @@ jobs:
         uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: 'latest'
+
+      - name: Update Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
       - name: Install Ninja
         uses: ashutoshvarma/setup-ninja@master
