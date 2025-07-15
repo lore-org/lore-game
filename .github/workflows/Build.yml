@@ -45,21 +45,11 @@ jobs:
             mingw-w64-x86_64-sdl3-ttf
             libcurl-devel
 
-      - name: Update Linux Packages
-        if: matrix.config.id == 'linux'
-        run: sudo apt update
+      - name: Install Homebrew
+        uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Install Linux Packages
-        if: matrix.config.id == 'linux'
-        run: >
-          sudo apt install
-          libsdl3-dev
-          libsdl3-image-dev
-          libsdl3-ttf-dev
-          libcurl4-openssl-dev
-
-      - name: Install MacOS Packages
-        if: matrix.config.id == 'macosx'
+      - name: Install Brew Packages
+        if: matrix.config.id != 'windows'
         run: >
           brew install
           sdl3
