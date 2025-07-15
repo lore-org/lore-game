@@ -130,14 +130,20 @@ jobs:
           disable_annotations: true
         env:
           SCCACHE_GHA_ENABLED: "true"
+      
+      - name: Install Clang
+        uses: egor-tensin/setup-clang@v1
 
       - name: Setup Build Cache
         uses: actions/cache@v4
         with:
-          path: build
-          key: submodulecache-${{ matrix.config.id }}-${{ hashFiles('**/CMakeLists.txt') }}
+          path: |
+            build
+            !build/bin
+          key: buildcache-${{ matrix.config.id }}-${{ matrix.libs }}-${{ hashFiles('**/CMakeLists.txt') }}
           restore-keys: |
-            submodulecache-${{ matrix.config.id }}-
+            buildcache-${{ matrix.config.id }}-${{ matrix.libs }}-
+            buildcache-${{ matrix.config.id }}-
       
       - name: Install Meson
         run: python -m pip install meson
@@ -160,6 +166,8 @@ jobs:
           cmake
           -D CMAKE_BUILD_TYPE=RelWithDebInfo
           -D BUILD_SHARED_LIBS=${{ matrix.libs == 'shared' && 'TRUE' || 'FALSE' }}
+          -D CMAKE_C_COMPILER=clang
+          -D CMAKE_CXX_COMPILER=clang++
           -B build
           -G Ninja
       

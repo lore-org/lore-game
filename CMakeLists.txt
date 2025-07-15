@@ -25,7 +25,6 @@ execute_process(
 )
 
 set(DEBUG CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-set(GCC CMAKE_C_COMPILER_ID STREQUAL "GNU")
 
 project(lore-game
     LANGUAGES CXX
@@ -39,12 +38,19 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 if (APPLE)
     target_compile_options(${PROJECT_NAME} PRIVATE -fexperimental-library)
+else()
+    target_compile_definitions(${PROJECT_NAME} PUBLIC PARALLEL)
 endif()
 
 set(SDL_CCACHE ON)
 set(SDL_CLOCK_GETTIME ON)
-set(SDL_STATIC ON)
-set(SDL_SHARED ON)
+if (BUILD_SHARED_LIBS)
+    set(SDL_SHARED ON)
+    set(SDL_STATIC OFF)
+else()
+    set(SDL_SHARED OFF)
+    set(SDL_STATIC ON)
+endif()
 
 set(SDLIMAGE_VENDORED ON)
 set(SDLIMAGE_AVIF OFF)

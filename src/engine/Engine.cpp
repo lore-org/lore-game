@@ -8,7 +8,12 @@
 #include <stdexcept>
 #include <thread>
 #include <atomic>
-#include <execution>
+#ifdef PARALLEL
+    #include <execution>
+    #define par_unseq std::execution::par_unseq,
+#else
+    #define par_unseq
+#endif
 #include <utility>
 
 #include <engine/PresenceManager.h>
@@ -267,7 +272,7 @@ void Engine::runEngine() {
 
             m_frameAvg = m_showFPS ?
                 std::reduce(
-                    std::execution::par_unseq,
+                    par_unseq
                     m_frameDeltas.begin(),
                     m_frameDeltas.end()
                 ) / m_sampleSize :
@@ -275,7 +280,7 @@ void Engine::runEngine() {
 
             m_tickAvg = m_showTPS ?
                 std::reduce(
-                    std::execution::par_unseq,
+                    par_unseq
                     m_tickDeltas.begin(),
                     m_tickDeltas.end()
                 ) / m_sampleSize :
