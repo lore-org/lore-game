@@ -49,16 +49,6 @@ set(SDLTTF_VENDORED ON)
 
 set(CPR_USE_SYSTEM_LIB_PSL ON)
 
-find_package(usb)
-if (NOT usb_FOUND)
-    add_subdirectory(submodules/usb)
-endif()
-
-find_package(brotli)
-if (NOT brotli_FOUND)
-    add_subdirectory(submodules/brotli)
-endif()
-
 add_subdirectory(submodules/SDL3)
 add_subdirectory(submodules/SDL3_image)
 add_subdirectory(submodules/SDL3_ttf)
