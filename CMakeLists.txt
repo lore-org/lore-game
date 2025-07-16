@@ -52,21 +52,21 @@ check_linker_flag(CXX -Wl,--pdb= PDB_SUPPORTED)
 
 if (DEBUG)
     target_compile_options(${PROJECT_NAME} PUBLIC
-        $<$<BOOL:CXX_DEBUG_SUPPORTED>:-g>
-        $<$<BOOL:CODEVIEW_SUPPORTED>:-gcodeview>
-        $<$<BOOL:COLUMN_INFO_SUPPORTED>:-gcolumn-info>
+        $<$<BOOL:${CXX_DEBUG_SUPPORTED}>:-g>
+        $<$<BOOL:${CODEVIEW_SUPPORTED}>:-gcodeview>
+        $<$<BOOL:${COLUMN_INFO_SUPPORTED}>:-gcolumn-info>
     )
     target_link_options(${PROJECT_NAME} PUBLIC
-        $<$<BOOL:USE_LLD_SUPPORTED>:-fuse-ld=lld>
-        $<$<BOOL:LD_DEBUG_SUPPORTED>:-g>
-        $<$<BOOL:PDB_SUPPORTED>:-Wl,--pdb=>
+        $<$<BOOL:${USE_LLD_SUPPORTED}>:-fuse-ld=lld>
+        $<$<BOOL:${LD_DEBUG_SUPPORTED}>:-g>
+        $<$<BOOL:${PDB_SUPPORTED}>:-Wl,--pdb=>
     )
 else()
     set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
 target_compile_options(${PROJECT_NAME} PUBLIC
-    $<$<BOOL:EXPER_LIB_SUPPORTED>:-fexperimental-library>
+    $<$<BOOL:${EXPER_LIB_SUPPORTED}>:-fexperimental-library>
 )
 
 check_cxx_source_compiles("
@@ -172,17 +172,9 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E rm
             -rf
             ${CMAKE_CURRENT_BINARY_DIR}/bin
-    COMMENT "Cleaning build/bin"
-)
-
-add_custom_command(
-    TARGET ${PROJECT_NAME}
-    PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E rm
-            -f
             $<TARGET_FILE:${PROJECT_NAME}>
             ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pdb
-    COMMENT "Cleaning ${PROJECT_NAME} binaries"
+    COMMENT "Cleaning built artifacts"
 )
 
 copy_libraries_recurse(${PROJECT_NAME})

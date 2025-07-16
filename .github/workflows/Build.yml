@@ -133,9 +133,6 @@ jobs:
             build
             !build/bin
           key: buildcache-${{ matrix.config.id }}-${{ matrix.libs }}-${{ hashFiles('**/CMakeLists.txt') }}
-          restore-keys: |
-            buildcache-${{ matrix.config.id }}-${{ matrix.libs }}-
-            buildcache-${{ matrix.config.id }}-
       
       - name: Install Meson
         run: python -m pip install meson
