@@ -8,13 +8,14 @@
 #include <stdexcept>
 #include <thread>
 #include <atomic>
-#ifdef PARALLEL
+#include <utility>
+
+#ifdef HAS_PAR_UNSEQ
     #include <execution>
     #define par_unseq std::execution::par_unseq,
 #else
     #define par_unseq
 #endif
-#include <utility>
 
 #include <engine/PresenceManager.h>
 #include <engine/Scheduler.h>
