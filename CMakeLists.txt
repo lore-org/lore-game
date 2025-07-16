@@ -37,9 +37,24 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
-if (CLANG)
-    target_compile_options(${PROJECT_NAME} PRIVATE -fexperimental-library)
+if (NOT DEBUG)
+    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
+else()
+    if (CLANG)
+        target_compile_options(${PROJECT_NAME} PUBLIC -g -gcodeview -gcolumn-info)
+        target_link_options(${PROJECT_NAME} PUBLIC -fuse-ld=lld -g -Wl,--pdb=)
+    endif()
 endif()
+
+try_compile(
+    EXPER_LIB_SUPPORTED
+    ${CMAKE_CURRENT_BINARY_DIR}/exper_lib
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compiler_flag_test.cpp
+    CXX_STANDARD ${CMAKE_CXX_STANDARD}
+    CXX_STANDARD_REQUIRED ON
+    CMAKE_FLAGS -DCMAKE_CXX_FLAGS="-fexperimental-library"
+)
+message(STATUS "EXPER_LIB_SUPPORTED: ${EXPER_LIB_SUPPORTED}")
 
 try_compile(
     PAR_EXEC_SUPPORTED
@@ -47,10 +62,13 @@ try_compile(
     SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/par_exec_support_test.cpp
     CXX_STANDARD ${CMAKE_CXX_STANDARD}
     CXX_STANDARD_REQUIRED ON
-    CMAKE_FLAGS -DCMAKE_CXX_FLAGS="-fexperimental-library"
+    CMAKE_FLAGS -DCMAKE_CXX_FLAGS="$<IF:EXPER_LIB_SUPPORTED,-fexperimental-library,>"
 )
 message(STATUS "PAR_EXEC_SUPPORTED: ${PAR_EXEC_SUPPORTED}")
 
+if (EXPER_LIB_SUPPORTED)
+    target_compile_options(${PROJECT_NAME} PUBLIC -fexperimental-library)
+endif()
 if (PAR_EXEC_SUPPORTED)
     target_compile_definitions(${PROJECT_NAME} PUBLIC PARALLEL)
 endif()
@@ -87,10 +105,6 @@ endif()
 find_package(glaze)
 if (NOT glaze_FOUND)
     add_subdirectory(submodules/glaze)
-endif()
-
-if (NOT DEBUG)
-    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
@@ -142,6 +156,18 @@ add_custom_command(
     COMMENT "Copying $<TARGET_FILE_NAME:${PROJECT_NAME}> to build/bin"
 )
 
+if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pdb)
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pdb
+                ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.pdb
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pdb
+        COMMENT "Copying ${PROJECT_NAME}.pdb to build/bin"
+    )
+endif()
+
 add_custom_command(
     TARGET ${PROJECT_NAME}
     POST_BUILD
@@ -149,4 +175,10 @@ add_custom_command(
             ${CMAKE_CURRENT_SOURCE_DIR}/resources
             ${CMAKE_CURRENT_BINARY_DIR}/bin/resources
     COMMENT "Copying resources to build/bin"
+)
+
+set_property(
+    DIRECTORY
+    APPEND
+    PROPERTY ADDITIONAL_CLEAN_FILES "${CMAKE_CURRENT_BINARY_DIR}/bin"
 )

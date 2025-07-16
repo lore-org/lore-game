@@ -152,6 +152,18 @@ jobs:
 
       - name: Install Ninja
         uses: ashutoshvarma/setup-ninja@master
+
+      - name: Check Amount of Cores
+        id: cpu
+        run: |
+          import os
+
+          num_cpus = os.cpu_count()
+          output_file = os.environ["GITHUB_OUTPUT"]
+
+          with open(output_file, "a") as file:
+              file.write(f"cores={num_cpus}\nthreads={num_cpus * 2}\n")
+        shell: python
       
       - name: Setup
         run: >
@@ -160,12 +172,14 @@ jobs:
           -D BUILD_SHARED_LIBS=${{ matrix.libs == 'shared' && 'TRUE' || 'FALSE' }}
           -B build
           -G Ninja
+          --clean-first
       
       - name: Build
         run: >
           cmake
           --build build
           --target all
+          -j ${{ steps.cpu.outputs.cores }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
