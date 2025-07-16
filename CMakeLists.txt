@@ -25,6 +25,7 @@ execute_process(
 )
 
 set(DEBUG CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+set(CLANG CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
 project(lore-game
     LANGUAGES CXX
@@ -36,9 +37,21 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
-if (APPLE)
+if (CLANG)
     target_compile_options(${PROJECT_NAME} PRIVATE -fexperimental-library)
-else()
+endif()
+
+try_compile(
+    PAR_EXEC_SUPPORTED
+    ${CMAKE_CURRENT_BINARY_DIR}/par_exec
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/par_exec_support_test.cpp
+    CXX_STANDARD ${CMAKE_CXX_STANDARD}
+    CXX_STANDARD_REQUIRED ON
+    CMAKE_FLAGS -DCMAKE_CXX_FLAGS="-fexperimental-library"
+)
+message(STATUS "PAR_EXEC_SUPPORTED: ${PAR_EXEC_SUPPORTED}")
+
+if (PAR_EXEC_SUPPORTED)
     target_compile_definitions(${PROJECT_NAME} PUBLIC PARALLEL)
 endif()
 
@@ -90,11 +103,50 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     glaze::glaze
 )
 
+function(copy_libraries_recurse target)
+    get_target_property(libraries ${target} LINK_LIBRARIES)
+    foreach(library IN LISTS libraries)
+        if (
+            library STREQUAL "HarfBuzz::HarfBuzz" OR
+            NOT TARGET ${library}
+        )
+            continue()
+        endif()
+
+        copy_libraries_recurse(${library})
+
+        get_target_property(target_type ${library} TYPE)
+        if (NOT target_type STREQUAL "SHARED_LIBRARY")
+            continue()
+        endif()
+
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    $<TARGET_FILE:${library}>
+                    ${CMAKE_CURRENT_BINARY_DIR}/bin/$<TARGET_FILE_NAME:${library}>
+            COMMENT "Copying $<TARGET_FILE_NAME:${library}> to build/bin"
+        )
+    endforeach()
+endfunction()
+
+copy_libraries_recurse(${PROJECT_NAME})
+
 add_custom_command(
     TARGET ${PROJECT_NAME}
     POST_BUILD
-    COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/install-bin.py
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    USES_TERMINAL
-    COMMENT "Copy needed files to build/bin"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:${PROJECT_NAME}>
+            ${CMAKE_CURRENT_BINARY_DIR}/bin/$<TARGET_FILE_NAME:${PROJECT_NAME}>
+    COMMENT "Copying $<TARGET_FILE_NAME:${PROJECT_NAME}> to build/bin"
+)
+
+add_custom_command(
+    TARGET ${PROJECT_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+            ${CMAKE_CURRENT_SOURCE_DIR}/resources
+            ${CMAKE_CURRENT_BINARY_DIR}/bin/resources
+    COMMENT "Copying resources to build/bin"
 )

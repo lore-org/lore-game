@@ -113,15 +113,9 @@ jobs:
         if: matrix.config.id == 'macosx'
         run: >
           brew install
-          brotli
           heimdal
-          libidn2
-          libnghttp2
           libnghttp3
           libpsl
-          libssh2
-          libunistring
-          openssl
           zlib
           llvm
         
