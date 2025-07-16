@@ -172,7 +172,6 @@ jobs:
           -D BUILD_SHARED_LIBS=${{ matrix.libs == 'shared' && 'TRUE' || 'FALSE' }}
           -B build
           -G Ninja
-          --clean-first
       
       - name: Build
         run: >
@@ -180,6 +179,7 @@ jobs:
           --build build
           --target all
           -j ${{ steps.cpu.outputs.cores }}
+          --clean-first
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
