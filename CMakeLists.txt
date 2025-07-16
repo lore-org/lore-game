@@ -31,7 +31,10 @@ execute_process(
 set(DEBUG CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
 set(CLANG CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
-project(lore-game VERSION 0.0.1)
+project(lore-game
+    LANGUAGES CXX
+    VERSION 0.0.1
+)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/**.cpp)
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -49,21 +52,21 @@ check_linker_flag(CXX -Wl,--pdb= PDB_SUPPORTED)
 
 if (DEBUG)
     target_compile_options(${PROJECT_NAME} PUBLIC
-        $<${CXX_DEBUG_SUPPORTED}:-g>
-        $<${CODEVIEW_SUPPORTED}:-gcodeview>
-        $<${COLUMN_INFO_SUPPORTED}:-gcolumn-info>
+        $<$<BOOL:CXX_DEBUG_SUPPORTED>:-g>
+        $<$<BOOL:CODEVIEW_SUPPORTED>:-gcodeview>
+        $<$<BOOL:COLUMN_INFO_SUPPORTED>:-gcolumn-info>
     )
     target_link_options(${PROJECT_NAME} PUBLIC
-        $<${USE_LLD_SUPPORTED}:-fuse-ld=lld>
-        $<${LD_DEBUG_SUPPORTED}:-g>
-        $<${PDB_SUPPORTED}:-Wl,--pdb=>
+        $<$<BOOL:USE_LLD_SUPPORTED>:-fuse-ld=lld>
+        $<$<BOOL:LD_DEBUG_SUPPORTED>:-g>
+        $<$<BOOL:PDB_SUPPORTED>:-Wl,--pdb=>
     )
 else()
     set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
 target_compile_options(${PROJECT_NAME} PUBLIC
-    $<${EXPER_LIB_SUPPORTED}:-fexperimental-library>
+    $<$<BOOL:EXPER_LIB_SUPPORTED>:-fexperimental-library>
 )
 
 check_cxx_source_compiles("
@@ -165,7 +168,7 @@ endfunction()
 
 add_custom_command(
     TARGET ${PROJECT_NAME}
-    POST_BUILD
+    PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E rm
             -rf
             ${CMAKE_CURRENT_BINARY_DIR}/bin
@@ -174,7 +177,7 @@ add_custom_command(
 
 add_custom_command(
     TARGET ${PROJECT_NAME}
-    POST_BUILD
+    PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E rm
             -f
             $<TARGET_FILE:${PROJECT_NAME}>
