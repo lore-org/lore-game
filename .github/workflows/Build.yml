@@ -172,18 +172,21 @@ jobs:
         with:
           packages: 'build-tools;36.0.0-rc5 cmdline-tools;latest ndk;29.0.13599879 platforms;android-29'
       
+      - name: Update ENVs for Android SDK
+        if: matrix.config.id == 'android'
+        run: |
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/*" >> "$GITHUB_ENV"
+          echo "$ANDROID_HOME/toolchains/llvm/prebuilt/linux-*/bin" >> "$GITHUB_PATH"
+      
       # TODO - cache output
       - name: Build and Install Android OpenSSL
         if: matrix.config.id == 'android'
         run: |
-          echo "$ANDROID_HOME/toolchains/llvm/prebuilt/linux-*/bin" >> $GITHUB_PATH
           git clone https://github.com/openssl/openssl --recursive
           cd openssl
           ./Configure android-arm64 -D__ANDROID_API__=29 -D__ANDROID_MIN_SDK_VERSION__=24
           make
           sudo make install
-        env:
-          ANDROID_NDK_HOME: "${{ env.ANDROID_HOME || '/usr/local/lib/android' }}/ndk/*"
       
       - name: Setup
         if: steps.buildcache.outputs.cache-hit != 'true'
