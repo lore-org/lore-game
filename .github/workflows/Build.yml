@@ -183,7 +183,7 @@ jobs:
           sudo make install
         env:
           ANDROID_NDK_HOME: "${{ env.ANDROID_HOME || '/usr/local/lib/android' }}/ndk/*"
-          PATH: '${{ env.ANDROID_NDK_HOME }}/toolchains/llvm/prebuilt/linux-*/bin:${{ env.PATH }}'
+          PATH: '${{ env.ANDROID_NDK_HOME }}/toolchains/llvm/prebuilt/linux-*/bin:$PATH'
       
       - name: Setup
         if: steps.buildcache.outputs.cache-hit != 'true'
