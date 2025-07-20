@@ -1,4 +1,3 @@
-#include "SDL3/SDL_blendmode.h"
 #include <engine/Default.h>
 
 #include <engine/RectangleNode.h>
@@ -56,7 +55,7 @@ void RectangleNode::draw(const double dt) {
     )) PrintSDLError();
     if (!SDL_SetRenderDrawBlendMode(
         renderer,
-        SDL_BLENDMODE_BLEND // TODO - implement
+        m_blendMode
     )) PrintSDLError();
 
     SDL_FRect rect = {

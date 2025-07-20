@@ -1,9 +1,9 @@
 #pragma once
 
 #include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_blendmode.h>
 
 #include "Node.h"
-#include "SDL3/SDL_pixels.h"
 
 class ColorNode : public Node {
 public:
@@ -35,6 +35,16 @@ public:
         operator SDL_FColor();
     };
 
+    enum BlendMode {
+        None = SDL_BLENDMODE_NONE,
+        Blend = SDL_BLENDMODE_BLEND,
+        Blend_Premultiplied = SDL_BLENDMODE_BLEND_PREMULTIPLIED,
+        Add = SDL_BLENDMODE_ADD,
+        Add_Premultiplied = SDL_BLENDMODE_ADD_PREMULTIPLIED,
+        Modulate = SDL_BLENDMODE_MOD,
+        Multiply = SDL_BLENDMODE_MUL
+    };
+
     void setColor(Color3 color);
     // Includes alpha channel
     void setColorA(Color4 color);
@@ -43,6 +53,10 @@ public:
     // Includes alpha channel
     Color4 getColorA();
 
+    void setBlendMode(BlendMode mode);
+    BlendMode getBlendMode();
+
 protected:
     Color4 m_color;
+    BlendMode m_blendMode;
 };

@@ -117,7 +117,7 @@ void Sprite::draw(const double dt) {
     )) PrintSDLError();
     if (!SDL_SetRenderDrawBlendMode(
         renderer,
-        SDL_BLENDMODE_BLEND // TODO - implement
+        m_blendMode
     )) PrintSDLError();
 
     SDL_FPoint rotationalAxis = { xOffset, yOffset };

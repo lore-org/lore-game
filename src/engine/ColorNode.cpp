@@ -4,7 +4,7 @@
 
 #include <engine/utils.hpp>
 
-ColorNode::ColorNode() : m_color({ 255, 255, 255, 255 }) {};
+ColorNode::ColorNode() : m_color({ 255, 255, 255, 255 }), m_blendMode(Blend) {};
 
 ColorNode::Color3::operator SDL_Color() {
     return {
@@ -61,4 +61,12 @@ ColorNode::Color3 ColorNode::getColor() {
 
 ColorNode::Color4 ColorNode::getColorA() {
     return m_color;
+}
+
+void ColorNode::setBlendMode(BlendMode mode) {
+    m_blendMode = mode;
+}
+
+ColorNode::BlendMode ColorNode::getBlendMode() {
+    return m_blendMode;
 }

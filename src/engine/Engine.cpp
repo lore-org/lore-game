@@ -324,6 +324,7 @@ void Engine::runEngine() {
                     this->_updateDisplayData();
                     break;
                 case SDL_EVENT_QUIT:
+                case SDL_EVENT_TERMINATING:
                     m_isStopped = true;
                     break;
             }
