@@ -176,6 +176,7 @@ jobs:
       - name: Build and Install Android OpenSSL
         if: matrix.config.id == 'android'
         run: |
+          echo "$ANDROID_HOME/toolchains/llvm/prebuilt/linux-*/bin" >> $GITHUB_PATH
           git clone https://github.com/openssl/openssl --recursive
           cd openssl
           ./Configure android-arm64 -D__ANDROID_API__=29 -D__ANDROID_MIN_SDK_VERSION__=24
@@ -183,7 +184,6 @@ jobs:
           sudo make install
         env:
           ANDROID_NDK_HOME: "${{ env.ANDROID_HOME || '/usr/local/lib/android' }}/ndk/*"
-          PATH: '${{ env.ANDROID_NDK_HOME }}/toolchains/llvm/prebuilt/linux-*/bin:$PATH'
       
       - name: Setup
         if: steps.buildcache.outputs.cache-hit != 'true'
