@@ -178,11 +178,12 @@ jobs:
         run: |
           git clone https://github.com/openssl/openssl --recursive
           cd openssl
-          export ANDROID_NDK_HOME="$ANDROID_SDK/ndk/*/"
-          export PATH="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
           ./Configure android-arm64 -D__ANDROID_API__=29 -D__ANDROID_MIN_SDK_VERSION__=24
           make
           sudo make install
+        env:
+          ANDROID_NDK_HOME: "${{ env.ANDROID_HOME || '/usr/local/lib/android' }}/ndk/*"
+          PATH: '${{ env.ANDROID_NDK_HOME }}/toolchains/llvm/prebuilt/linux-*/bin:${{ env.PATH }}'
       
       - name: Setup
         if: steps.buildcache.outputs.cache-hit != 'true'
