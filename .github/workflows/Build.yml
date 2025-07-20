@@ -16,23 +16,19 @@ jobs:
         config:
         - name: Windows
           os: windows-2025
-          id: Windows
-          buildname: windows
+          id: windows
 
         - name: Linux
           os: ubuntu-24.04
-          id: Linux
-          buildname: linux
+          id: linux
 
         - name: MacOS
           os: macos-15
-          id: Darwin
-          buildname: macos
+          id: macos
 
-        - name: Android
+        - name: android
           os: ubuntu-24.04
-          id: Android
-          buildname: android
+          id: android
 
     name: ${{ matrix.config.name }} (${{ matrix.libs }})
     runs-on: ${{ matrix.config.os }}
@@ -61,11 +57,11 @@ jobs:
             zlib-devel
 
       - name: Update Linux Packages
-        if: matrix.config.id == 'Linux'
+        if: matrix.config.id == 'linux'
         run: sudo apt-get update
 
       - name: Install Linux Packages
-        if: matrix.config.id == 'Linux'
+        if: matrix.config.id == 'linux'
         run: >
           sudo apt-get install
           libasound2-dev
@@ -114,11 +110,11 @@ jobs:
           zlib1g-dev
 
       - name: Install Homebrew
-        if: matrix.config.id == 'Darwin'
+        if: matrix.config.id == 'macos'
         uses: Homebrew/actions/setup-homebrew@main
 
       - name: Install MacOS Packages
-        if: matrix.config.id == 'Darwin'
+        if: matrix.config.id == 'macos'
         run: >
           brew install
           heimdal
@@ -140,7 +136,7 @@ jobs:
           path: |
             build
             !build/bin
-          key: buildcache-${{ matrix.config.buildname }}-${{ matrix.libs }}-${{ hashFiles('**/CMakeLists.txt') }}
+          key: buildcache-${{ matrix.config.id }}-${{ matrix.libs }}-${{ hashFiles('**/CMakeLists.txt') }}
       
       - name: Install Meson
         run: python -m pip install meson
@@ -170,22 +166,26 @@ jobs:
               file.write(f"threads={int(num_cpus)}\ncores={int(num_cpus / 2)}\n")
         shell: python
       
-      - name: Set up JDK 17
+      - name: Install JDK 17
         uses: actions/setup-java@v3
-        if: matrix.config.id == 'Android'
+        if: matrix.config.id == 'android'
         with:
           java-version: '17'
           distribution: 'temurin'
       
       - name: Setup Android SDK
-        if: matrix.config.id == 'Android'
+        if: matrix.config.id == 'android'
         uses: android-actions/setup-android@v3
         with:
           packages: 'build-tools;36.0.0-rc5 cmdline-tools;latest ndk;29.0.13599879 platforms;android-29'
       
+      - name: Debug NDK
+        if: matrix.config.if == 'android'
+        run: ls -R $ANDROID_NDK
+      
       # TODO - cache output
       - name: Build and Install Android OpenSSL
-        if: matrix.config.id == 'Android'
+        if: matrix.config.id == 'android'
         run: |
           git clone https://github.com/openssl/openssl --recursive
           cd openssl
@@ -201,7 +201,7 @@ jobs:
           -D CMAKE_BUILD_TYPE=RelWithDebInfo
           -D CMAKE_FIND_ROOT_PATH=${{ github.workspace }}/openssl
           -D BUILD_SHARED_LIBS=${{ matrix.libs == 'shared' && 'TRUE' || 'FALSE' }}
-          -D CMAKE_SYSTEM_NAME=${{ matrix.config.id }}
+          ${{ matrix.config.id == 'android' && '-D CMAKE_SYSTEM_NAME=Android' || '' }}
           -B build
           -G Ninja
       
@@ -213,15 +213,15 @@ jobs:
           -j ${{ steps.cpu.outputs.threads }}
 
       - name: Upload Artifacts
-        if: matrix.config.id != 'Android'
+        if: matrix.config.id != 'android'
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.config.buildname }}-${{ matrix.libs }}
+          name: build-${{ matrix.config.id }}-${{ matrix.libs }}
           path: build/bin
 
       - name: Upload APK
-        if: matrix.config.id == 'Android'
+        if: matrix.config.id == 'android'
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.config.buildname }}-${{ matrix.libs }}
+          name: build-${{ matrix.config.id }}-${{ matrix.libs }}
           path: build/*_apk/build/outputs/apk/debug/*.apk
