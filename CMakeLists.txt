@@ -139,9 +139,11 @@ set(SDLIMAGE_AVIF OFF)
 
 set(SDLTTF_VENDORED ON)
 
+set(CPR_USE_SYSTEM_LIB_PSL ON) # otherwise CPR will try building psl
+set(CURL_USE_LIBPSL OFF)
+
 # https://github.com/libcpr/cpr/issues/333#issuecomment-2425104338
 if(ANDROID)
-    set(CURL_USE_LIBPSL OFF)
     set(CPR_FORCE_OPENSSL_BACKEND ON)
     find_package(openssl REQUIRED CONFIG)
     # get_target_property(OPENSSL_CRYPTO_LIBRARY openssl::crypto IMPORTED_LOCATION)
@@ -152,14 +154,6 @@ if(ANDROID)
 
     # get_target_property(OPENSSL_INCLUDE_DIR openssl::ssl INTERFACE_INCLUDE_DIRECTORIES)
     set(OPENSSL_INCLUDE_DIR ${OPENSSL_INCLUDE_DIR} CACHE INTERNAL "")
-else()
-    set(CPR_USE_SYSTEM_LIB_PSL ON) # otherwise CPR will try building psl
-
-    find_package(openssl QUIET)
-    find_package(Libpsl QUIET)
-
-    set(CURL_USE_LIBPSL Libpsl_FOUND)
-    set(CPR_FORCE_OPENSSL_BACKEND openssl_FOUND)
 endif()
 
 add_subdirectory(submodules/SDL3)

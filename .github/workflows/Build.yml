@@ -169,14 +169,6 @@ jobs:
           with open(output_file, "a") as file:
               file.write(f"threads={int(num_cpus)}\ncores={int(num_cpus / 2)}\n")
         shell: python
-
-      - name: openssl/openssl
-        uses: actions/checkout@v4
-        if: matrix.config.id == 'Android'
-        with:
-          repository: openssl/openssl
-          ref: openssl-3.5.1
-          submodules: recursive
       
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -194,10 +186,11 @@ jobs:
       # TODO - cache output
       - name: Build and Install Android OpenSSL
         if: matrix.config.id == 'Android'
-        working-directory: ${{ github.workspace }}/openssl
         run: |
+          git clone https://github.com/openssl/openssl --recursive
+          cd openssl
           export ANDROID_NDK_HOME=$ANDROID_SDK/ndk/29.0.13599879
-          PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
+          export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
           ./Configure android-arm64 -D__ANDROID_API__=29 -D__ANDROID_MIN_SDK_VERSION__=24
           make
           sudo make install
