@@ -154,21 +154,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+          cache: 'pip'
 
       - name: Install Ninja
         uses: ashutoshvarma/setup-ninja@master
-
-      - name: Check Amount of Cores
-        id: cpu
-        run: |
-          import os
-
-          num_cpus = os.cpu_count()
-          output_file = os.environ["GITHUB_OUTPUT"]
-
-          with open(output_file, "a") as file:
-              file.write(f"threads={int(num_cpus)}\ncores={int(num_cpus / 2)}\n")
-        shell: python
       
       - name: Install JDK 17
         uses: actions/setup-java@v3
@@ -183,17 +172,13 @@ jobs:
         with:
           packages: 'build-tools;36.0.0-rc5 cmdline-tools;latest ndk;29.0.13599879 platforms;android-29'
       
-      - name: Debug NDK
-        if: matrix.config.id == 'android'
-        run: ls -R $ANDROID_NDK
-      
       # TODO - cache output
       - name: Build and Install Android OpenSSL
         if: matrix.config.id == 'android'
         run: |
           git clone https://github.com/openssl/openssl --recursive
           cd openssl
-          export ANDROID_NDK_HOME="$ANDROID_SDK/ndk/29.0.13599879"
+          export ANDROID_NDK_HOME="$ANDROID_SDK/ndk/*/"
           export PATH="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH"
           ./Configure android-arm64 -D__ANDROID_API__=29 -D__ANDROID_MIN_SDK_VERSION__=24
           make
@@ -211,11 +196,12 @@ jobs:
           -G Ninja
       
       - name: Build
+        shell: bash
         run: >
           cmake
           --build build
           --target all
-          -j ${{ steps.cpu.outputs.threads }}
+          -j $(nproc)
 
       - name: Upload Artifacts
         if: matrix.config.id != 'android'
