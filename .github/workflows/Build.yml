@@ -207,6 +207,14 @@ jobs:
         run: |
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/*" >> "$GITHUB_ENV"
           echo "$ANDROID_HOME/ndk/*/toolchains/llvm/prebuilt/linux-*/bin" >> "$GITHUB_PATH"
+          ls $ANDROID_HOME
+          ls $ANDROID_HOME/ndk
+          ls $ANDROID_HOME/ndk/*
+          ls $ANDROID_HOME/ndk/*/toolchains
+          ls $ANDROID_HOME/ndk/*/toolchains/llvm
+          ls $ANDROID_HOME/ndk/*/toolchains/llvm/prebuilt
+          ls $ANDROID_HOME/ndk/*/toolchains/llvm/prebuilt/linux-*
+          ls $ANDROID_HOME/ndk/*/toolchains/llvm/prebuilt/linux-*/bin
       
       # TODO - cache output
       - name: Build and Install Android OpenSSL
