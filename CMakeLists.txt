@@ -176,7 +176,7 @@ use_found_or_vendored(SDL3_ttf::SDL3_ttf submodules/SDL3_ttf)
 use_found_or_vendored(discord-rpc submodules/discord-rpc)
 use_found_or_vendored(cpr submodules/cpr)
 use_found_or_vendored(fmt submodules/fmt)
-use_found_or_vendored(glaze::glaze submodules/glaze)
+use_found_or_vendored(glaze submodules/glaze)
 
 target_link_libraries(${PROJECT_NAME}
     SDL3::SDL3

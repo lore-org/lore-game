@@ -40,13 +40,13 @@ jobs:
           submodules: recursive
 
       - name: Install vcpkg
-        if: matrix.config.id == 'Windows'
+        if: matrix.config.id == 'windows'
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0
 
       - name: Install Windows Packages
-        if: matrix.config.id == 'Windows'
+        if: matrix.config.id == 'windows'
         run: >
           vcpkg install
           brotli
@@ -74,6 +74,7 @@ jobs:
           sdl3
           sdl3-image
           sdl3-ttf
+          llvm
 
       - name: Update Linux Packages
         if: matrix.config.id == 'linux'
@@ -131,6 +132,7 @@ jobs:
           libunwind-dev
           libusb-1.0-0-dev
           libusb-dev
+          clang-19
 
       - name: Install Homebrew
         if: matrix.config.id == 'macos'
@@ -149,6 +151,7 @@ jobs:
           sdl3
           sdl3_image
           sdl3_ttf
+          llvm
         
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -187,8 +190,8 @@ jobs:
         uses: ashutoshvarma/setup-ninja@master
       
       - name: Install JDK 17
-        uses: actions/setup-java@v3
         if: matrix.config.id == 'android'
+        uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
