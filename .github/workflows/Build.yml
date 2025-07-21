@@ -6,6 +6,9 @@ on:
     
   pull_request:
     branches: [ main ]
+
+env:
+  NDK_VERSION: 29.0.13599879
     
 jobs:
   build:
@@ -198,23 +201,18 @@ jobs:
       
       - name: Setup Android SDK
         if: matrix.config.id == 'android'
+        id: android-sdk
         uses: android-actions/setup-android@v3
         with:
-          packages: 'build-tools;36.0.0-rc5 cmdline-tools;latest ndk;29.0.13599879 platforms;android-29'
+          packages: 'build-tools;36.0.0-rc5 cmdline-tools;latest ndk;${{ env.NDK_VERSION }} platforms;android-29'
       
       - name: Update ENVs for Android SDK
         if: matrix.config.id == 'android'
         run: |
-          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/*" >> "$GITHUB_ENV"
-          echo "$ANDROID_HOME/ndk/*/toolchains/llvm/prebuilt/linux-*/bin" >> "$GITHUB_PATH"
-          ls $ANDROID_HOME
-          ls $ANDROID_HOME/ndk
-          ls $ANDROID_HOME/ndk/*
-          ls $ANDROID_HOME/ndk/*/toolchains
-          ls $ANDROID_HOME/ndk/*/toolchains/llvm
-          ls $ANDROID_HOME/ndk/*/toolchains/llvm/prebuilt
-          ls $ANDROID_HOME/ndk/*/toolchains/llvm/prebuilt/linux-*
-          ls $ANDROID_HOME/ndk/*/toolchains/llvm/prebuilt/linux-*/bin
+          echo "ANDROID_NDK_HOME=${{ env.ANDROID_NDK_HOME }}" >> "$GITHUB_ENV"
+          echo "${{ env.ANDROID_NDK_HOME }}/toolchains/llvm/prebuilt/linux-x86_64/bin" >> "$GITHUB_PATH"
+        env: 
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME || '/usr/local/lib/android/sdk' }}/ndk/${{ env.NDK_VERSION }}
       
       # TODO - cache output
       - name: Build and Install Android OpenSSL
