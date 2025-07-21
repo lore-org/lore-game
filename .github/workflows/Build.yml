@@ -42,6 +42,8 @@ jobs:
       - name: Install vcpkg
         if: matrix.config.id == 'Windows'
         uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0
 
       - name: Install Windows Packages
         if: matrix.config.id == 'Windows'
