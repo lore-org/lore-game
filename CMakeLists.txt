@@ -12,6 +12,13 @@ set(ANDROID_ABI ${CMAKE_ANDROID_ARCH_ABI} CACHE INTERNAL "") # SDL relies on AND
 set(CMAKE_ANDROID_API 29 CACHE INTERNAL "Target Android API version. Default is Android 10.")
 set(CMAKE_ANDROID_API_MIN 24 CACHE INTERNAL "Minimum Android API version. Default is Android 7.0.")
 
+if (DEFINED ENV{VCPKG_ROOT})
+    file(GLOB VCPKG_SOURCES CONFIGURE_DEPENDS $ENV{VCPKG_ROOT}/packages/*)
+    list(APPEND CMAKE_FIND_ROOT_PATH ${VCPKG_SOURCES})
+endif()
+
+message(STATUS ${CMAKE_FIND_ROOT_PATH})
+
 if (NOT DEFINED ANDROID_NDK AND NOT DEFINED ENV{ANDROID_NDK})
     message(FATAL_ERROR "ANDROID_NDK must be defined as a cmake variable or environment variable.")
 endif()
@@ -156,21 +163,20 @@ if(ANDROID)
     set(OPENSSL_INCLUDE_DIR ${OPENSSL_INCLUDE_DIR} CACHE INTERNAL "")
 endif()
 
-add_subdirectory(submodules/SDL3)
-add_subdirectory(submodules/SDL3_image)
-add_subdirectory(submodules/SDL3_ttf)
-add_subdirectory(submodules/discord-rpc)
-add_subdirectory(submodules/cpr)
+function(use_found_or_vendored LIB PATH)
+    find_package(${LIB} QUIET)
+    if (NOT ${LIB}_FOUND)
+        add_subdirectory(${PATH})
+    endif()
+endfunction()
 
-find_package(fmt QUIET)
-if (NOT fmt_FOUND)
-    add_subdirectory(submodules/fmt)
-endif()
-
-find_package(glaze QUIET)
-if (NOT glaze_FOUND)
-    add_subdirectory(submodules/glaze)
-endif()
+use_found_or_vendored(SDL3::SDL3 submodules/SDL3)
+use_found_or_vendored(SDL3_image::SDL3_image submodules/SDL3_image)
+use_found_or_vendored(SDL3_ttf::SDL3_ttf submodules/SDL3_ttf)
+use_found_or_vendored(discord-rpc submodules/discord-rpc)
+use_found_or_vendored(cpr submodules/cpr)
+use_found_or_vendored(fmt submodules/fmt)
+use_found_or_vendored(glaze::glaze submodules/glaze)
 
 target_link_libraries(${PROJECT_NAME}
     SDL3::SDL3

@@ -39,22 +39,39 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install MSYS2 and Packages
+      - name: Install vcpkg
         if: matrix.config.id == 'Windows'
-        uses: msys2/setup-msys2@v2
-        with:
-          install: >
-            brotli-devel
-            heimdal-devel
-            libidn2-devel
-            libnghttp2-devel
-            mingw-w64-x86_64-nghttp3
-            libngtcp2-devel
-            libpsl-devel
-            libssh2-devel
-            libunistring-devel
-            openssl-devel
-            zlib-devel
+        uses: lukka/run-vcpkg@v11
+
+      - name: Install Windows Packages
+        if: matrix.config.id == 'Windows'
+        run: >
+          vcpkg install
+          brotli
+          libidn2
+          nghttp2
+          nghttp3
+          ngtcp2
+          libpsl
+          libssh2
+          libunistring
+          openssl
+          zlib
+          libjpeg-turbo
+          libpng
+          libdeflate
+          jbig2dec
+          lerc
+          liblzma
+          zstd
+          libwebp
+          tiff
+          libusb
+          giflib
+          freeglut
+          sdl3
+          sdl3-image
+          sdl3-ttf
 
       - name: Update Linux Packages
         if: matrix.config.id == 'linux'
@@ -108,6 +125,10 @@ jobs:
           libssl-dev
           libzstd-dev
           zlib1g-dev
+          libjack-jackd2-dev
+          libunwind-dev
+          libusb-1.0-0-dev
+          libusb-dev
 
       - name: Install Homebrew
         if: matrix.config.id == 'macos'
@@ -122,6 +143,10 @@ jobs:
           libpsl
           zlib
           llvm
+          libtiff
+          sdl3
+          sdl3_image
+          sdl3_ttf
         
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -176,7 +201,7 @@ jobs:
         if: matrix.config.id == 'android'
         run: |
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/*" >> "$GITHUB_ENV"
-          echo "$ANDROID_HOME/toolchains/llvm/prebuilt/linux-*/bin" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/ndk/*/toolchains/llvm/prebuilt/linux-*/bin" >> "$GITHUB_PATH"
       
       # TODO - cache output
       - name: Build and Install Android OpenSSL
