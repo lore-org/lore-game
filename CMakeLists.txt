@@ -33,7 +33,7 @@ if(WIN32)
 endif()
 
 set(ARM_ARCHS arm arm64 aarch64)
-if (CMAKE_SYSTEM_PROCESSOR IN_LIST ARM_ARCHS)
+if (NORMALISED_CMAKE_SYSTEM_PROCESSOR IN_LIST ARM_ARCHS)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
@@ -83,6 +83,52 @@ endif()
 
 set(DEBUG "${DEBUG}" CACHE BOOL "Whether to build debug libraries or not")
 
+function(normalise_arch ARCH RESULT_VAR)
+    string(TOLOWER "${ARCH}" ARCH)
+    string(REGEX REPLACE "[^a-zA-Z0-9]" "_" ARCH "${ARCH}")
+
+
+    set(x64_ARCH_LIST x64
+        x86_64
+        amd64
+        hurd-amd64
+        kfreebsd-amd64
+    )
+
+    set(x32_ARCH_LIST x32
+        x86
+    )
+
+    set(arm_ARCH_LIST arm
+        armel
+        armhf
+    )
+
+    set(arm64_ARCH_LIST arm64
+        aarch64
+    )
+    
+
+    set(ARCH_LISTS
+        x64_ARCH_LIST
+        x32_ARCH_LIST
+        arm_ARCH_LIST
+        arm64_ARCH_LIST
+    )
+    
+    foreach(ARCH_LIST IN LISTS ARCH_LISTS)
+        if (ARCH IN_LIST "${ARCH_LIST}")
+            list(GET "${ARCH_LIST}" 0 NORMALISED_ARCH)
+            set(ARCH "${NORMALISED_ARCH}")
+        endif()
+    endforeach()
+
+
+    set("${RESULT_VAR}" ${ARCH} PARENT_SCOPE)
+endfunction()
+
+normalise_arch("${CMAKE_SYSTEM_PROCESSOR}" NORMALISED_CMAKE_SYSTEM_PROCESSOR)
+
 # Setup Python virtual env
 
 find_program(PYTHON python3 py python REQUIRED)
@@ -130,15 +176,14 @@ endif()
 # TODO - add windows support
 function(get_lib_arch LIB RESULT_VAR)
     find_program(FILE file)
-    find_program(SED sed)
 
-    if (FILE AND SED)
-        set(REAL_LIB ${LIB})
-        file(REAL_PATH ${LIB} REAL_LIB)
+    if (FILE)
+        set(REAL_LIB "${LIB}")
+        file(REAL_PATH "${LIB}" REAL_LIB)
 
         execute_process(
-            COMMAND ${FILE} ${REAL_LIB}
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMAND ${FILE} "${REAL_LIB}"
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
             OUTPUT_VARIABLE OUTPUT
         )
         
@@ -148,9 +193,15 @@ function(get_lib_arch LIB RESULT_VAR)
         string(REGEX MATCH "[^ ]+$" OUTPUT "${FULL_ARCH}") # get isolated arch at end of string
         string(TOLOWER "${OUTPUT}" OUTPUT)
 
-        set("${RESULT_VAR}" "${OUTPUT}" PARENT_SCOPE)
+        normalise_arch(NORMALISED_OUTPUT "${OUTPUT}")
+
+        set("${RESULT_VAR}" "${NORMALISED_OUTPUT}" PARENT_SCOPE)
     endif()
 endfunction()
+
+if (BUILD_SHARED_LIBS)
+    list(APPEND BANNED_LIBRARIES libusb-1.0)
+endif()
 
 function(add_libs_from_path PATH)
     # do NOT configure_depends, this will take 10 million years
@@ -191,25 +242,31 @@ function(add_libs_from_path PATH)
             endif()
 
             list(GET CMAKE_FIND_LIBRARY_SUFFIXES 0 WANTED_LIBRARY_SUFFIX)
-            message(STATUS "CMAKE_FIND_LIBRARY_SUFFIXES: ${CMAKE_FIND_LIBRARY_SUFFIXES}")
-            message(STATUS "WANTED_LIBRARY_SUFFIX:       ${WANTED_LIBRARY_SUFFIX}")
             file(GLOB LIBRARY_FILES ${LIB_PATH}/*${WANTED_LIBRARY_SUFFIX})
 
             foreach (LIBRARY IN LISTS LIBRARY_FILES)
-                # quit early if arch doesn't exist or doesn't match target
-                get_lib_arch(${LIBRARY} ARCH)
-                if (
-                    ARCH STREQUAL "" OR
-                    NOT ARCH STREQUAL ${CMAKE_SYSTEM_PROCESSOR}
-                )
-                    continue()
+                if (BUILD_SHARED_LIBS)
+                    # quit early if arch doesn't exist or doesn't match target
+                    get_lib_arch(${LIBRARY} ARCH)
+                    message("LIBRARY: ${LIBRARY}")
+                    message("get_lib_arch: ${ARCH}")
+                    if (
+                        ARCH STREQUAL "" OR
+                        NOT ARCH STREQUAL ${NORMALISED_CMAKE_SYSTEM_PROCESSOR}
+                    )
+                        continue()
+                    endif()
                 endif()
 
                 cmake_path(GET LIBRARY FILENAME LIBRARY_NAME)
+
+                if (LIBRARY_NAME IN_LIST BANNED_LIBRARIES) # some libraries will not work given the current config
+                    continue()
+                endif()
+
                 string(REGEX REPLACE "[^a-zA-Z0-9_\\.\\+-]" "" LIBRARY_NAME "${LIBRARY_NAME}") # sanitize library
 
                 cmake_path(GET LIBRARY_NAME STEM STRIPPED_LIBRARY_NAME)
-
                 string(REGEX REPLACE "^lib" "" BARE_STRIPPED_LIBRARY_NAME ${STRIPPED_LIBRARY_NAME})
 
                 set(LIBRARY_NAMES
@@ -251,12 +308,16 @@ function(add_libs_from_path PATH)
                             endif()
 
                             string(REPLACE "::" "_" SNAKE_LIBRARY_NAME "${LIBRARY_NAME}")
-                            
-                            set("${LIBRARY_NAME}_LIBRARY" ${LIBRARY} PARENT_SCOPE)
-                            set("${SNAKE_LIBRARY_NAME}_LIBRARY" ${LIBRARY} PARENT_SCOPE)
 
-                            set("${LIBRARY_NAME}_INCLUDE_DIR" ${INCLUDE_PATH} PARENT_SCOPE)
-                            set("${SNAKE_LIBRARY_NAME}_INCLUDE_DIR" ${INCLUDE_PATH} PARENT_SCOPE)
+                            set(LIBRARY_NAMES
+                                ${LIBRARY_NAME}
+                                ${SNAKE_LIBRARY_NAME}
+                            )
+
+                            foreach (LIBRARY_NAME IN LISTS LIBRARY_NAMES)
+                                set("${LIBRARY_NAME}_LIBRARY" ${LIBRARY} PARENT_SCOPE)
+                                set("${LIBRARY_NAME}_INCLUDE_DIR" ${INCLUDE_PATH} PARENT_SCOPE)
+                            endforeach()
                         endforeach()
                     endforeach()
                 endforeach()
@@ -265,23 +326,23 @@ function(add_libs_from_path PATH)
     endforeach()
 endfunction()
 
-message("Looking for libraries matching arch '${CMAKE_SYSTEM_PROCESSOR}'")
+message(STATUS "Looking for libraries matching arch '${NORMALISED_CMAKE_SYSTEM_PROCESSOR}'")
 
 # linux libraries
 if (EXISTS /usr/lib)
-    message("Looking for libraries: /usr")
+    message(STATUS "Looking for libraries: /usr")
     add_libs_from_path(/usr)
 endif()
 
 # vcpkg libraries
 if (DEFINED ENV{VCPKG_ROOT})
-    message("Looking for libraries: $ENV{VCPKG_ROOT}")
+    message(STATUS "Looking for libraries: $ENV{VCPKG_ROOT}")
     add_libs_from_path($ENV{VCPKG_ROOT}/packages/*)
 endif()
 
 # Android libraries
 if (DEFINED ANDROID_NDK)
-    message("Looking for libraries: ${ANDROID_NDK}")
+    message(STATUS "Looking for libraries: ${ANDROID_NDK}")
     add_libs_from_path(${ANDROID_NDK}/toolchains/llvm/prebuilt/*)
     add_libs_from_path(${ANDROID_NDK}/toolchains/llvm/prebuilt/*/sysroot/usr)
 endif()
@@ -294,7 +355,7 @@ if (BREW)
         OUTPUT_VARIABLE BREW_CELLAR
     )
     string(STRIP ${BREW_CELLAR} BREW_CELLAR)
-    message("Looking for libraries: ${BREW_CELLAR}")
+    message(STATUS "Looking for libraries: ${BREW_CELLAR}")
     add_libs_from_path(${BREW_CELLAR}/*/*)
 endif()
 
@@ -336,12 +397,12 @@ if (ANDROID)
     if (NOT EXISTS ${crypto})
         message(FATAL_ERROR "Could not find OpenSSL::Crypto (looking for ${crypto})")
     endif()
-    message("Found OpenSSL::Crypto: ${crypto}")
+    message(STATUS "Found OpenSSL::Crypto: ${crypto}")
 
     if (NOT EXISTS ${ssl})
         message(FATAL_ERROR "Could not find OpenSSL::SSL (looking for ${ssl})")
     endif()
-    message("Found OpenSSL::SSL: ${ssl}")
+    message(STATUS "Found OpenSSL::SSL: ${ssl}")
 
     function(add_imported_library target type)
         if (NOT TARGET ${target})
