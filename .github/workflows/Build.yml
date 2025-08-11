@@ -127,6 +127,7 @@ jobs:
 
     steps:
       - name: Ensure Git Symlink Support
+        continue-on-error: true
         run: |
           git config --global --unset-all core.symlinks
           git config --global --add core.symlinks true
@@ -143,16 +144,16 @@ jobs:
           echo "WINDOWS_PKGS=$(echo -n "$WINDOWS_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
           echo "BREW_PKGS=$(echo -n "$BREW_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
 
-      - name: Install vcpkg
-        if: matrix.config.id == 'windows'
-        uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgGitCommitId: ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0
-          doNotCache: false
+      # - name: Install vcpkg
+      #   if: matrix.config.id == 'windows'
+      #   uses: lukka/run-vcpkg@v11
+      #   with:
+      #     vcpkgGitCommitId: ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0
+      #     doNotCache: false
 
-      - name: Install Leftover Windows Packages
-        if: matrix.config.id == 'windows'
-        run: vcpkg install ${{ env.WINDOWS_PKGS }}
+      # - name: Install Leftover Windows Packages
+      #   if: matrix.config.id == 'windows'
+      #   run: vcpkg install ${{ env.WINDOWS_PKGS }}
 
 
       - name: Update Linux Packages
