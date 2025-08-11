@@ -3,12 +3,13 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <atomic>
 
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>
 
-#include "Geometry.h"
+#include <engine/Geometry.h>
 
 class Engine : public std::enable_shared_from_this<Engine> {
 public:
@@ -48,9 +49,9 @@ public:
     void showTPS(bool show);
 
     // How many decimal points should follow the FPS/TPS display -- default is 0
-    void setTimeDisplayPrecision(unsigned int precision);
+    void setTimeDisplayPrecision(unsigned long long precision);
     // How many samples should the FPS/TPS display average -- default is 10
-    void setTimeDisplaySampleSize(unsigned int size);
+    void setTimeDisplaySampleSize(unsigned long long size);
 
     void setWindowSize(Size size);
     // Gets the stored window size that is updated after each frame
@@ -81,7 +82,7 @@ public:
     // Be sure to run this in the main thread
     static std::shared_ptr<MouseData> getMouseData();
 
-    TTF_Font* getOrCreateFont(std::string file, float point = 100);
+    TTF_Font* getOrCreateFont(std::string file, double point = 100);
 
     void setupEngine();
 
@@ -136,7 +137,7 @@ protected:
     bool m_showTPS;
     TTF_Text* m_tpsText;
 
-    unsigned int m_sampleSize;
+    unsigned long long m_sampleSize;
     double m_deltaAverageMult;
 
     std::vector<double> m_frameDeltas;
@@ -145,7 +146,7 @@ protected:
     std::atomic<double> m_frameAvg;
     std::atomic<double> m_tickAvg;
 
-    unsigned int m_displayPrecision;
+    unsigned long long m_displayPrecision;
 
     // -----------------
 

@@ -1,6 +1,20 @@
-#include <engine/Default.h>
-
 #include <engine/Sprite.h>
+
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
+
+#include <fmt/base.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+#include <fmt/printf.h>
+
+#include <discord-rpc.hpp>
+
+#include <engine/config.hpp>
+#include <engine/Engine.h>
+#include <engine/Geometry.h>
+#include <engine/utils.hpp>
 
 #include <memory>
 #include <regex>
@@ -10,15 +24,14 @@
 #include <engine/Geometry.h>
 #include <engine/ColorNode.h>
 #include <engine/Engine.h>
-#include <engine/utils.hpp>
 
-Sprite::Sprite() {};
+Sprite::Sprite() {}
 
 Sprite::~Sprite() {
     Node::~Node();
     
     SDL_DestroyTexture(m_texture);
-};
+}
 
 bool Sprite::init(SDL_Texture* texture) {
     if (!ColorNode::init()) return false;
@@ -26,106 +39,109 @@ bool Sprite::init(SDL_Texture* texture) {
     if (!texture) return false;
 
     this->setContentSize({
-        static_cast<float>(texture->w),
-        static_cast<float>(texture->h)
+        static_cast<double>(texture->w),
+        static_cast<double>(texture->h)
     });
 
     m_texture = texture;
 
     return true;
-};
+}
 
 std::shared_ptr<Sprite> Sprite::create() {
     auto ret = utils::protected_make_shared<Sprite>();
 
     if (!ret->init({})) return nullptr;
     return ret;
-};
+}
 
 std::shared_ptr<Sprite> Sprite::createFromFile(std::string filename) {
     auto ret = utils::protected_make_shared<Sprite>();
 
     auto tex = IMG_LoadTexture(Engine::sharedInstance()->getRenderer(), filename.c_str());
     if (!tex) {
-        PrintSDLError();
+        LogSDLError();
         return nullptr;
-    };
+    }
 
     if (!ret->init(tex)) return nullptr;
     return ret;
-};
+}
 
 std::shared_ptr<Sprite> Sprite::createFromSurface(SDL_Surface* surface) {
     auto ret = utils::protected_make_shared<Sprite>();
 
     auto tex = SDL_CreateTextureFromSurface(Engine::sharedInstance()->getRenderer(), surface);
     if (!tex) {
-        PrintSDLError();
+        LogSDLError();
         return nullptr;
-    };
+    }
 
     if (!ret->init(tex)) return nullptr;
     return ret;
-};
+}
 
 std::shared_ptr<Sprite> Sprite::createFromURL(std::string url) {
     auto ret = utils::protected_make_shared<Sprite>();
 
     auto tex = Sprite::loadFromURL(url);
     if (!tex) {
-        PrintSDLError();
+        LogSDLError();
         return nullptr;
-    };
+    }
 
     if (!ret->init(tex)) return nullptr;
     return ret;
-};
+}
 
 std::shared_ptr<Sprite> Sprite::createFromSprite(std::shared_ptr<Sprite> sprite) {
     auto ret = utils::protected_make_shared<Sprite>();
 
     if (!ret->init(sprite->getTexture())) return nullptr;
     return ret;
-};
+}
 
 void Sprite::setTexture(SDL_Texture* texture) {
     SDL_DestroyTexture(m_texture);
     m_texture = texture;
-};
+}
 
 SDL_Texture* Sprite::getTexture() {
     return m_texture;
-};
+}
 
 void Sprite::draw(const double dt) {
     ColorNode::draw(dt);
 
     auto renderer = Engine::sharedInstance()->getRenderer();
 
-    auto xOffset = IsZero(m_anchorPoint.x) ? 0 : m_contentSize.width * m_anchorPoint.x;
-    auto yOffset = IsZero(m_anchorPoint.y) ? 0 : m_contentSize.height * m_anchorPoint.y;
+    auto scaledWidth = m_contentSize.width * m_scale;
+    auto scaledHeight = m_contentSize.height * m_scale;
+
+    auto xOffset = IsZero(m_anchorPoint.x) ? 0 : scaledWidth * m_anchorPoint.x;
+    auto yOffset = IsZero(m_anchorPoint.y) ? 0 : scaledHeight * m_anchorPoint.y;
 
     if (!SDL_SetTextureColorMod(
         m_texture,
         m_color.r,
         m_color.g,
         m_color.b
-    )) PrintSDLError();
+    )) LogSDLError();
     if (!SDL_SetTextureAlphaMod(
         m_texture,
         m_color.a
-    )) PrintSDLError();
+    )) LogSDLError();
     if (!SDL_SetRenderDrawBlendMode(
         renderer,
         m_blendMode
-    )) PrintSDLError();
+    )) LogSDLError();
 
-    SDL_FPoint rotationalAxis = { xOffset, yOffset };
+    SDL_FPoint rotationalAxis = { static_cast<float>(xOffset), static_cast<float>(yOffset) };
     SDL_FRect destinationRect = {
-        m_position.x - xOffset,
-        m_position.y - yOffset,
-        m_contentSize.width,
-        m_contentSize.height
+        static_cast<float>(m_position.x - xOffset),
+        static_cast<float>(m_position.y - yOffset),
+        static_cast<float>(scaledWidth),
+        static_cast<float>(scaledHeight)
     };
 
     if (!SDL_RenderTextureRotated(
@@ -136,19 +152,19 @@ void Sprite::draw(const double dt) {
         m_rotation,
         &rotationalAxis,
         SDL_FLIP_NONE // TODO - implement
-    )) PrintSDLError();
-};
+    )) LogSDLError();
+}
 
-// May be nullptr, use PrintSDLError()
+// May be nullptr, use LogSDLError()
 SDL_Texture* Sprite::loadFromURL(std::string url) {
     auto response = cpr::Get(cpr::Url { url });
     if (response.status_code != 200) {
-        PrintError(fmt::format("Image returned status code '{}'", response.status_code));
+        LogError(fmt::format("Image returned status code '{}'", response.status_code));
         return nullptr;
     }
     auto stream = SDL_IOFromConstMem(response.text.data(), response.text.size());
     if (!stream) {
-        PrintSDLError();
+        LogSDLError();
         return nullptr;
     }
 
@@ -161,7 +177,7 @@ SDL_Texture* Sprite::loadFromURL(std::string url) {
 
         if (utils::caseInsensitiveCompare(split[0], "image"))
             fileType = utils::toUpperCase(split[1]).c_str();
-        else PrintError("Content-Type is not an Image");
+        else LogError("Content-Type is not an Image");
     }
 
     return IMG_LoadTextureTyped_IO(
@@ -169,4 +185,4 @@ SDL_Texture* Sprite::loadFromURL(std::string url) {
         stream, true,
         fileType.empty() ? nullptr : fileType.c_str()
     );
-};
+}

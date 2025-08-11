@@ -11,8 +11,7 @@
 
 #include <discord-rpc.hpp>
 
-#include <SDL3_image/SDL_image.h>
-
-#include "config.hpp" // IWYU pragma: keep
-#include "Engine.h" // IWYU pragma: keep
-#include "Geometry.h" // IWYU pragma: keep
+#include <engine/config.hpp>
+#include <engine/Engine.h>
+#include <engine/Geometry.h>
+#include <engine/utils.hpp>

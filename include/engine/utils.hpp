@@ -1,24 +1,52 @@
 #pragma once
-#include "Default.h" // IWYU pragma: keep
+
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
+
+#include <fmt/base.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+#include <fmt/printf.h>
+
+#include <discord-rpc.hpp>
+
+#include <engine/config.hpp>
+#include <engine/Engine.h>
+#include <engine/Geometry.h>
+#include <engine/utils.hpp>
 
 #include <string>
 #include <algorithm>
 #include <vector>
 #include <regex>
 #include <cctype>
+#include <limits>
+
+#include <SDL3/SDL_log.h>
 
 #include "Object.h"
 
-#define MakePoint(x, y) Point(static_cast<float>(x), static_cast<float>(y))
-#define MakeSize(width, height) Size(static_cast<float>(width), static_cast<float>(height))
-#define MakeRect(x, y, width, height) Rect(static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height))
+#define MakePoint(x, y) Point(static_cast<double>(x), static_cast<double>(y))
+#define MakeSize(width, height) Size(static_cast<double>(width), static_cast<double>(height))
+#define MakeRect(x, y, width, height) Rect(static_cast<double>(x), static_cast<double>(y), static_cast<double>(width), static_cast<double>(height))
 
-#define EPSILON 0.000001f
-#define IsZero(f) std::fabs(static_cast<float>(f)) < EPSILON
+#define EPSILON std::numeric_limits<double>::epsilon()
+#define IsZero(f) std::fabs(static_cast<double>(f)) < EPSILON
 
-#define PrintLN() fmt::println("{}:{}", __FILE__, __LINE__)
-#define PrintError(x) fmt::println("[ERROR]: '{}:{}': {}", __FILE__, __LINE__, x)
-#define PrintSDLError() PrintError(SDL_GetError())
+#define GetLine() fmt::format("{}:{}", __FILE__, __LINE__).c_str()
+#define GetWithTag(tag, x) fmt::format("[{}]: '{}': {}", tag, GetLine(), x).c_str()
+
+#define Log(x) SDL_Log(x, NULL)
+#define LogCritical(x) SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, GetWithTag("CRITICAL", x), NULL )
+#define LogDebug(x)    SDL_LogDebug(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("DEBUG",    x), NULL )
+#define LogError(x)    SDL_LogError(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("ERROR",    x), NULL )
+#define LogInfo(x)     SDL_LogInfo(     SDL_LOG_CATEGORY_APPLICATION, GetWithTag("INFO",     x), NULL )
+#define LogTrace(x)    SDL_LogTrace(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("TRACE",    x), NULL )
+#define LogVerbose(x)  SDL_LogVerbose(  SDL_LOG_CATEGORY_APPLICATION, GetWithTag("VERBOSE",  x), NULL )
+#define LogWarn(x)     SDL_LogWarn(     SDL_LOG_CATEGORY_APPLICATION, GetWithTag("WARN",     x), NULL )
+
+#define LogSDLError() LogError(SDL_GetError())
 
 #define __Quote__(...) #__VA_ARGS__
 #define CreateEventDecl(prefix, event) inline static const char* event = __Quote__(prefix ## __ ## event)

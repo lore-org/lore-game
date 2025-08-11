@@ -1,6 +1,3 @@
-#include "SDL3/SDL_render.h"
-#include <engine/Default.h>
-
 #include <engine/Engine.h>
 
 #include <algorithm>
@@ -17,11 +14,23 @@
     #define par_unseq
 #endif
 
+#include <discord-rpc.hpp>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3/SDL_main.h>
+#include <fmt/base.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+#include <fmt/printf.h>
+
+#include <engine/config.hpp>
+#include <engine/Engine.h>
+#include <engine/Geometry.h>
+#include <engine/utils.hpp>
 #include <engine/PresenceManager.h>
 #include <engine/Scheduler.h>
 #include <engine/Director.h>
-#include <engine/config.hpp>
-#include <engine/utils.hpp>
 
 #define Millisecond_Constant 1e-3
 
@@ -39,7 +48,7 @@ Engine::Engine() :
     m_showFPS(false), m_showTPS(false),
     m_sampleSize(10), m_deltaAverageMult(1.f / m_sampleSize), 
     m_frameAvg(0), m_tickAvg(0),
-    m_displayPrecision(0) {};
+    m_displayPrecision(0) {}
 
 std::shared_ptr<Engine> Engine::sharedInstance() {
     if (!m_instance) m_instance = utils::protected_make_shared<Engine>();
@@ -75,7 +84,7 @@ void Engine::resetSecondsPerTick() {
 
 double Engine::getFramesPerSecond() {
     return m_framesPerSecond;
-};
+}
 
 void Engine::setFramesPerSecond(double fps) {
     if (fps == 0) return void(m_usingVsync = true);
@@ -85,23 +94,23 @@ void Engine::setFramesPerSecond(double fps) {
     m_secondsPerFrame = 1.f / fps;
     m_framesPerMillisecond = fps / 1e3;
     m_millisecondsPerFrame = 1e3 / fps;
-};
+}
 
 void Engine::resetFramesPerSecond() {
     this->setFramesPerSecond(0);
-};
+}
 
 double Engine::getSecondsPerFrame() {
     return m_secondsPerFrame;
-};
+}
 
 void Engine::setSecondsPerFrame(double spf) {
     this->setFramesPerSecond(1.f / spf);
-};
+}
 
 void Engine::resetSecondsPerFrame() {
     this->resetFramesPerSecond();
-};
+}
 
 void Engine::showFPS(bool show) {
     m_showFPS = show;
@@ -111,11 +120,11 @@ void Engine::showTPS(bool show) {
     m_showTPS = show;
 }
 
-void Engine::setTimeDisplayPrecision(unsigned int precision) {
+void Engine::setTimeDisplayPrecision(unsigned long long precision) {
     m_displayPrecision = precision;
 }
 
-void Engine::setTimeDisplaySampleSize(unsigned int size) {
+void Engine::setTimeDisplaySampleSize(unsigned long long size) {
     if (size < 1) throw std::length_error("Sample size must be greater than 0!");
     m_sampleSize = size;
     m_deltaAverageMult = 1.f / m_sampleSize;
@@ -131,7 +140,7 @@ void Engine::setTimeDisplaySampleSize(unsigned int size) {
 
 void Engine::setWindowSize(Size size) {
     m_windowSize = size;
-    if (!SDL_SetWindowSize(m_sdlWindow, size.width, size.height)) PrintSDLError();
+    if (!SDL_SetWindowSize(m_sdlWindow, static_cast<int>(size.width), static_cast<int>(size.height))) LogSDLError();
 }
 
 Size Engine::getStaticWindowSize() {
@@ -144,32 +153,32 @@ SDL_Window* Engine::getWindow() {
 
 SDL_Renderer* Engine::getRenderer() {
     return m_sdlRenderer;
-};
+}
 
 const SDL_DisplayMode* Engine::getDisplayMode() {
     return m_sdlDisplayMode;
-};
+}
 
 SDL_Time Engine::getTime() {
     SDL_Time value = {};
 
-    if (!SDL_GetCurrentTime(&value)) PrintSDLError();
+    if (!SDL_GetCurrentTime(&value)) LogSDLError();
     return value;
-};
+}
 
 Size Engine::getWindowSize() {
     std::pair<int, int> size(0, 0);
-    if (!SDL_GetWindowSize(m_sdlWindow, &size.first, &size.second)) PrintSDLError();
+    if (!SDL_GetWindowSize(m_sdlWindow, &size.first, &size.second)) LogSDLError();
 
     return MakeSize(size.first, size.second);
-};
+}
 
 std::shared_ptr<Engine::MouseData> Engine::getMouseData() {
     MouseData mouseData = {};
 
     auto mouseState = SDL_GetMouseState(&mouseData.x, &mouseData.y);
 
-    #define ParseButtonMask(x) (mouseState & x) > 0;
+    #define ParseButtonMask(x) (mouseState & x) > 0
 
     mouseData.lmb = ParseButtonMask(SDL_BUTTON_LMASK);
     mouseData.mmb = ParseButtonMask(SDL_BUTTON_MMASK);
@@ -180,52 +189,54 @@ std::shared_ptr<Engine::MouseData> Engine::getMouseData() {
     return std::make_shared<MouseData>(mouseData);
 }
 
-TTF_Font* Engine::getOrCreateFont(std::string file, float point) {
+TTF_Font* Engine::getOrCreateFont(std::string file, double point) {
     if (m_fontMap.contains(file)) return m_fontMap.at(file);
 
     auto font = TTF_OpenFont(file.c_str(), point);
     if (!font) {
-        PrintSDLError();
+        LogSDLError();
         return nullptr;
     }
     m_fontMap.insert({ file, font });
     return font;
-};
+}
 
 void Engine::setupEngine() {
-    if (m_isSetup) return fmt::println("Engine has already been set up!");
+    if (m_isSetup) return LogWarn("Engine has already been set up!");
     m_isSetup = true;
 
     m_frameDeltas.resize(m_sampleSize, 0);
     m_tickDeltas.resize(m_sampleSize, 0);
 
-    if (!SDL_SetAppMetadata("lore-game", "0.0.1", "dev.kontroll.lore")) PrintSDLError();
-    if (!SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO)) PrintSDLError();
-    if (!TTF_Init()) PrintSDLError();
+    SDL_SetMainReady();
+
+    if (!SDL_SetAppMetadata(__APP_NAME__, __APP_VERSION__, __APP_NAMESPACE__)) LogSDLError();
+    if (!SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO)) LogSDLError();
+    if (!TTF_Init()) LogSDLError();
     if (!SDL_CreateWindowAndRenderer(
         SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING),
-        m_windowSize.width, m_windowSize.height,
+        static_cast<int>(m_windowSize.width), static_cast<int>(m_windowSize.height),
         SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS,
         &m_sdlWindow, &m_sdlRenderer
-    )) PrintSDLError();
+    )) LogSDLError();
 
     this->_updateDisplayData();
 
     m_sdlTextEngine = TTF_CreateRendererTextEngine(m_sdlRenderer);
-    if (!m_sdlTextEngine) PrintSDLError();
+    if (!m_sdlTextEngine) LogSDLError();
 
     m_fpsText = TTF_CreateText(
         m_sdlTextEngine, this->getOrCreateFont("resources/Noto Sans.ttf"),
         "",
         NULL
     );
-    if (!m_fpsText) PrintSDLError();
+    if (!m_fpsText) LogSDLError();
     m_tpsText = TTF_CreateText(
         m_sdlTextEngine, this->getOrCreateFont("resources/Noto Sans.ttf"),
         "",
         NULL
     );
-    if (!m_tpsText) PrintSDLError();
+    if (!m_tpsText) LogSDLError();
 
     auto presenceManager = utils::PresenceManager::sharedManager();
 
@@ -238,18 +249,18 @@ void Engine::setupEngine() {
             .setClientID(clientID.get<std::string>())
             .onReady([](auto) {
                 utils::PresenceManager::sharedManager()->setActive(true);
-                fmt::println("Discord Presence initialised.");
+                LogInfo("Discord Presence initialised.");
             })
             .onErrored([](auto, auto) {
-                fmt::println("Failed to initialise Discord presence.");
+                LogError("Failed to initialise Discord presence.");
             })
             .initialize();
     }
-};
+}
 
 void Engine::runEngine() {
     if (!m_isSetup) throw std::runtime_error("Engine not setup before trying to run!");
-    if (m_isStarted) return fmt::println("Engine is already running!");
+    if (m_isStarted) return LogWarn("Engine is already running!");
     m_isStarted = true;
 
     std::thread updateThread([this]() {
@@ -272,7 +283,7 @@ void Engine::runEngine() {
             double endTime = SDL_GetTicks();
 
             if (endTime - startTime < m_millisecondsPerTick)
-                SDL_DelayPrecise(((startTime + m_millisecondsPerTick) - endTime) * 1e6);
+                SDL_DelayPrecise(static_cast<unsigned long long>(((startTime + m_millisecondsPerTick) - endTime) * 1e6));
         }
     });
 
@@ -303,7 +314,7 @@ void Engine::runEngine() {
             double endTime = SDL_GetTicks();
 
             if (endTime - startTime < m_millisecondsPerTick)
-                SDL_DelayPrecise(((startTime + m_millisecondsPerTick) - endTime) * 1e6);
+                SDL_DelayPrecise(static_cast<unsigned long long>(((startTime + m_millisecondsPerTick) - endTime) * 1e6));
         }
     });
 
@@ -337,41 +348,41 @@ void Engine::runEngine() {
         }
         director->draw(dt);
         
-        if (!TTF_SetFontSize(notoSans, 20)) PrintSDLError();
+        if (!TTF_SetFontSize(notoSans, 20)) LogSDLError();
 
         if (m_showFPS) {
             if (!TTF_SetTextString(
                 m_fpsText,
                 fmt::format("{} FPS", fmt::sprintf(format, m_frameAvg.load())).c_str(),
                 NULL
-            )) PrintSDLError();
+            )) LogSDLError();
         }
         if (m_showTPS) {
             if (!TTF_SetTextString(
                 m_tpsText,
                 fmt::format("{} TPS", fmt::sprintf(format, m_tickAvg.load())).c_str(),
                 NULL
-            )) PrintSDLError();
+            )) LogSDLError();
         }
 
         if (!SDL_SetRenderDrawColor(
             m_sdlRenderer,
             255, 255, 255, 255
-        )) PrintSDLError();
+        )) LogSDLError();
 
         if (m_showFPS && m_fpsText)
-            if (!TTF_DrawRendererText(m_fpsText, 5, 5)) PrintSDLError();
+            if (!TTF_DrawRendererText(m_fpsText, 5, 5)) LogSDLError();
         if (m_showTPS && m_tpsText)
-            if (!TTF_DrawRendererText(m_tpsText, 5, m_showFPS ? 30 : 5)) PrintSDLError();
+            if (!TTF_DrawRendererText(m_tpsText, 5, m_showFPS ? 30 : 5)) LogSDLError();
 
-        if (!SDL_RenderPresent(m_sdlRenderer)) PrintSDLError();
+        if (!SDL_RenderPresent(m_sdlRenderer)) LogSDLError();
         
         lastFrameTime = startTime;
 
         double endTime = SDL_GetTicks();
 
         if (endTime - startTime < m_millisecondsPerFrame)
-            SDL_DelayPrecise(((startTime + m_millisecondsPerFrame) - endTime) * 1e6);
+            SDL_DelayPrecise(static_cast<unsigned long long>(((startTime + m_millisecondsPerFrame) - endTime) * 1e6));
     }
 
     m_isStopped = true;
@@ -390,20 +401,20 @@ void Engine::runEngine() {
 
     SDL_Quit();
     TTF_Quit();
-};
+}
 
 void Engine::_updateDisplayData() {
     if (!m_sdlRenderer) return;
     
     m_sdlDisplay = SDL_GetDisplayForWindow(m_sdlWindow);
-    if (!m_sdlDisplay) PrintSDLError();
+    if (!m_sdlDisplay) LogSDLError();
     m_sdlDisplayMode = SDL_GetCurrentDisplayMode(m_sdlDisplay);
-    if (!m_sdlDisplayMode) PrintSDLError();
+    if (!m_sdlDisplayMode) LogSDLError();
 
     m_windowSize = this->getWindowSize();
 
     this->_updateFrameData();
-};
+}
 
 void Engine::_updateFrameData() {
     if (!m_usingVsync) return;

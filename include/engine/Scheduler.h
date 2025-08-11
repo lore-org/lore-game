@@ -8,7 +8,7 @@
 
 struct _entry {
     Object* target;
-    int priority;
+    long long priority;
     bool paused;
     bool willDelete;
 };
@@ -19,12 +19,12 @@ public:
 
     static std::shared_ptr<Scheduler> sharedScheduler();
 
-    float getTimeScale();
-    void setTimeScale(float timeScale);
+    double getTimeScale();
+    void setTimeScale(double timeScale);
 
     virtual void update(double dt) override;
 
-    void scheduleUpdate(Object* target, int priority = 0, bool paused = false);
+    void scheduleUpdate(Object* target, long long priority = 0, bool paused = false);
 
     void unscheduleUpdate(Object* target);
     void unscheduleUpdates(std::unordered_set<Object*> targets);
@@ -44,14 +44,14 @@ public:
 protected:
     Scheduler();
 
-    float m_timeScale;
+    double m_timeScale;
     std::vector<std::shared_ptr<_entry>> m_entries;
 
 private:
     static std::shared_ptr<Scheduler> m_instance;
 
     // Returns -1 if target does not exist
-    size_t _getIndexOfTarget(Object* target);
+    long long _getIndexOfTarget(Object* target);
     
     // Returns nullptr if target does not exist
     std::shared_ptr<_entry> _getEntryFromTarget(Object* target);

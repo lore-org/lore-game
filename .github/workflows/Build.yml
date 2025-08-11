@@ -9,7 +9,96 @@ on:
 
 env:
   NDK_VERSION: 29.0.13599879
-    
+  LINUX_PKGS: >
+    libasound2-dev
+    libdbus-1-dev
+    libdecor-0-dev
+    libdrm-dev
+    libegl-dev
+    libgbm-dev
+    libgl-dev
+    libgles-dev
+    libibus-1.0-dev
+    libpipewire-0.3-dev
+    libpulse-dev
+    libsndio-dev
+    libudev-dev
+    libwayland-dev
+    libx11-dev
+    libxcursor-dev
+    libxext-dev
+    libxfixes-dev
+    libxi-dev
+    libxinerama-dev
+    libxkbcommon-dev
+    libxrandr-dev
+    libxss-dev
+    libxt-dev
+    libxv-dev
+    libxxf86vm-dev
+    libjpeg-dev
+    libpng-dev
+    libtiff-dev
+    libwebp-dev
+    libc6-dev
+    libfreetype-dev
+    libharfbuzz-dev
+    libbrotli-dev
+    libidn2-dev
+    libkrb5-dev
+    libldap-dev
+    libnghttp2-dev
+    libpsl-dev
+    librtmp-dev
+    libssh2-1-dev
+    libssl-dev
+    libzstd-dev
+    zlib1g-dev
+    libjack-jackd2-dev
+    libunwind-dev
+    libusb-1.0-0-dev
+    libusb-dev
+    clang-19
+  WINDOWS_PKGS: >
+    brotli
+    libidn2
+    nghttp2
+    nghttp3
+    ngtcp2
+    libpsl
+    libssh2
+    libunistring
+    openssl
+    zlib
+    libjpeg-turbo
+    libpng
+    libdeflate
+    jbig2dec
+    lerc
+    liblzma
+    zstd
+    libwebp
+    tiff
+    libusb
+    giflib
+    freeglut
+    hidapi
+    sdl3
+    sdl3-image
+    sdl3-ttf
+  BREW_PKGS: >
+    heimdal
+    libnghttp3
+    libpsl
+    zlib
+    llvm
+    libtiff
+    sdl3
+    sdl3_image
+    sdl3_ttf
+    cpr
+    llvm
+
 jobs:
   build:
     strategy:
@@ -29,139 +118,85 @@ jobs:
           os: macos-15
           id: macos
 
-        - name: Android
-          os: ubuntu-24.04
-          id: android
+        # - name: Android
+        #   os: ubuntu-24.04
+        #   id: android
 
     name: ${{ matrix.config.name }} (${{ matrix.libs }})
     runs-on: ${{ matrix.config.os }}
 
     steps:
+      - name: Ensure Git Symlink Support
+        run: |
+          git config --unset-all core.symlinks
+          git config --add core.symlinks true
+
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v2
         with:
           submodules: recursive
+
+      - name: Hash Package Lists
+        id: hash
+        run: |
+          echo "LINUX_PKGS=$(echo -n "$LINUX_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
+          echo "WINDOWS_PKGS=$(echo -n "$WINDOWS_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
+          echo "BREW_PKGS=$(echo -n "$BREW_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Install vcpkg
         if: matrix.config.id == 'windows'
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0
+          doNotCache: false
 
-      - name: Install Windows Packages
+      - name: Install Leftover Windows Packages
         if: matrix.config.id == 'windows'
-        run: >
-          vcpkg install
-          brotli
-          libidn2
-          nghttp2
-          nghttp3
-          ngtcp2
-          libpsl
-          libssh2
-          libunistring
-          openssl
-          zlib
-          libjpeg-turbo
-          libpng
-          libdeflate
-          jbig2dec
-          lerc
-          liblzma
-          zstd
-          libwebp
-          tiff
-          libusb
-          giflib
-          freeglut
-          sdl3
-          sdl3-image
-          sdl3-ttf
-          llvm
+        run: vcpkg install ${{ env.WINDOWS_PKGS }}
+
 
       - name: Update Linux Packages
-        if: matrix.config.id == 'linux'
+        if: matrix.config.id == 'linux' || matrix.config.id == 'android'
         run: sudo apt-get update
 
-      - name: Install Linux Packages
-        if: matrix.config.id == 'linux'
-        run: >
-          sudo apt-get install
-          libasound2-dev
-          libdbus-1-dev
-          libdecor-0-dev
-          libdrm-dev
-          libegl-dev
-          libgbm-dev
-          libgl-dev
-          libgles-dev
-          libibus-1.0-dev
-          libpipewire-0.3-dev
-          libpulse-dev
-          libsndio-dev
-          libudev-dev
-          libwayland-dev
-          libx11-dev
-          libxcursor-dev
-          libxext-dev
-          libxfixes-dev
-          libxi-dev
-          libxinerama-dev
-          libxkbcommon-dev
-          libxrandr-dev
-          libxss-dev
-          libxt-dev
-          libxv-dev
-          libxxf86vm-dev
-          libjpeg-dev
-          libpng-dev
-          libtiff-dev
-          libwebp-dev
-          libc6-dev
-          libfreetype-dev
-          libharfbuzz-dev
-          libbrotli-dev
-          libidn2-dev
-          libkrb5-dev
-          libldap-dev
-          libnghttp2-dev
-          libpsl-dev
-          librtmp-dev
-          libssh2-1-dev
-          libssl-dev
-          libzstd-dev
-          zlib1g-dev
-          libjack-jackd2-dev
-          libunwind-dev
-          libusb-1.0-0-dev
-          libusb-dev
-          clang-19
+      - name: Install and Cache Linux Packages
+        if: matrix.config.id == 'linux' || matrix.config.id == 'android'
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: ${{ env.LINUX_PKGS }}
+          execute_install_scripts: true
+          version: ${{ steps.hash.outputs.LINUX_PKGS }}
 
-      - name: Install Homebrew
-        if: matrix.config.id == 'macos'
+      - name: Install Leftover Linux Packages
+        if: matrix.config.id == 'linux' || matrix.config.id == 'android'
+        run: sudo apt-get install ${{ env.LINUX_PKGS }}
+
+
+      - name: Setup Homebrew
+        if: matrix.config.id != 'windows'
+        id: homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Install MacOS Packages
-        if: matrix.config.id == 'macos'
-        run: >
-          brew install
-          heimdal
-          libnghttp3
-          libpsl
-          zlib
-          llvm
-          libtiff
-          sdl3
-          sdl3_image
-          sdl3_ttf
-          llvm
+      - name: Setup Homebrew Cache
+        if: matrix.config.id != 'windows'
+        id: brewcache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.homebrew.outputs.gems-path }}
+          key: brewcache-${{ matrix.config.id }}-${{ steps.homebrew.outputs.gems-hash }}
+          restore-keys: brewcache-${{ matrix.config.id }}-
+
+      - name: Install Leftover Brew Packages
+        if: matrix.config.id != 'windows'
+        run: brew install ${{ env.BREW_PKGS }}
         
+
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
         with:
           disable_annotations: true
         env:
-          SCCACHE_GHA_ENABLED: "true"
+          SCCACHE_GHA_ENABLED: 'true'
 
       - name: Setup Build Cache
         id: buildcache
@@ -174,6 +209,12 @@ jobs:
           restore-keys: |
             buildcache-${{ matrix.config.id }}-${{ matrix.libs }}-
             buildcache-${{ matrix.config.id }}-
+
+      - name: Update Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
       
       - name: Install Meson
         run: python -m pip install meson
@@ -183,20 +224,15 @@ jobs:
         with:
           cmake-version: 'latest'
 
-      - name: Update Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-          cache: 'pip'
-
       - name: Install Ninja
         uses: ashutoshvarma/setup-ninja@master
+
       
-      - name: Install JDK 17
+      - name: Install JDK 21
         if: matrix.config.id == 'android'
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
       
       - name: Setup Android SDK
@@ -204,36 +240,29 @@ jobs:
         id: android-sdk
         uses: android-actions/setup-android@v3
         with:
-          packages: 'build-tools;36.0.0-rc5 cmdline-tools;latest ndk;${{ env.NDK_VERSION }} platforms;android-29'
+          packages: 'build-tools;35.0.0 cmdline-tools;latest ndk;${{ env.NDK_VERSION }} platforms;android-33'
       
       - name: Update ENVs for Android SDK
         if: matrix.config.id == 'android'
         run: |
           echo "ANDROID_NDK_HOME=${{ env.ANDROID_NDK_HOME }}" >> "$GITHUB_ENV"
-          echo "${{ env.ANDROID_NDK_HOME }}/toolchains/llvm/prebuilt/linux-x86_64/bin" >> "$GITHUB_PATH"
+          echo "ANDROID_NDK=${{ env.ANDROID_NDK_HOME }}" >> "$GITHUB_ENV"
         env: 
           ANDROID_NDK_HOME: ${{ env.ANDROID_HOME || '/usr/local/lib/android/sdk' }}/ndk/${{ env.NDK_VERSION }}
-      
-      # TODO - cache output
-      - name: Build and Install Android OpenSSL
-        if: matrix.config.id == 'android'
-        run: |
-          git clone https://github.com/openssl/openssl --recursive
-          cd openssl
-          ./Configure android-arm64 -D__ANDROID_API__=29 -D__ANDROID_MIN_SDK_VERSION__=24
-          make
-          sudo make install
-      
+
+  
       - name: Setup
         if: steps.buildcache.outputs.cache-hit != 'true'
+        shell: bash
         run: >
           cmake
           -D CMAKE_BUILD_TYPE=RelWithDebInfo
-          -D CMAKE_FIND_ROOT_PATH=${{ github.workspace }}/openssl
           -D BUILD_SHARED_LIBS=${{ matrix.libs == 'shared' && 'ON' || 'OFF' }}
           ${{ matrix.config.id == 'android' && '-D CMAKE_SYSTEM_NAME=Android' || '' }}
           -B build
           -G Ninja
+          --log-level DEBUG
+          --fresh
       
       - name: Build
         shell: bash
@@ -242,17 +271,13 @@ jobs:
           --build build
           --target all
           -j $(nproc)
+          -v
+
 
       - name: Upload Artifacts
-        if: matrix.config.id != 'android'
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.config.id }}-${{ matrix.libs }}
-          path: build/bin
-
-      - name: Upload APK
-        if: matrix.config.id == 'android'
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ matrix.config.id }}-${{ matrix.libs }}
-          path: build/*_apk/build/outputs/apk/debug/*.apk
+          path: |
+            build/bin
+            build/android/build/outputs/apk/*/*.apk

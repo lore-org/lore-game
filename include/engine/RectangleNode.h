@@ -18,5 +18,7 @@ protected:
     RectangleNode();
 
 private:
+    using ColorNode::init;
+
     bool m_filled;
 };

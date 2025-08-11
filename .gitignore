@@ -8,3 +8,6 @@ compile_commands.json
 *.pdb
 .vscode/c_cpp_properties.json
 builddir/
+android/.gradle
+.android/
+.venv/

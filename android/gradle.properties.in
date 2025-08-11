@@ -1,0 +1,6 @@
+org.gradle.jvmargs=-Xmx1536m
+org.gradle.parallel=true
+org.gradle.warning.mode=all
+org.gradle.java.home=@JAVA_HOME@
+org.gradle.configuration-cache=true
+android.useAndroidX=true

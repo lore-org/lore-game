@@ -1,0 +1,42 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace = '@SANITISED_APP_NAMESPACE@'
+    compileSdkVersion = @CMAKE_ANDROID_API@
+    compileSdk = @CMAKE_ANDROID_API@
+
+    defaultConfig {
+        applicationId = '@SANITISED_APP_NAMESPACE@'
+        versionCode = @APP_VERSION_CODE@
+        versionName = '@CMAKE_PROJECT_VERSION@'
+        compileSdk = @CMAKE_ANDROID_API@
+
+        //noinspection ExpiredTargetSdkVersion
+        targetSdkVersion = @CMAKE_ANDROID_API@
+        minSdkVersion = @CMAKE_ANDROID_API_MIN@
+    }
+    
+    buildTypes {
+        debug {
+            minifyEnabled = false
+            debuggable = true
+        }
+        
+        release {
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file('@HOME_DIR@/.android/debug.keystore')
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-splashscreen:1.0.1'
+}

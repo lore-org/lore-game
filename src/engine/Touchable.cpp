@@ -1,28 +1,41 @@
-#include <engine/Default.h>
-
 #include <engine/Touchable.h>
+
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
+
+#include <fmt/base.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+#include <fmt/printf.h>
+
+#include <discord-rpc.hpp>
+
+#include <engine/config.hpp>
+#include <engine/Engine.h>
+#include <engine/Geometry.h>
+#include <engine/utils.hpp>
 
 #include <cstdint>
 
 #include <engine/Scheduler.h>
-#include <engine/utils.hpp>
 #include <engine/Engine.h>
 
-Touchable::Touchable() : m_isHovered(false), m_lastMouseData(nullptr) {};
+Touchable::Touchable() : m_isHovered(false), m_lastMouseData(nullptr) {}
 
 bool Touchable::init() {
     if (!Node::init()) return false;
 
     Scheduler::sharedScheduler()->scheduleUpdate(this, INT32_MIN);
     return true;
-};
+}
 
 std::shared_ptr<Touchable> Touchable::create() {
     auto ret = utils::protected_make_shared<Touchable>();
 
     if (!ret->init()) return nullptr;
     return ret;
-};
+}
 
 void Touchable::update(const double dt) {
     #define IsClicked(button) (!m_lastMouseData->button && mouseData->button)
@@ -49,4 +62,4 @@ void Touchable::update(const double dt) {
     m_lastMouseData = mouseData;
 
     Object::update(dt);
-};
+}

@@ -1,21 +1,31 @@
-#include <engine/Default.h>
-
 #include <engine/Director.h>
 
 #include <thread>
 
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include <fmt/base.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+#include <fmt/printf.h>
+#include <discord-rpc.hpp>
+
+#include <engine/config.hpp>
+#include <engine/Engine.h>
+#include <engine/Geometry.h>
+#include <engine/utils.hpp>
 #include <engine/Object.h>
 #include <engine/Scene.h>
 #include <engine/Engine.h>
 #include <engine/RectangleNode.h>
-#include <engine/utils.hpp>
 
 std::shared_ptr<Director> Director::m_instance;
 
 Director::Director() :
     m_transitionStart(SDL_GetTicks()), m_transitionDuration(0),
-    m_clearColor({ 0, 0, 0, 255 }),
-    m_entering(false) {};
+    m_entering(false),
+    m_clearColor({ 0, 0, 0, 255 }) {}
 
 bool Director::init() {
     if (!Object::init()) return false;
@@ -43,12 +53,12 @@ void Director::pushScene(std::shared_ptr<Scene> scene) {
     this->_replaceSceneWithNext();
 }
 
-void Director::pushSceneWithTransition(std::shared_ptr<Scene> scene, float duration) {
+void Director::pushSceneWithTransition(std::shared_ptr<Scene> scene, double duration) {
     m_nextScene = scene;
     this->_transitionBetweenScenes(duration);
 }
 
-void Director::popScene(unsigned int depth) {
+void Director::popScene(unsigned long long depth) {
     if (depth > m_sceneStack.size()) depth = m_sceneStack.size();
     m_nextScene = *(m_sceneStack.end() - depth);
 
@@ -60,7 +70,7 @@ void Director::popScene(unsigned int depth) {
     this->_replaceSceneWithNext();
 }
 
-void Director::popSceneWithTransition(unsigned int depth, float duration) {
+void Director::popSceneWithTransition(unsigned long long depth, double duration) {
     if (depth > m_sceneStack.size()) depth = m_sceneStack.size();
     m_nextScene = *(m_sceneStack.end() - depth);
 
@@ -78,7 +88,7 @@ void Director::replaceTopScene(std::shared_ptr<Scene> scene) {
     this->_replaceSceneWithNext();
 }
 
-void Director::replaceTopSceneWithTransition(std::shared_ptr<Scene> scene, float duration) {
+void Director::replaceTopSceneWithTransition(std::shared_ptr<Scene> scene, double duration) {
     m_nextScene = scene;
     if (m_sceneStack.size() > 0) m_sceneStack.pop_back();
     this->_transitionBetweenScenes(duration);
@@ -112,13 +122,13 @@ void Director::draw(const double dt) {
         m_clearColor.b,
         m_clearColor.a
     )) {
-        PrintSDLError();
+        LogSDLError();
         return;
     }
     if (!SDL_RenderClear(renderer)) {
-        PrintSDLError();
+        LogSDLError();
         return;
-    };
+    }
     
     if (m_displayedScene) m_displayedScene->draw(dt);
     
@@ -127,19 +137,19 @@ void Director::draw(const double dt) {
     auto normalisedOpacity = m_entering ?
         this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<double>(SDL_GetTicks())) :
         std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<double>(SDL_GetTicks())));
-    m_transitionFader->setOpacity(normalisedOpacity * 255);
+    m_transitionFader->setOpacity(static_cast<unsigned char>(normalisedOpacity * 255));
 
     m_transitionFader->draw(dt);
-};
+}
 
-void Director::_transitionBetweenScenes(float duration) {
+void Director::_transitionBetweenScenes(double duration) {
     std::thread _transitionThread([this, duration]() {
         m_transitionDuration = duration * 1000;
 
         m_entering = true;
         m_transitionStart = SDL_GetTicks();
 
-        SDL_DelayPrecise(m_transitionDuration * 1e6);
+        SDL_DelayPrecise(static_cast<unsigned long long>(m_transitionDuration * 1e6));
         this->_replaceSceneWithNext();
 
         m_entering = false;

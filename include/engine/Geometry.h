@@ -11,55 +11,53 @@ class Size;
 
 class Point : public std::enable_shared_from_this<Point> {
 public:
-    float x;
-    float y;
+    double x;
+    double y;
 
     Point();
-    Point(float dim);
-    Point(float x, float y);
-    Point(const Point& point);
+    Point(double dim);
+    Point(double x, double y);
     Point(const Size& size);
 
     // In Radians
-    static std::shared_ptr<Point> createFromAngle(float angle);
+    static std::shared_ptr<Point> createFromAngle(double angle);
     
     Point& operator+=(const Point& right);
     Point& operator-=(const Point& right);
     Point operator+(const Point& right) const;
     Point operator-(const Point& right) const;
     Point operator-() const;
-    Point operator*(float a) const;
-    Point operator/(float a) const;
+    Point operator*(double a) const;
+    Point operator/(double a) const;
     bool operator==(const Point& right) const;
 
     operator std::string() const;
     operator SDL_FPoint() const;
 
-    void setPoint(float x, float y);
+    void setPoint(double x, double y);
     bool equals(const Point& target) const;
     
-    bool fuzzyEquals(const Point& target, float variance) const;
+    bool fuzzyEquals(const Point& target, double variance) const;
 
-    float getLength() const;
+    double getLength() const;
 
-    float getDistance(const Point& other) const;
+    double getDistance(const Point& other) const;
 
-    float getAngle() const;
+    double getAngle() const;
 
     Point normalise() const;
 
-    Point rotateByAngle(float angle);
+    Point rotateByAngle(double angle);
 };
 
 class Size : public std::enable_shared_from_this<Size> {
 public:
-    float width;
-    float height;
+    double width;
+    double height;
 
     Size();
-    Size(float dim);
-    Size(float width, float height);
-    Size(const Size& size);
+    Size(double dim);
+    Size(double width, double height);
     Size(const Point& point);
 
     Size& operator+=(const Size& right);
@@ -67,14 +65,14 @@ public:
     Size operator+(const Size& right);
     Size operator-(const Size& right);
     Size operator-() const;
-    Size operator*(float a) const;
-    Size operator/(float a) const;
+    Size operator*(double a) const;
+    Size operator/(double a) const;
     bool operator==(const Size& right) const;
 
     operator std::string() const;
     operator SDL_FPoint() const;
 
-    void setSize(float width, float height);
+    void setSize(double width, double height);
     bool equals(const Size& target) const;
 };
 
@@ -84,9 +82,8 @@ public:
     Size size;
 
     Rect();
-    Rect(float x, float y, float width, float height);
+    Rect(double x, double y, double width, double height);
     Rect(const Point& origin, const Size& size);
-    Rect(const Rect& other);
 
     bool operator==(const Rect& right) const;
 
@@ -94,22 +91,22 @@ public:
 
     operator std::string() const;
 
-    void setRect(float x, float y, float width, float height);
+    void setRect(double x, double y, double width, double height);
     void setOrigin(const Point& point);
     void setSize(const Size& size);
 
     bool equals(const Rect& other) const;
-    float getMinX() const;
-    float getMaxX() const;
-    float getMinY() const;
-    float getMaxY() const;
-    std::tuple<float, float, float, float> getBounds() const;
+    double getMinX() const;
+    double getMaxX() const;
+    double getMinY() const;
+    double getMaxY() const;
+    std::tuple<double, double, double, double> getBounds() const;
 
     bool containsPoint(const Point& point) const;
     bool intersectsRect(const Rect& rect) const;
 
-    float getX() const;
-    float getY() const;
-    float getWidth() const;
-    float getHeight() const;
+    double getX() const;
+    double getY() const;
+    double getWidth() const;
+    double getHeight() const;
 };

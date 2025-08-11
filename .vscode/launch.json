@@ -12,7 +12,7 @@
             "cwd": "${workspaceFolder}/build/bin",
             "preLaunchTask": "Build",
             // "internalConsoleOptions": "openOnSessionStart",
-            "program": "${workspaceFolder}/build/bin/lore-game.exe"
+            "program": "${workspaceFolder}/build/bin/Lore Game.exe"
         }
     ]
 }

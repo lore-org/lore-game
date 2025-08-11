@@ -5,7 +5,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "command": "cmake --build build --config Debug",
+            "command": "cmake --build build --target all --config Debug -j $(nproc) -v ",
             "label": "Build",
             "type": "shell"
         }

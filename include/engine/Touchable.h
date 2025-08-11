@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Node.h"
-#include "Engine.h"
-#include "utils.hpp"
+#include <engine/Engine.h>
+#include <engine/utils.hpp>
 
 class Touchable : public Node {
 public:

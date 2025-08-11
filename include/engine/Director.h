@@ -16,15 +16,15 @@ public:
 
     void pushScene(std::shared_ptr<Scene> scene);
     // Duration is in seconds
-    void pushSceneWithTransition(std::shared_ptr<Scene> scene, float duration = 5);
+    void pushSceneWithTransition(std::shared_ptr<Scene> scene, double duration = 5);
 
-    void popScene(unsigned int depth = 1);
+    void popScene(unsigned long long depth = 1);
     // Duration is in seconds
-    void popSceneWithTransition(unsigned int depth = 1, float duration = 5);
+    void popSceneWithTransition(unsigned long long depth = 1, double duration = 5);
 
     void replaceTopScene(std::shared_ptr<Scene> scene);
     // Duration is in seconds
-    void replaceTopSceneWithTransition(std::shared_ptr<Scene> scene, float duration = 5);
+    void replaceTopSceneWithTransition(std::shared_ptr<Scene> scene, double duration = 5);
 
     std::shared_ptr<Scene> getTopScene();
     std::shared_ptr<Scene> getDisplayedScene();
@@ -51,7 +51,7 @@ protected:
 private:
     static std::shared_ptr<Director> m_instance;
 
-    void _transitionBetweenScenes(float duration = 5);
+    void _transitionBetweenScenes(double duration = 5);
 
     void _replaceSceneWithNext();
 
