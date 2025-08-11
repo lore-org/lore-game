@@ -137,6 +137,7 @@ jobs:
         with:
           submodules: recursive
 
+
       - name: Hash Package Lists
         id: hash
         run: |
@@ -228,6 +229,9 @@ jobs:
       - name: Install Ninja
         uses: ashutoshvarma/setup-ninja@master
 
+      - name: Install NASM
+        uses: ilammy/setup-nasm@v1
+
       
       - name: Install JDK 21
         if: matrix.config.id == 'android'
@@ -281,4 +285,3 @@ jobs:
           name: build-${{ matrix.config.id }}-${{ matrix.libs }}
           path: |
             build/bin
-            build/android/build/outputs/apk/*/*.apk

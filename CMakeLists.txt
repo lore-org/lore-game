@@ -191,6 +191,8 @@ function(add_libs_from_path PATH)
             endif()
 
             list(GET CMAKE_FIND_LIBRARY_SUFFIXES 0 WANTED_LIBRARY_SUFFIX)
+            message(STATUS "CMAKE_FIND_LIBRARY_SUFFIXES: ${CMAKE_FIND_LIBRARY_SUFFIXES}")
+            message(STATUS "WANTED_LIBRARY_SUFFIX:       ${WANTED_LIBRARY_SUFFIX}")
             file(GLOB LIBRARY_FILES ${LIB_PATH}/*${WANTED_LIBRARY_SUFFIX})
 
             foreach (LIBRARY IN LISTS LIBRARY_FILES)
