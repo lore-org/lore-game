@@ -83,52 +83,6 @@ endif()
 
 set(DEBUG "${DEBUG}" CACHE BOOL "Whether to build debug libraries or not")
 
-function(normalise_arch ARCH RESULT_VAR)
-    string(TOLOWER "${ARCH}" ARCH)
-    string(REGEX REPLACE "[^a-zA-Z0-9]" "_" ARCH "${ARCH}")
-
-
-    set(x64_ARCH_LIST x64
-        x86_64
-        amd64
-        hurd-amd64
-        kfreebsd-amd64
-    )
-
-    set(x32_ARCH_LIST x32
-        x86
-    )
-
-    set(arm_ARCH_LIST arm
-        armel
-        armhf
-    )
-
-    set(arm64_ARCH_LIST arm64
-        aarch64
-    )
-    
-
-    set(ARCH_LISTS
-        x64_ARCH_LIST
-        x32_ARCH_LIST
-        arm_ARCH_LIST
-        arm64_ARCH_LIST
-    )
-    
-    foreach(ARCH_LIST IN LISTS ARCH_LISTS)
-        if (ARCH IN_LIST "${ARCH_LIST}")
-            list(GET "${ARCH_LIST}" 0 NORMALISED_ARCH)
-            set(ARCH "${NORMALISED_ARCH}")
-        endif()
-    endforeach()
-
-
-    set("${RESULT_VAR}" ${ARCH} PARENT_SCOPE)
-endfunction()
-
-normalise_arch("${CMAKE_SYSTEM_PROCESSOR}" NORMALISED_CMAKE_SYSTEM_PROCESSOR)
-
 # Setup Python virtual env
 
 find_program(PYTHON python3 py python REQUIRED)
@@ -173,6 +127,45 @@ endif()
 
 # Getting pre-installed libraries
 
+function(normalise_arch ARCH RESULT_VAR)
+    string(TOLOWER "${ARCH}" ARCH)
+    string(REGEX REPLACE "[^a-zA-Z0-9]" "_" ARCH "${ARCH}")
+
+    set(x64_ARCH_LIST x64
+        x86_64
+        amd64
+        hurd-amd64
+        kfreebsd-amd64
+    )
+    set(x32_ARCH_LIST x32
+        x86
+    )
+    set(arm_ARCH_LIST arm
+        armel
+        armhf
+    )
+    set(arm64_ARCH_LIST arm64
+        aarch64
+    )
+
+    set(ARCH_LISTS
+        x64_ARCH_LIST
+        x32_ARCH_LIST
+        arm_ARCH_LIST
+        arm64_ARCH_LIST
+    )
+    foreach(ARCH_LIST IN LISTS ARCH_LISTS)
+        if (ARCH IN_LIST "${ARCH_LIST}")
+            list(GET "${ARCH_LIST}" 0 NORMALISED_ARCH)
+            set(ARCH "${NORMALISED_ARCH}")
+        endif()
+    endforeach()
+
+    set("${RESULT_VAR}" ${ARCH} PARENT_SCOPE)
+endfunction()
+
+normalise_arch("${CMAKE_SYSTEM_PROCESSOR}" NORMALISED_CMAKE_SYSTEM_PROCESSOR)
+
 # TODO - add windows support
 function(get_lib_arch LIB RESULT_VAR)
     find_program(FILE file)
@@ -193,14 +186,18 @@ function(get_lib_arch LIB RESULT_VAR)
         string(REGEX MATCH "[^ ]+$" OUTPUT "${FULL_ARCH}") # get isolated arch at end of string
         string(TOLOWER "${OUTPUT}" OUTPUT)
 
-        normalise_arch(NORMALISED_OUTPUT "${OUTPUT}")
+        normalise_arch("${OUTPUT}" NORMALISED_OUTPUT)
 
         set("${RESULT_VAR}" "${NORMALISED_OUTPUT}" PARENT_SCOPE)
     endif()
 endfunction()
 
-if (BUILD_SHARED_LIBS)
-    list(APPEND BANNED_LIBRARIES libusb-1.0)
+if (NOT BUILD_SHARED_LIBS)
+    list(APPEND BANNED_LIBRARIES
+        libusb-1.0
+        libusb-1
+        libusb
+    )
 endif()
 
 function(add_libs_from_path PATH)
