@@ -128,8 +128,8 @@ jobs:
     steps:
       - name: Ensure Git Symlink Support
         run: |
-          git config --unset-all core.symlinks
-          git config --add core.symlinks true
+          git config --global --unset-all core.symlinks
+          git config --global --add core.symlinks true
 
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v2
