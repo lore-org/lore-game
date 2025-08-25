@@ -49,7 +49,7 @@ std::shared_ptr<RectangleNode> RectangleNode::createWithRect(Rect rectangle) {
     return ret;
 }
 
-void RectangleNode::draw(const double dt) {
+void RectangleNode::draw(const long double dt) {
     ColorNode::draw(dt);
 
     auto renderer = Engine::sharedInstance()->getRenderer();

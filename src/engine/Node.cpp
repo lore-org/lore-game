@@ -42,20 +42,20 @@ std::shared_ptr<Node> Node::create() {
     return ret;
 }
 
-void Node::setZOrder(long long zOrder) {
+void Node::setZOrder(int64_t zOrder) {
     m_zOrder = zOrder;
     if (m_parent) m_parent->sortAllChildren();
 }
 
-long long Node::getZOrder() {
+int64_t Node::getZOrder() {
     return m_zOrder;
 }
 
-void Node::setScale(double scale) {
+void Node::setScale(long double scale) {
     m_scale = scale;
 }
 
-double Node::getScale() {
+long double Node::getScale() {
     return m_scale;
 }
 
@@ -67,24 +67,24 @@ Point Node::getPosition() const {
     return m_position;
 }
 
-void Node::setPosition(double x, double y) {
+void Node::setPosition(long double x, long double y) {
     m_position.x = x;
     m_position.y = y;
 }
 
-void Node::setPositionX(double x) {
+void Node::setPositionX(long double x) {
     m_position.x = x;
 }
 
-double Node::getPositionX() const {
+long double Node::getPositionX() const {
     return m_position.x;
 }
 
-void Node::setPositionY(double y) {
+void Node::setPositionY(long double y) {
     m_position.y = y;
 }
 
-double Node::getPositionY() const {
+long double Node::getPositionY() const {
     return m_position.y;
 }
 
@@ -112,11 +112,11 @@ bool Node::isVisible() const {
     return m_visible;
 }
 
-void Node::setRotation(double rotation) {
+void Node::setRotation(long double rotation) {
     m_rotation = rotation;
 }
 
-double Node::getRotation() const {
+long double Node::getRotation() const {
     return m_rotation;
 }
 
@@ -126,17 +126,17 @@ void Node::addChild(std::shared_ptr<Node> child) {
     this->sortAllChildren();
 }
 
-void Node::addChild(std::shared_ptr<Node> child, long long zOrder) {
+void Node::addChild(std::shared_ptr<Node> child, int64_t zOrder) {
     child->setZOrder(zOrder);
     this->addChild(child);
 }
 
-void Node::addChild(std::shared_ptr<Node> child, long long zOrder, long long tag) {
+void Node::addChild(std::shared_ptr<Node> child, int64_t zOrder, int64_t tag) {
     this->setTag(tag);
     this->addChild(child, zOrder);
 }
 
-std::shared_ptr<Node> Node::getChildByTag(long long tag) {
+std::shared_ptr<Node> Node::getChildByTag(int64_t tag) {
     auto find = std::ranges::find_if(
         m_children,
         [tag](std::shared_ptr<Node> node) { return node->m_tag == tag; }
@@ -150,7 +150,7 @@ std::vector<std::shared_ptr<Node>> Node::getChildren() {
     return m_children;
 }
 
-unsigned long long Node::getChildrenCount() const {
+uint64_t Node::getChildrenCount() const {
     return m_children.size();
 }
 
@@ -174,7 +174,7 @@ void Node::removeChild(std::shared_ptr<Node> child) {
     child->m_parent = nullptr;
 }
 
-void Node::removeChildByTag(long long tag) {
+void Node::removeChildByTag(int64_t tag) {
     auto child = this->getChildByTag(tag);
     if (child) this->removeChild(child);
 }
@@ -186,7 +186,7 @@ void Node::removeAllChildren() {
     );
 }
 
-void Node::reorderChild(std::shared_ptr<Node> child, long long zOrder) {
+void Node::reorderChild(std::shared_ptr<Node> child, int64_t zOrder) {
     auto idx = this->_getIndexOfChild(child);
     if (idx > 0) m_children.at(idx)->setZOrder(zOrder);
     this->sortAllChildren();
@@ -199,7 +199,7 @@ void Node::sortAllChildren() {
     );
 }
 
-void Node::setTag(long long tag) {
+void Node::setTag(int64_t tag) {
     m_tag = tag;
 }
 
@@ -216,7 +216,7 @@ void Node::cleanup() {
     this->removeAllChildren();
 }
 
-void Node::draw(const double dt) {
+void Node::draw(const long double dt) {
     std::ranges::for_each(
         m_children,
         [dt](std::shared_ptr<Node> child) { child->draw(dt); }

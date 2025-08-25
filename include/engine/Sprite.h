@@ -37,7 +37,7 @@ public:
     void setTexture(SDL_Texture* texture);
     SDL_Texture* getTexture();
 
-    virtual void draw(const double dt) override;
+    virtual void draw(const long double dt) override;
 
 protected:
     Sprite();

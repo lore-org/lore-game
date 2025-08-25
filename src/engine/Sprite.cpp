@@ -39,8 +39,8 @@ bool Sprite::init(SDL_Texture* texture) {
     if (!texture) return false;
 
     this->setContentSize({
-        static_cast<double>(texture->w),
-        static_cast<double>(texture->h)
+        static_cast<long double>(texture->w),
+        static_cast<long double>(texture->h)
     });
 
     m_texture = texture;
@@ -110,7 +110,7 @@ SDL_Texture* Sprite::getTexture() {
     return m_texture;
 }
 
-void Sprite::draw(const double dt) {
+void Sprite::draw(const long double dt) {
     ColorNode::draw(dt);
 
     auto renderer = Engine::sharedInstance()->getRenderer();

@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <atomic>
+#include <stdfloat>
 
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3/SDL_stdinc.h>
@@ -11,35 +12,38 @@
 
 #include <engine/Geometry.h>
 
+#define NanosecondsPerSecond 1e9L
+#define SecondsPerNanosecond 1e-9L
+
 class Engine : public std::enable_shared_from_this<Engine> {
 public:
     static std::shared_ptr<Engine> sharedInstance();
 
     // Gets the target TPS
-    double getTicksPerSecond();
+    long double getTicksPerSecond();
     // Sets the target TPS -- default is 240
-    void setTicksPerSecond(double tps);
+    void setTicksPerSecond(long double tps);
     // Sets TPS to 240
     void resetTicksPerSecond();
 
     // Gets the target SPT
-    double getSecondsPerTick();
+    long double getSecondsPerTick();
     // Sets the target SPF -- default is 1 / 240
-    void setSecondsPerTick(double spt);
+    void setSecondsPerTick(long double spt);
     // Sets SPT to 1 / 240
     void resetSecondsPerTick();
 
     // Gets the target FPS
-    double getFramesPerSecond();
+    long double getFramesPerSecond();
     // Sets the target FPS -- 0 uses the monitor's target hz, otherwise known as vsync -- default is 0
-    void setFramesPerSecond(double fps);
+    void setFramesPerSecond(long double fps);
     // Sets FPS to 0
     void resetFramesPerSecond();
 
     // Gets the target SPF
-    double getSecondsPerFrame();
+    long double getSecondsPerFrame();
     // Sets the target SPF -- 0 uses the monitor's target hz, otherwise known as vsync -- default is 0
-    void setSecondsPerFrame(double spf);
+    void setSecondsPerFrame(long double spf);
     // Sets SPF to 0
     void resetSecondsPerFrame();
 
@@ -49,9 +53,9 @@ public:
     void showTPS(bool show);
 
     // How many decimal points should follow the FPS/TPS display -- default is 0
-    void setTimeDisplayPrecision(unsigned long long precision);
+    void setTimeDisplayPrecision(uint64_t precision);
     // How many samples should the FPS/TPS display average -- default is 10
-    void setTimeDisplaySampleSize(unsigned long long size);
+    void setTimeDisplaySampleSize(uint64_t size);
 
     void setWindowSize(Size size);
     // Gets the stored window size that is updated after each frame
@@ -82,7 +86,7 @@ public:
     // Be sure to run this in the main thread
     static std::shared_ptr<MouseData> getMouseData();
 
-    TTF_Font* getOrCreateFont(std::string file, double point = 100);
+    TTF_Font* getOrCreateFont(std::string file, long double point = 100);
 
     void setupEngine();
 
@@ -93,15 +97,15 @@ protected:
 
     // ---- Target Updates ----
         
-    double m_ticksPerSecond;
-    double m_secondsPerTick;
-    double m_ticksPerMillisecond;
-    double m_millisecondsPerTick;
+    long double m_ticksPerSecond;
+    long double m_secondsPerTick;
+    long double m_ticksPerNanosecond;
+    long double m_nanosecondsPerTick;
 
-    double m_framesPerSecond;
-    double m_secondsPerFrame;
-    double m_framesPerMillisecond;
-    double m_millisecondsPerFrame;
+    long double m_framesPerSecond;
+    long double m_secondsPerFrame;
+    long double m_framesPerNanosecond;
+    long double m_nanosecondsPerFrame;
 
     bool m_usingVsync;
 
@@ -137,16 +141,16 @@ protected:
     bool m_showTPS;
     TTF_Text* m_tpsText;
 
-    unsigned long long m_sampleSize;
-    double m_deltaAverageMult;
+    uint64_t m_sampleSize;
+    long double m_deltaAverageMult;
 
-    std::vector<double> m_frameDeltas;
-    std::vector<double> m_tickDeltas;
+    std::vector<long double> m_frameDeltas;
+    std::vector<long double> m_tickDeltas;
 
-    std::atomic<double> m_frameAvg;
-    std::atomic<double> m_tickAvg;
+    std::atomic<long double> m_frameAvg;
+    std::atomic<long double> m_tickAvg;
 
-    unsigned long long m_displayPrecision;
+    uint64_t m_displayPrecision;
 
     // -----------------
 

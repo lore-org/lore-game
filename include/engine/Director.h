@@ -16,22 +16,22 @@ public:
 
     void pushScene(std::shared_ptr<Scene> scene);
     // Duration is in seconds
-    void pushSceneWithTransition(std::shared_ptr<Scene> scene, double duration = 5);
+    void pushSceneWithTransition(std::shared_ptr<Scene> scene, long double duration = 5);
 
-    void popScene(unsigned long long depth = 1);
+    void popScene(uint64_t depth = 1);
     // Duration is in seconds
-    void popSceneWithTransition(unsigned long long depth = 1, double duration = 5);
+    void popSceneWithTransition(uint64_t depth = 1, long double duration = 5);
 
     void replaceTopScene(std::shared_ptr<Scene> scene);
     // Duration is in seconds
-    void replaceTopSceneWithTransition(std::shared_ptr<Scene> scene, double duration = 5);
+    void replaceTopSceneWithTransition(std::shared_ptr<Scene> scene, long double duration = 5);
 
     std::shared_ptr<Scene> getTopScene();
     std::shared_ptr<Scene> getDisplayedScene();
     size_t getNumberOfScenes();
     std::vector<std::shared_ptr<Scene>> getSceneStack();
     
-    virtual void draw(const double dt);
+    virtual void draw(const long double dt);
 
 protected:
     Director();
@@ -42,8 +42,8 @@ protected:
     std::shared_ptr<Scene> m_nextScene;
 
     std::shared_ptr<RectangleNode> m_transitionFader;
-    double m_transitionStart;
-    double m_transitionDuration;
+    long double m_transitionStart;
+    long double m_transitionDuration;
     bool m_entering;
 
     ColorNode::Color4 m_clearColor;
@@ -51,7 +51,7 @@ protected:
 private:
     static std::shared_ptr<Director> m_instance;
 
-    void _transitionBetweenScenes(double duration = 5);
+    void _transitionBetweenScenes(long double duration = 5);
 
     void _replaceSceneWithNext();
 

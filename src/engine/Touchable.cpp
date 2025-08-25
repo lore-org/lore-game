@@ -26,7 +26,7 @@ Touchable::Touchable() : m_isHovered(false), m_lastMouseData(nullptr) {}
 bool Touchable::init() {
     if (!Node::init()) return false;
 
-    Scheduler::sharedScheduler()->scheduleUpdate(this, INT32_MIN);
+    Scheduler::sharedScheduler()->scheduleUpdate(this, INT64_MIN);
     return true;
 }
 
@@ -37,7 +37,7 @@ std::shared_ptr<Touchable> Touchable::create() {
     return ret;
 }
 
-void Touchable::update(const double dt) {
+void Touchable::update(const long double dt) {
     #define IsClicked(button) (!m_lastMouseData->button && mouseData->button)
     #define IsReleased(button) (m_lastMouseData->button && !mouseData->button)
 

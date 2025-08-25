@@ -12,7 +12,7 @@ public:
 
     static std::shared_ptr<RectangleNode> createWithRect(Rect rectangle);
 
-    virtual void draw(const double dt) override;
+    virtual void draw(const long double dt) override;
 
 protected:
     RectangleNode();

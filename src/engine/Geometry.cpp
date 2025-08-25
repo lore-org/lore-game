@@ -20,13 +20,13 @@
 #include <cmath>
 #include <memory>
 
-Point::Point(double dim) : x(dim), y(dim) {}
+Point::Point(long double dim) : x(dim), y(dim) {}
 
-Point::Point(double x, double y) : x(x), y(y) {}
+Point::Point(long double x, long double y) : x(x), y(y) {}
 
 Point::Point(const Size& size) : x(size.width), y(size.height) {}
 
-std::shared_ptr<Point> Point::createFromAngle(double angle) {
+std::shared_ptr<Point> Point::createFromAngle(long double angle) {
     return std::make_shared<Point>(cos(angle), sin(angle));
 }
 
@@ -52,11 +52,11 @@ Point Point::operator-() const {
     return Point(-x, -y);
 }
 
-Point Point::operator*(double a) const {
+Point Point::operator*(long double a) const {
     return Point(x * a, y * a);
 }
 
-Point Point::operator/(double a) const {
+Point Point::operator/(long double a) const {
     return Point(x / a, y / a);
 }
 
@@ -72,7 +72,7 @@ Point::operator SDL_FPoint() const {
     return { static_cast<float>(x), static_cast<float>(y) };
 }
 
-void Point::setPoint(double x, double y) {
+void Point::setPoint(long double x, long double y) {
     this->x = x;
     this->y = y;
 }
@@ -81,19 +81,19 @@ bool Point::equals(const Point& target) const {
     return x == target.x && y == target.y;
 }
 
-bool Point::fuzzyEquals(const Point& target, double variance) const {
+bool Point::fuzzyEquals(const Point& target, long double variance) const {
     return (x - variance <= target.x && target.x <= x + variance) && (y - variance <= target.y && target.y <= y + variance);
 }
 
-double Point::getLength() const {
+long double Point::getLength() const {
     return sqrtf(x*x + y*y);
 }
 
-double Point::getDistance(const Point& other) const {
+long double Point::getDistance(const Point& other) const {
     return (*this - other).getLength();
 }
 
-double Point::getAngle() const {
+long double Point::getAngle() const {
     return atan2f(y, x);
 }
 
@@ -101,20 +101,20 @@ Point Point::normalise() const {
     return *this / getLength();
 }
 
-Point Point::rotateByAngle(double angle) {
-    double oldAngle = this->getAngle();
-    double newAngle = oldAngle - angle; // Clockwise rotation
+Point Point::rotateByAngle(long double angle) {
+    long double oldAngle = this->getAngle();
+    long double newAngle = oldAngle - angle; // Clockwise rotation
 
-    double length = this->getLength();
+    long double length = this->getLength();
     this->setPoint(cos(angle) * length, sin(angle) * length);
 
     return *this;
 }
 
 
-Size::Size(double dim) : width(dim), height(dim) {}
+Size::Size(long double dim) : width(dim), height(dim) {}
 
-Size::Size(double width, double height) : width(width), height(height) {}
+Size::Size(long double width, long double height) : width(width), height(height) {}
 
 Size::Size(const Point& point) : width(point.x), height(point.y) {}
 
@@ -141,11 +141,11 @@ Size Size::operator-() const {
     return Size(-width, -height);
 }
 
-Size Size::operator*(double a) const {
+Size Size::operator*(long double a) const {
     return Size(width * a, height * a);
 }
 
-Size Size::operator/(double a) const {
+Size Size::operator/(long double a) const {
     return Size(width / a, height / a);
 }
 
@@ -161,7 +161,7 @@ Size::operator SDL_FPoint() const {
     return { static_cast<float>(width), static_cast<float>(height) };
 }
 
-void Size::setSize(double width, double height) {
+void Size::setSize(long double width, long double height) {
     this->width = width;
     this->height = height;
 }
@@ -171,7 +171,7 @@ bool Size::equals(const Size& target) const {
 }
 
 
-Rect::Rect(double x, double y, double width, double height) : origin(x, y), size(width, height) {}
+Rect::Rect(long double x, long double y, long double width, long double height) : origin(x, y), size(width, height) {}
 
 Rect::Rect(const Point& origin, const Size& size) : origin(origin), size(size) {}
 
@@ -196,7 +196,7 @@ Rect::operator std::string() const {
     );
 }
 
-void Rect::setRect(double x, double y, double width, double height) {
+void Rect::setRect(long double x, long double y, long double width, long double height) {
     this->setOrigin({ x, y });
     this->setSize({ width, height });
 }
@@ -213,23 +213,23 @@ bool Rect::equals(const Rect& other) const {
     return origin == other.origin && size == other.size;
 }
 
-double Rect::getMinX() const {
+long double Rect::getMinX() const {
     return this->getX() - (this->getWidth() / 2.f);
 }
 
-double Rect::getMaxX() const {
+long double Rect::getMaxX() const {
     return this->getX() + (this->getWidth() / 2.f);
 }
 
-double Rect::getMinY() const {
+long double Rect::getMinY() const {
     return this->getY() + (this->getHeight() / 2.f);
 }
 
-double Rect::getMaxY() const {
+long double Rect::getMaxY() const {
     return this->getY() - (this->getHeight() / 2.f);
 }
 
-std::tuple<double, double, double, double> Rect::getBounds() const {
+std::tuple<long double, long double, long double, long double> Rect::getBounds() const {
     return std::make_tuple(this->getMinX(), this->getMaxX(), this->getMinY(), this->getMaxY());
 }
 
@@ -246,18 +246,18 @@ bool Rect::intersectsRect(const Rect& rect) const {
     );
 }
 
-double Rect::getX() const {
+long double Rect::getX() const {
     return origin.x;
 }
 
-double Rect::getY() const {
+long double Rect::getY() const {
     return origin.y;
 }
 
-double Rect::getWidth() const {
+long double Rect::getWidth() const {
     return size.width;
 }
 
-double Rect::getHeight() const {
+long double Rect::getHeight() const {
     return size.height;
 }

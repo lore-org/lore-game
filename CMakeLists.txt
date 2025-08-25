@@ -24,6 +24,31 @@ set(APP_NAME "${PROJECT_NAME}" CACHE STRING "The name given to the application."
 
 set(ANDROID_SPLASH_BACKGROUND_COLOR "#FFFFFF" CACHE STRING "The background colour for the Android splash screen.")
 
+option(IMAGE_DEFAULTS "Support loading JPEG, PNG, and WEBP images" ON)
+option(IMAGE_EXTRAS "Support loading AVIF, JPEG, PNG, SVG, and WEBP images" OFF)
+option(IMAGE_ALL "Support loading all images supported by SDL3_image" OFF)
+
+# for more options, set the values below:
+# IMAGE_AVIF
+# IMAGE_BMP
+# IMAGE_GIF
+# IMAGE_JPG
+# IMAGE_LBM
+# IMAGE_PCX
+# IMAGE_PNG
+# IMAGE_PNM
+# IMAGE_QOI
+# IMAGE_SVG
+# IMAGE_TGA
+# IMAGE_TIF
+# IMAGE_WEBP
+# IMAGE_XCF
+# IMAGE_XPM
+# IMAGE_XV
+
+set(CPM_VERSION 0.42.0 CACHE STRING "Version of CPM to download")
+set(CPM_HASH eed8973c5595c72d9ba785a5472e9750 CACHE STRING "Hash of the specific version of CPM")
+
 # -------------------
 
 # Non-configurable variables
@@ -60,12 +85,6 @@ endif()
 file(REAL_PATH "~" HOME_DIR EXPAND_TILDE)
 file(TO_CMAKE_PATH ${HOME_DIR} HOME_DIR)
 
-if (BUILD_SHARED_LIBS)
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX} ${CMAKE_STATIC_LIBRARY_SUFFIX})
-else()
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX} ${CMAKE_SHARED_LIBRARY_SUFFIX})
-endif()
-
 find_program(COMPILER_LAUNCHER sccache)
 if (NOT COMPILER_LAUNCHER)
     find_program(COMPILER_LAUNCHER ccache)
@@ -82,6 +101,96 @@ else()
 endif()
 
 set(DEBUG "${DEBUG}" CACHE BOOL "Whether to build debug libraries or not")
+
+function(set_if_empty VARIABLE VALUE)
+    if (NOT DEFINED "${VARIABLE}")
+        set("${VARIABLE}" "${VALUE}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+if (IMAGE_DEFAULTS)
+    set_if_empty(IMAGE_JPG  ON)
+    set_if_empty(IMAGE_PNG  ON)
+    set_if_empty(IMAGE_WEBP ON)
+endif()
+
+if (IMAGE_EXTRAS)
+    set_if_empty(IMAGE_AVIF ON)
+    set_if_empty(IMAGE_JPG  ON)
+    set_if_empty(IMAGE_JXL  ON)
+    set_if_empty(IMAGE_PNG  ON)
+    set_if_empty(IMAGE_SVG  ON)
+    set_if_empty(IMAGE_WEBP ON)
+endif()
+
+if (IMAGE_ALL)
+    set_if_empty(IMAGE_AVIF ON)
+    set_if_empty(IMAGE_BMP  ON)
+    set_if_empty(IMAGE_GIF  ON)
+    set_if_empty(IMAGE_JPG  ON)
+    set_if_empty(IMAGE_JXL  ON)
+    set_if_empty(IMAGE_LBM  ON)
+    set_if_empty(IMAGE_PCX  ON)
+    set_if_empty(IMAGE_PNG  ON)
+    set_if_empty(IMAGE_PNM  ON)
+    set_if_empty(IMAGE_QOI  ON)
+    set_if_empty(IMAGE_SVG  ON)
+    set_if_empty(IMAGE_TGA  ON)
+    set_if_empty(IMAGE_TIF  ON)
+    set_if_empty(IMAGE_WEBP ON)
+    set_if_empty(IMAGE_XCF  ON)
+    set_if_empty(IMAGE_XPM  ON)
+    set_if_empty(IMAGE_XV   ON)
+endif()
+
+set_if_empty(IMAGE_AVIF OFF)
+set_if_empty(IMAGE_BMP  OFF)
+set_if_empty(IMAGE_GIF  OFF)
+set_if_empty(IMAGE_JPG  OFF)
+set_if_empty(IMAGE_JXL  OFF)
+set_if_empty(IMAGE_LBM  OFF)
+set_if_empty(IMAGE_PCX  OFF)
+set_if_empty(IMAGE_PNG  OFF)
+set_if_empty(IMAGE_PNM  OFF)
+set_if_empty(IMAGE_QOI  OFF)
+set_if_empty(IMAGE_SVG  OFF)
+set_if_empty(IMAGE_TGA  OFF)
+set_if_empty(IMAGE_TIF  OFF)
+set_if_empty(IMAGE_WEBP OFF)
+set_if_empty(IMAGE_XCF  OFF)
+set_if_empty(IMAGE_XPM  OFF)
+set_if_empty(IMAGE_XV   OFF)
+
+set(LIBCXX_ENABLE_SHARED OFF)
+set(LIBCXX_ENABLE_STATIC ON)
+
+# Download CPM
+
+set_if_empty(CPM_VERSION 0.42.0)
+set_if_empty(CPM_HASH eed8973c5595c72d9ba785a5472e9750)
+
+set(_cpm_file "${CMAKE_BINARY_DIR}/get_cpm.cmake")
+
+if (EXISTS "${_cpm_file}")
+    file(MD5 "${_cpm_file}" CURRENT_CPM_HASH)
+
+    if (CURRENT_CPM_HASH STREQUAL CPM_HASH)
+        set(CURRENT_CPM_VALID TRUE)
+        message(STATUS "Found existing CPM v${CPM_VERSION} (MD5: ${CPM_HASH})")
+    endif()
+endif()
+
+if (NOT CURRENT_CPM_VALID)
+    message(STATUS "Downloading CPM v${CPM_VERSION} (MD5: ${CPM_HASH})")
+    file(DOWNLOAD
+        "https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_VERSION}/get_cpm.cmake"
+        "${_cpm_file}"
+        EXPECTED_HASH "MD5=${CPM_HASH}"
+        SHOW_PROGRESS
+    )
+endif()
+
+include("${_cpm_file}")
 
 # Setup Python virtual env
 
@@ -192,176 +301,64 @@ function(get_lib_arch LIB RESULT_VAR)
     endif()
 endfunction()
 
-if (NOT BUILD_SHARED_LIBS)
-    list(APPEND BANNED_LIBRARIES
-        libusb-1.0
-        libusb-1
-        libusb
-    )
-endif()
+# function(add_libs_from_path PATH_GLOB)
+#     # do NOT configure_depends, this will take 10 million years
 
-function(add_libs_from_path PATH)
-    # do NOT configure_depends, this will take 10 million years
+#     file(TO_CMAKE_PATH "${PATH_GLOB}" TEMP_PATH)
+#     file(GLOB TEMP_SOURCES "${TEMP_PATH}")
+#     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${TEMP_SOURCES}" PARENT_SCOPE)
 
-    file(TO_CMAKE_PATH ${PATH} TEMP_PATH)
-    file(GLOB TEMP_SOURCES ${TEMP_PATH})
-    list(APPEND CMAKE_PREFIX_PATH ${TEMP_SOURCES})
+#     foreach (SOURCE IN LISTS TEMP_SOURCES)
+#         if (EXISTS "${SOURCE}/lib")
+#             list(APPEND CMAKE_LIBRARY_PATH ${SOURCE}/lib)
+#         endif()
+#         if (EXISTS "${SOURCE}/include")
+#             list(APPEND CMAKE_INCLUDE_PATH ${SOURCE}/include)
+#         endif()
+#     endforeach()
+# endfunction()
 
-    foreach (SOURCE IN LISTS TEMP_SOURCES)
-        file(GLOB SOURCE_LIBS ${SOURCE}/lib ${SOURCE}/lib/* ${SOURCE}/*/lib)
+# # Brew libraries
+# find_program(BREW brew)
+# if (BREW)
+#     execute_process(
+#         COMMAND ${BREW} --prefix
+#         OUTPUT_VARIABLE BREW_PREFIX
+#     )
+#     string(STRIP ${BREW_PREFIX} BREW_PREFIX)
 
-        foreach (LIB_PATH IN LISTS SOURCE_LIBS)
-            cmake_path(GET LIB_PATH FILENAME CURRENT_DIR)
-            if (
-                NOT IS_DIRECTORY ${LIB_PATH} OR
-                # These are paths from brew and do not contain libraries
-                ${CURRENT_DIR} STREQUAL "pkgconfig" OR
-                ${CURRENT_DIR} STREQUAL "cmake" 
-            )
-                continue()
-            endif()
-            if (EXISTS ${LIB_PATH}/pkgconfig)
-                list(APPEND CMAKE_PREFIX_PATH ${LIB_PATH}/pkgconfig)
-            endif()
+#     add_libs_from_path(${BREW_PREFIX})
+# endif()
 
-            cmake_path(GET LIB_PATH PARENT_PATH LIB_PARENT)
-            if (${LIB_PARENT} STREQUAL ${SOURCE})
-                set(LIB_RELATIVE lib)
-            else()
-                cmake_path(GET LIB_PARENT PARENT_PATH LIB_PARENT)
-                cmake_path(RELATIVE_PATH LIB_PATH BASE_DIRECTORY ${LIB_PARENT} OUTPUT_VARIABLE LIB_RELATIVE)
-            endif()
-            string(REPLACE "lib" "include" INCLUDE_RELATIVE ${LIB_RELATIVE})
-            set(INCLUDE_PATH ${SOURCE}/${INCLUDE_RELATIVE})
+# # Android libraries
+# if (DEFINED ANDROID_NDK)
+#     add_libs_from_path(${ANDROID_NDK}/toolchains/llvm/prebuilt/*)
+#     add_libs_from_path(${ANDROID_NDK}/toolchains/llvm/prebuilt/*/sysroot/usr)
+# endif()
 
-            if (NOT EXISTS ${SOURCE}/${INCLUDE_RELATIVE})
-                continue()
-            endif()
+# # vcpkg libraries
+# if (DEFINED ENV{VCPKG_ROOT})
+#     add_libs_from_path($ENV{VCPKG_ROOT}/packages/*)
+# endif()
 
-            list(GET CMAKE_FIND_LIBRARY_SUFFIXES 0 WANTED_LIBRARY_SUFFIX)
-            file(GLOB LIBRARY_FILES ${LIB_PATH}/*${WANTED_LIBRARY_SUFFIX})
-
-            foreach (LIBRARY IN LISTS LIBRARY_FILES)
-                if (BUILD_SHARED_LIBS)
-                    # quit early if arch doesn't exist or doesn't match target
-                    get_lib_arch(${LIBRARY} ARCH)
-                    message("LIBRARY: ${LIBRARY}")
-                    message("get_lib_arch: ${ARCH}")
-                    if (
-                        ARCH STREQUAL "" OR
-                        NOT ARCH STREQUAL ${NORMALISED_CMAKE_SYSTEM_PROCESSOR}
-                    )
-                        continue()
-                    endif()
-                endif()
-
-                cmake_path(GET LIBRARY FILENAME LIBRARY_NAME)
-
-                if (LIBRARY_NAME IN_LIST BANNED_LIBRARIES) # some libraries will not work given the current config
-                    continue()
-                endif()
-
-                string(REGEX REPLACE "[^a-zA-Z0-9_\\.\\+-]" "" LIBRARY_NAME "${LIBRARY_NAME}") # sanitize library
-
-                cmake_path(GET LIBRARY_NAME STEM STRIPPED_LIBRARY_NAME)
-                string(REGEX REPLACE "^lib" "" BARE_STRIPPED_LIBRARY_NAME ${STRIPPED_LIBRARY_NAME})
-
-                set(LIBRARY_NAMES
-                    ${LIBRARY_NAME}
-                    ${STRIPPED_LIBRARY_NAME}
-                    ${BARE_STRIPPED_LIBRARY_NAME}
-                )
-                
-                message(STATUS "Found valid library \"${STRIPPED_LIBRARY_NAME}\": ${SOURCE}")
-
-                foreach (LIBRARY_NAME IN LISTS LIBRARY_NAMES)
-                    string(TOLOWER ${LIBRARY_NAME} LOWER_LIBRARY_NAME)
-                    string(TOUPPER ${LIBRARY_NAME} UPPER_LIBRARY_NAME)
-                    set(LIBRARY_NAMES
-                        ${LOWER_LIBRARY_NAME}
-                        ${LIBRARY_NAME}
-                        ${UPPER_LIBRARY_NAME}
-                    )
-
-                    foreach (LIBRARY_NAME IN LISTS LIBRARY_NAMES)
-                        set(LIBRARY_NAMES
-                            ${LIBRARY_NAME}
-                            ${LIBRARY_NAME}::${LIBRARY_NAME}
-                        )
-
-                        foreach (LIBRARY_NAME IN LISTS LIBRARY_NAMES)
-                            if (NOT TARGET "${LIBRARY_NAME}")
-                                if (BUILD_SHARED_LIBS)
-                                    add_library("${LIBRARY_NAME}" SHARED IMPORTED)
-                                else()
-                                    add_library("${LIBRARY_NAME}" STATIC IMPORTED)
-                                endif()
-                            
-                                set_target_properties("${LIBRARY_NAME}" PROPERTIES
-                                    IMPORTED_LOCATION ${LIBRARY}
-                                )
-
-                                target_include_directories("${LIBRARY_NAME}" INTERFACE ${INCLUDE_PATH})
-                            endif()
-
-                            string(REPLACE "::" "_" SNAKE_LIBRARY_NAME "${LIBRARY_NAME}")
-
-                            set(LIBRARY_NAMES
-                                ${LIBRARY_NAME}
-                                ${SNAKE_LIBRARY_NAME}
-                            )
-
-                            foreach (LIBRARY_NAME IN LISTS LIBRARY_NAMES)
-                                set("${LIBRARY_NAME}_LIBRARY" ${LIBRARY} PARENT_SCOPE)
-                                set("${LIBRARY_NAME}_INCLUDE_DIR" ${INCLUDE_PATH} PARENT_SCOPE)
-                            endforeach()
-                        endforeach()
-                    endforeach()
-                endforeach()
-            endforeach()
-        endforeach()
-    endforeach()
-endfunction()
-
-message(STATUS "Looking for libraries matching arch '${NORMALISED_CMAKE_SYSTEM_PROCESSOR}'")
-
-# linux libraries
-if (EXISTS /usr/lib)
-    message(STATUS "Looking for libraries: /usr")
-    add_libs_from_path(/usr)
-endif()
-
-# vcpkg libraries
-if (DEFINED ENV{VCPKG_ROOT})
-    message(STATUS "Looking for libraries: $ENV{VCPKG_ROOT}")
-    add_libs_from_path($ENV{VCPKG_ROOT}/packages/*)
-endif()
-
-# Android libraries
-if (DEFINED ANDROID_NDK)
-    message(STATUS "Looking for libraries: ${ANDROID_NDK}")
-    add_libs_from_path(${ANDROID_NDK}/toolchains/llvm/prebuilt/*)
-    add_libs_from_path(${ANDROID_NDK}/toolchains/llvm/prebuilt/*/sysroot/usr)
-endif()
-
-# Brew libraries
-find_program(BREW brew)
-if (BREW)
-    execute_process(
-        COMMAND ${BREW} --cellar
-        OUTPUT_VARIABLE BREW_CELLAR
-    )
-    string(STRIP ${BREW_CELLAR} BREW_CELLAR)
-    message(STATUS "Looking for libraries: ${BREW_CELLAR}")
-    add_libs_from_path(${BREW_CELLAR}/*/*)
-endif()
+# # linux libraries
+# if (EXISTS /usr/lib)
+#     add_libs_from_path(/usr)
+# endif()
 
 # Setup Android-specific dependencies
 
 if (ANDROID)
+    CPMAddPackage(
+        NAME android_openssl
+        GIT_REPOSITORY https://github.com/KDAB/android_openssl.git
+        GIT_TAG 0025bbe48f69792f95e02c9289df0fae68c954d6
+        DOWNLOAD_ONLY YES
+    )
+
     # openssl
 
-    set(OPENSSL_ROOT_PATH ${CMAKE_SOURCE_DIR}/submodules/android_openssl)
+    set(OPENSSL_ROOT_PATH ${android_openssl_SOURCE_DIR})
     
     if (CMAKE_BUILD_TYPE STREQUAL "Debug") # Specifically debug
         string(APPEND OPENSSL_ROOT_PATH "/no-asm")
@@ -372,7 +369,11 @@ if (ANDROID)
 
     list(APPEND CMAKE_PREFIX_PATH ${OPENSSL_LIB_DIR})
 
-    list(GET CMAKE_FIND_LIBRARY_SUFFIXES 0 WANTED_LIBRARY_SUFFIX)
+    if (BUILD_SHARED_LIBS)
+        set(WANTED_LIBRARY_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    else()
+        set(WANTED_LIBRARY_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    endif()
 
     if (DEFINED crypto_LIBRARY)
         set(crypto ${crypto_LIBRARY})
@@ -443,6 +444,10 @@ if (ANDROID)
     set(OPENSSL_SSL_LIBRARY ${ssl} CACHE INTERNAL "")
     set(OPENSSL_CRYPTO_LIBRARY ${crypto} CACHE INTERNAL "")
     set(OPENSSL_INCLUDE_DIR ${OPENSSL_INCLUDE_DIR} CACHE INTERNAL "")
+
+    message(DEBUG "OPENSSL_SSL_LIBRARY:    ${OPENSSL_SSL_LIBRARY}")
+    message(DEBUG "OPENSSL_CRYPTO_LIBRARY: ${OPENSSL_CRYPTO_LIBRARY}")
+    message(DEBUG "OPENSSL_INCLUDE_DIR:    ${OPENSSL_INCLUDE_DIR}")
 endif()
 
 # Init project
@@ -538,6 +543,9 @@ if (DEBUG)
         $<$<BOOL:${COLUMN_INFO_SUPPORTED}>:-gcolumn-info>
         $<$<BOOL:${NO_OMIT_FRAME_POINTER_SUPPORTED}>:-fno-omit-frame-pointer>
     )
+endif()
+
+if (DEBUG)
     target_link_options("${SANITISED_PROJECT_NAME}" PUBLIC
         $<$<BOOL:${USE_LLD_SUPPORTED}>:-fuse-ld=lld>
         $<$<BOOL:${LD_DEBUG_SUPPORTED}>:-g>
@@ -573,191 +581,222 @@ target_compile_definitions("${SANITISED_PROJECT_NAME}" PUBLIC
 
 # Configure submodules
 
-set(SDL_CCACHE ON)
-set(SDL_CLOCK_GETTIME ON)
-if (BUILD_SHARED_LIBS)
-    set(SDL_SHARED ON)
-    set(SDL_STATIC OFF)
-else()
-    set(SDL_SHARED OFF)
-    set(SDL_STATIC ON)
-endif()
+message(STATUS "IMAGE_AVIF: ${IMAGE_AVIF}")
+message(STATUS "IMAGE_BMP:  ${IMAGE_BMP}")
+message(STATUS "IMAGE_GIF:  ${IMAGE_GIF}")
+message(STATUS "IMAGE_JPG:  ${IMAGE_JPG}")
+message(STATUS "IMAGE_JXL:  ${IMAGE_JXL}")
+message(STATUS "IMAGE_LBM:  ${IMAGE_LBM}")
+message(STATUS "IMAGE_PCX:  ${IMAGE_PCX}")
+message(STATUS "IMAGE_PNG:  ${IMAGE_PNG}")
+message(STATUS "IMAGE_PNM:  ${IMAGE_PNM}")
+message(STATUS "IMAGE_QOI:  ${IMAGE_QOI}")
+message(STATUS "IMAGE_SVG:  ${IMAGE_SVG}")
+message(STATUS "IMAGE_TGA:  ${IMAGE_TGA}")
+message(STATUS "IMAGE_TIF:  ${IMAGE_TIF}")
+message(STATUS "IMAGE_WEBP: ${IMAGE_WEBP}")
+message(STATUS "IMAGE_XCF:  ${IMAGE_XCF}")
+message(STATUS "IMAGE_XPM:  ${IMAGE_XPM}")
+message(STATUS "IMAGE_XV:   ${IMAGE_XV}")
 
-set(SDLIMAGE_VENDORED ON)
-set(SDLIMAGE_JXL ON)
+function(set_found LIB FOUND_VAR)
+    set(FOUND FALSE)
+    foreach(LIBRARY "${LIB}" "lib${LIB}" "${LIB}::${LIB}")
+        find_package("${LIBRARY}" QUIET)
+        if ("${LIBRARY}_FOUND" OR TARGET "${LIBRARY}")
+            set(FOUND TRUE)
+            break()
+        endif()
+    endforeach()
 
-set(SDLTTF_VENDORED ON)
-
-set(CPR_USE_SYSTEM_LIB_PSL ON) # otherwise CPR will try building psl
-set(CURL_USE_LIBPSL OFF)
-
-function(use_found_or_vendored_with_output LIB PATH FOUND_VAR)
-    set(${FOUND_VAR} FALSE PARENT_SCOPE)
-    find_package(${LIB} QUIET)
-    if (${LIB}_FOUND OR TARGET ${LIB})
-        message(STATUS "Found Library: ${LIB}")
-        set(${FOUND_VAR} TRUE PARENT_SCOPE)
+    if (FOUND)
+        message("Found library: ${LIB}")
     else()
-        message(STATUS "Could not find Library: ${LIB}. Compiling...")
-        add_subdirectory(${PATH})
+        message("Could not find library: ${LIB}")
+    endif()
+    
+    set("${FOUND_VAR}" "${FOUND}" PARENT_SCOPE)
+endfunction()
+
+function(add_alias_if_valid ALIAS TARGET)
+    message(VERBOSE "Setting \"${ALIAS}\" as alias for \"${TARGET}\"")
+    
+    if (TARGET "${ALIAS}")
+        message(VERBOSE "    \"${ALIAS}\" is already a target")
+    elseif(NOT TARGET "${ALIAS}")
+        message(VERBOSE "    \"${TARGET}\" is not already a target")
+    else()
+        message(VERBOSE "    \"${ALIAS}\" set as alias for \"${TARGET}\"")
+        add_library("${ALIAS}" ALIAS "${TARGET}")
+    endif()
+
+    # TODO - add setting variables
+endfunction()
+
+CPMAddPackage(
+    NAME discord-rpc
+    VERSION 1.0.0
+    GIT_REPOSITORY https://github.com/EclipseMenu/discord-presence.git
+    GIT_TAG 346214d78ace3c4e4e09759f412c3717bbc6e25c
+)
+
+CPMAddPackage(
+    NAME fmt
+    VERSION 11.2.0
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG 11.2.0
+)
+
+CPMAddPackage(
+    NAME glaze
+    VERSION 5.5.4
+    GIT_REPOSITORY https://github.com/stephenberry/glaze.git
+    GIT_TAG v5.5.4
+)
+
+CPMAddPackage(
+    NAME cpr
+    VERSION 1.12.0
+    GIT_REPOSITORY https://github.com/libcpr/cpr.git
+    GIT_TAG 1.12.0
+    OPTIONS
+        "CPR_USE_SYSTEM_LIB_PSL ON"
+        "CURL_USE_LIBPSL OFF"
+)
+
+CPMAddPackage(
+    NAME SDL3
+    VERSION 3.2.20
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+    GIT_TAG release-3.2.20
+    OPTIONS
+        "SDL_CCACHE ON"
+        "SDL_CLOCK_GETTIME ON"
+)
+
+CPMAddPackage(
+    NAME SDL3_image
+    VERSION 3.2.4
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
+    GIT_TAG release-3.2.4
+    OPTIONS
+        "SDLIMAGE_VENDORED ON"
+        "SDLIMAGE_AVIF ${IMAGE_AVIF}"
+        "SDLIMAGE_BMP ${IMAGE_BMP}"
+        "SDLIMAGE_GIF ${IMAGE_GIF}"
+        "SDLIMAGE_JPG ${IMAGE_JPG}"
+        "SDLIMAGE_JXL ${IMAGE_JXL}"
+        "SDLIMAGE_LBM ${IMAGE_LBM}"
+        "SDLIMAGE_PCX ${IMAGE_PCX}"
+        "SDLIMAGE_PNG ${IMAGE_PNG}"
+        "SDLIMAGE_PNM ${IMAGE_PNM}"
+        "SDLIMAGE_QOI ${IMAGE_QOI}"
+        "SDLIMAGE_SVG ${IMAGE_SVG}"
+        "SDLIMAGE_TGA ${IMAGE_TGA}"
+        "SDLIMAGE_TIF ${IMAGE_TIF}"
+        "SDLIMAGE_WEBP ${IMAGE_WEBP}"
+        "SDLIMAGE_XCF ${IMAGE_XCF}"
+        "SDLIMAGE_XPM ${IMAGE_XPM}"
+        "SDLIMAGE_XV ${IMAGE_XV}"
+        "CMAKE_POLICY_VERSION_MINIMUM 3.5"
+)
+
+CPMAddPackage(
+    NAME SDL3_ttf
+    VERSION 3.2.2
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
+    GIT_TAG release-3.2.2
+    OPTIONS
+        "SDLTTF_VENDORED ON"
+)
+
+function(link_if_valid TARGET TYPE ITEM)
+    if (TARGET "${TARGET}" AND TARGET "${ITEM}")
+        target_link_libraries("${TARGET}" "${TYPE}" "${ITEM}")
     endif()
 endfunction()
-
-function(use_found_or_vendored LIB PATH)
-    use_found_or_vendored_with_output(${LIB} ${PATH} _)
-endfunction()
-
-function(set_vendored_if_found LIB TOGGLE_VAR)
-    find_package(${LIB} QUIET)
-    if (${LIB}_FOUND OR TARGET ${LIB})
-        message(STATUS "Found Library: ${LIB}")
-        set(${TOGGLE_VAR} OFF CACHE BOOL "" FORCE)
-    else()
-        set(${TOGGLE_VAR} ON CACHE BOOL "" FORCE)
-    endif()
-endfunction()
-
-set(TEMP_CMAKE_POLICY_VERSION_MINIMUM ${CMAKE_POLICY_VERSION_MINIMUM})
-set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
-
-set_vendored_if_found(zlibstatic SDLIMAGE_ZLIB_VENDORED)
-set_vendored_if_found(dav1d SDLIMAGE_DAV1D_VENDORED)
-set_vendored_if_found(aom SDLIMAGE_AOM_VENDORED)
-set_vendored_if_found(avif SDLIMAGE_AVIF_VENDORED)
-set_vendored_if_found(jpeg SDLIMAGE_JPG_VENDORED)
-set_vendored_if_found(jxl_dec-static SDLIMAGE_JXL_VENDORED)
-set_vendored_if_found(png_static SDLIMAGE_PNG_VENDORED)
-set_vendored_if_found(tiff SDLIMAGE_TIF_VENDORED)
-set_vendored_if_found(webp SDLIMAGE_WEBP_VENDORED)
-
-set_vendored_if_found(harfbuzz SDLTTF_HARFBUZZ_VENDORED)
-set_vendored_if_found(freetype SDLTTF_FREETYPE_VENDORED)
-set_vendored_if_found(plutovg SDLTTF_PLUTOSVG_VENDORED)
-set_vendored_if_found(plutosvg SDLTTF_PLUTOSVG_VENDORED)
-
-use_found_or_vendored(SDL3::SDL3 submodules/SDL3)
-use_found_or_vendored(SDL3_image::SDL3_image submodules/SDL3_image)
-use_found_or_vendored(SDL3_image::SDL3_ttf submodules/SDL3_ttf)
-use_found_or_vendored(discord-rpc submodules/discord-rpc)
-use_found_or_vendored(cpr submodules/cpr)
-use_found_or_vendored(fmt submodules/fmt)
-use_found_or_vendored(glaze submodules/glaze)
-
-target_compile_options(cpr PRIVATE -Wno-error) # CPR has some warning on arm platforms due to the `long` type
-# With how we use openssl on android, it needs to be linked manually
-if (TARGET OpenSSL::SSL)
-    target_link_libraries(cpr PUBLIC OpenSSL::SSL)
-endif()
-if (TARGET OpenSSL::Crypto)
-    target_link_libraries(cpr PUBLIC OpenSSL::Crypto)
-endif()
-
-set(CMAKE_POLICY_VERSION_MINIMUM ${TEMP_CMAKE_POLICY_VERSION_MINIMUM})
 
 # Add libraries to project
 
 set(LIBRARIES
-    SDL3::SDL3
-    SDL3_image::SDL3_image
-    SDL3_ttf::SDL3_ttf
     discord-rpc
-    cpr
+
     fmt
+
     glaze::glaze
+
+    cpr::cpr
+
+    SDL3::SDL3
+    SDL3_ttf::SDL3_ttf
+    SDL3_image::SDL3_image
 )
 
 target_link_libraries("${SANITISED_PROJECT_NAME}" ${LIBRARIES})
 
 # Copy resources and binaries after build
 
-function(get_lib_copy_dir VAR)
-    if (ANDROID)
-        set(${VAR} android/app/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI} PARENT_SCOPE)
-    else()
-        set(${VAR} bin PARENT_SCOPE)
-    endif()
-endfunction()
+if (ANDROID)
+    set(LIB_COPY_DIR ${CMAKE_BINARY_DIR}/android/app/src/main/jniLibs/${CMAKE_ANDROID_ARCH_ABI})
+    set(RES_COPY_DIR ${CMAKE_BINARY_DIR}/android/app/src/main/assets)
+else()
+    set(LIB_COPY_DIR ${CMAKE_BINARY_DIR}/bin)
+    set(RES_COPY_DIR ${CMAKE_BINARY_DIR}/bin)
+endif()
 
-function(get_res_copy_dir VAR)
-    if (ANDROID)
-        set(${VAR} android/app/src/main/assets PARENT_SCOPE)
-    else()
-        set(${VAR} bin PARENT_SCOPE)
-    endif()
-endfunction()
+message(DEBUG "LIB_COPY_DIR: ${LIB_COPY_DIR}")
+message(DEBUG "RES_COPY_DIR: ${RES_COPY_DIR}")
 
 
-function(copy_target target)
-    get_lib_copy_dir(DIR)
+file(GLOB_RECURSE DEBUG_BINARIES CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/**.pdb)
+add_custom_command(
+    TARGET "${SANITISED_PROJECT_NAME}"
+    PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E rm -rf
+            "${LIB_COPY_DIR}"
+            ${DEBUG_BINARIES}
+    COMMENT "Cleaning previous artifacts"
+    COMMAND_EXPAND_LISTS
+)
+add_custom_command(
+    TARGET "${SANITISED_PROJECT_NAME}"
+    PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+            "${LIB_COPY_DIR}"
+            "${RES_COPY_DIR}"
+    COMMENT "Creating copy directories"
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    TARGET "${SANITISED_PROJECT_NAME}"
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:${SANITISED_PROJECT_NAME}>
+            $<TARGET_FILE:${SANITISED_PROJECT_NAME}>
+            "${LIB_COPY_DIR}"
+    COMMENT "Copying runtime artifacts to ${LIB_COPY_DIR}"
+    COMMAND_EXPAND_LISTS
+)
+
+if (EXISTS ${CMAKE_BINARY_DIR}/${APP_NAME}.pdb)
     add_custom_command(
         TARGET "${SANITISED_PROJECT_NAME}"
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE:${target}>
-                ${CMAKE_BINARY_DIR}/${DIR}/$<TARGET_FILE_NAME:${target}>
-        COMMENT "Copying $<TARGET_FILE_NAME:${target}> to build/${DIR}"
+                ${CMAKE_BINARY_DIR}/${APP_NAME}.pdb
+                "${LIB_COPY_DIR}"
+        COMMENT "Copying ${APP_NAME}.pdb to ${LIB_COPY_DIR}"
     )
-endfunction()
-
-function(copy_libraries_recurse target)
-    get_target_property(libraries ${target} LINK_LIBRARIES)
-    foreach(library IN LISTS libraries)
-        if (
-            library STREQUAL "HarfBuzz::HarfBuzz" OR # Harfbuzz links to itself somehow
-            NOT TARGET ${library}
-        )
-            continue()
-        endif()
-
-        copy_libraries_recurse(${library})
-
-        get_target_property(target_type ${library} TYPE)
-        if (NOT target_type STREQUAL "SHARED_LIBRARY")
-            continue()
-        endif()
-
-        copy_target(${library})
-    endforeach()
-endfunction()
-
-file(GLOB_RECURSE DEBUG_BINARIES CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/*.pdb)
-add_custom_command(
-    TARGET "${SANITISED_PROJECT_NAME}"
-    PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E rm
-            -rf
-            ${CMAKE_BINARY_DIR}/bin
-            "${DEBUG_BINARIES}"
-    COMMENT "Cleaning extra artifacts"
-    COMMAND_EXPAND_LISTS
-)
-
-copy_target("${SANITISED_PROJECT_NAME}")
-if (BUILD_SHARED_LIBS)
-    copy_libraries_recurse("${SANITISED_PROJECT_NAME}")
 endif()
 
-if (NOT ANDROID)
-    if (EXISTS ${CMAKE_BINARY_DIR}/${APP_NAME}.pdb)
-        add_custom_command(
-            TARGET "${SANITISED_PROJECT_NAME}"
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    ${CMAKE_BINARY_DIR}/${APP_NAME}.pdb
-                    ${CMAKE_BINARY_DIR}/bin/${APP_NAME}.pdb
-            COMMENT "Copying ${APP_NAME}.pdb to build/bin"
-        )
-    endif()
-endif()
-
-get_res_copy_dir(RES_DIR)
 add_custom_command(
     TARGET "${SANITISED_PROJECT_NAME}"
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
             ${CMAKE_SOURCE_DIR}/resources
-            ${CMAKE_BINARY_DIR}/${RES_DIR}/resources
-    COMMENT "Copying resources to build/${RES_DIR}"
+            ${RES_COPY_DIR}/resources
+    COMMENT "Copying resources to ${RES_COPY_DIR}"
 )
 if (ANDROID)
     file(GLOB_RECURSE ANDROID_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/android/**)

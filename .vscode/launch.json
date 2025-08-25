@@ -6,11 +6,11 @@
     "configurations": [
 
         {
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "name": "Debug target",
             "cwd": "${workspaceFolder}/build/bin",
-            "preLaunchTask": "Build",
+            // "preLaunchTask": "Build",
             // "internalConsoleOptions": "openOnSessionStart",
             "program": "${workspaceFolder}/build/bin/Lore Game.exe"
         }

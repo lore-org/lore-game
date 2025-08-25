@@ -58,7 +58,6 @@ env:
     libunwind-dev
     libusb-1.0-0-dev
     libusb-dev
-    clang-19
   WINDOWS_PKGS: >
     brotli
     libidn2
@@ -97,7 +96,10 @@ env:
     sdl3_image
     sdl3_ttf
     cpr
-    llvm
+    openssl
+    brotli
+    fmt
+    glaze
 
 jobs:
   build:
@@ -145,6 +147,7 @@ jobs:
           echo "WINDOWS_PKGS=$(echo -n "$WINDOWS_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
           echo "BREW_PKGS=$(echo -n "$BREW_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
 
+          
       # - name: Install vcpkg
       #   if: matrix.config.id == 'windows'
       #   uses: lukka/run-vcpkg@v11
@@ -157,40 +160,40 @@ jobs:
       #   run: vcpkg install ${{ env.WINDOWS_PKGS }}
 
 
-      - name: Update Linux Packages
-        if: matrix.config.id == 'linux' || matrix.config.id == 'android'
-        run: sudo apt-get update
+      # - name: Update Linux Packages
+      #   if: matrix.config.id == 'linux' || matrix.config.id == 'android'
+      #   run: sudo apt-get update
 
-      - name: Install and Cache Linux Packages
-        if: matrix.config.id == 'linux' || matrix.config.id == 'android'
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: ${{ env.LINUX_PKGS }}
-          execute_install_scripts: true
-          version: ${{ steps.hash.outputs.LINUX_PKGS }}
+      # - name: Install and Cache Linux Packages
+      #   if: matrix.config.id == 'linux' || matrix.config.id == 'android'
+      #   uses: awalsh128/cache-apt-pkgs-action@latest
+      #   with:
+      #     packages: ${{ env.LINUX_PKGS }}
+      #     execute_install_scripts: true
+      #     version: ${{ steps.hash.outputs.LINUX_PKGS }}
 
-      - name: Install Leftover Linux Packages
-        if: matrix.config.id == 'linux' || matrix.config.id == 'android'
-        run: sudo apt-get install ${{ env.LINUX_PKGS }}
+      # - name: Install Leftover Linux Packages
+      #   if: matrix.config.id == 'linux' || matrix.config.id == 'android'
+      #   run: sudo apt-get install ${{ env.LINUX_PKGS }}
 
 
-      - name: Setup Homebrew
-        if: matrix.config.id != 'windows'
-        id: homebrew
-        uses: Homebrew/actions/setup-homebrew@main
+      # - name: Setup Homebrew
+      #   if: matrix.config.id != 'windows'
+      #   id: homebrew
+      #   uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Setup Homebrew Cache
-        if: matrix.config.id != 'windows'
-        id: brewcache
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.homebrew.outputs.gems-path }}
-          key: brewcache-${{ matrix.config.id }}-${{ steps.homebrew.outputs.gems-hash }}
-          restore-keys: brewcache-${{ matrix.config.id }}-
+      # - name: Setup Homebrew Cache
+      #   if: matrix.config.id != 'windows'
+      #   id: brewcache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ steps.homebrew.outputs.gems-path }}
+      #     key: brewcache-${{ matrix.config.id }}-${{ steps.homebrew.outputs.gems-hash }}
+      #     restore-keys: brewcache-${{ matrix.config.id }}-
 
-      - name: Install Leftover Brew Packages
-        if: matrix.config.id != 'windows'
-        run: brew install ${{ env.BREW_PKGS }}
+      # - name: Install Leftover Brew Packages
+      #   if: matrix.config.id != 'windows'
+      #   run: brew install ${{ env.BREW_PKGS }}
         
 
       - name: Setup sccache

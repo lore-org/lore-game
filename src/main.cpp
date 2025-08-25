@@ -1,3 +1,7 @@
+#include "SDL3/SDL_timer.h"
+#include "engine/Object.h"
+#include <cmath>
+#include <memory>
 #define SDL_MAIN_HANDLED
 #define SDL_MAIN_NEEDED
 #include <SDL3/SDL_main.h>
@@ -57,13 +61,20 @@ int main(int argc, char* argv[]) {
         kitty->setPosition(Engine::sharedInstance()->getStaticWindowSize() / 2.f); // Make sure kitty is in the center of the screen
         kitty->setRotation(kitty->getRotation() + (45 * dt)); // Spin kitty 45deg / second
     }));
-    // kitty->scheduleSelf();
+    kitty->scheduleSelf();
 
-    // scene->addChild(kitty);
+    scene->addChild(kitty);
 
     auto furries = Sprite::createFromURL("https://static1.e621.net/data/a8/f2/a8f216299b6b4a83d6d8bf038300a0d0.jpg");
     furries->setAnchorPoint(0);
     furries->setZOrder(-1);
+    furries->setScale(0.2);
+    furries->setUpdate(std::make_shared<Update_Callback>([&furries](auto dt) {
+        auto x = cos(SDL_GetTicksNS() * SecondsPerNanosecond);
+        auto y = sin(SDL_GetTicksNS() * SecondsPerNanosecond);
+        furries->setPosition((MakePoint(x, y) * 50) + 100);
+    }));
+    furries->scheduleSelf();
     scene->addChild(furries);
 
     Director::sharedDirector()->pushScene(scene);

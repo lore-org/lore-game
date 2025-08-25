@@ -25,7 +25,7 @@ public:
 
     static std::shared_ptr<Touchable> create();
 
-    virtual void update(const double dt) override;
+    virtual void update(const long double dt) override;
 
 protected:
     Touchable();

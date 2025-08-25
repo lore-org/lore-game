@@ -21,18 +21,17 @@
 #include <vector>
 #include <regex>
 #include <cctype>
-#include <limits>
 
 #include <SDL3/SDL_log.h>
 
 #include "Object.h"
 
-#define MakePoint(x, y) Point(static_cast<double>(x), static_cast<double>(y))
-#define MakeSize(width, height) Size(static_cast<double>(width), static_cast<double>(height))
-#define MakeRect(x, y, width, height) Rect(static_cast<double>(x), static_cast<double>(y), static_cast<double>(width), static_cast<double>(height))
+#define MakePoint(x, y) Point(static_cast<long double>(x), static_cast<long double>(y))
+#define MakeSize(width, height) Size(static_cast<long double>(width), static_cast<long double>(height))
+#define MakeRect(x, y, width, height) Rect(static_cast<long double>(x), static_cast<long double>(y), static_cast<long double>(width), static_cast<long double>(height))
 
-#define EPSILON std::numeric_limits<double>::epsilon()
-#define IsZero(f) std::fabs(static_cast<double>(f)) < EPSILON
+#define EPSILON std::numeric_limits<long double>::epsilon()
+#define IsZero(f) std::fabs(static_cast<long double>(f)) < EPSILON
 
 #define GetLine() fmt::format("{}:{}", __FILE__, __LINE__).c_str()
 #define GetWithTag(tag, x) fmt::format("[{}]: '{}': {}", tag, GetLine(), x).c_str()

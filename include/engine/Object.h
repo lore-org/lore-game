@@ -6,7 +6,7 @@
 #include <memory>
 
 #define Event_Callback std::function<void(std::shared_ptr<void>)>
-#define Update_Callback std::function<void(const double)>
+#define Update_Callback std::function<void(const long double)>
 
 // This uses Object* instead of std::shared_ptr<Object> for updates as the Object is never deconstructed
 class Object : public std::enable_shared_from_this<Object> {
@@ -26,7 +26,7 @@ public:
     virtual void scheduleSelf();
     // Run Scheduler::unscheduleUpdate on self
     virtual void unscheduleSelf();
-    virtual void update(const double dt);
+    virtual void update(const long double dt);
 
     // Name is case-insensitive
     virtual void registerEventListener(std::string name, std::shared_ptr<Event_Callback> callback);

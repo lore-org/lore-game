@@ -31,15 +31,15 @@ std::shared_ptr<Scheduler> Scheduler::sharedScheduler() {
     return m_instance;
 }
 
-double Scheduler::getTimeScale() {
+long double Scheduler::getTimeScale() {
     return m_timeScale;
 }
 
-void Scheduler::setTimeScale(double timeScale) {
+void Scheduler::setTimeScale(long double timeScale) {
     m_timeScale = timeScale;
 }
 
-void Scheduler::update(double dt) {
+void Scheduler::update(long double dt) {
     if (m_timeScale != 1.f) dt *= m_timeScale;
 
     std::ranges::for_each(
@@ -51,7 +51,7 @@ void Scheduler::update(double dt) {
         }
     );
 
-    unsigned long long _i = 0;
+    uint64_t _i = 0;
     std::ranges::for_each(
         m_entries,
         [this, &_i](std::shared_ptr<_entry> entry) {
@@ -63,7 +63,7 @@ void Scheduler::update(double dt) {
     Object::update(dt);
 }
 
-void Scheduler::scheduleUpdate(Object* target, long long priority, bool paused) {
+void Scheduler::scheduleUpdate(Object* target, int64_t priority, bool paused) {
     if (this->_getIndexOfTarget(target) != -1) return;
 
     m_entries.push_back(std::make_shared<_entry>(target, priority, paused, false));
@@ -131,7 +131,7 @@ bool Scheduler::isTargetPaused(Object* target) {
     return entry ? entry->paused : false;
 }
 
-long long Scheduler::_getIndexOfTarget(Object* target) {
+int64_t Scheduler::_getIndexOfTarget(Object* target) {
     auto find = std::ranges::find_if(
         m_entries,
         [&target](std::shared_ptr<_entry> entry) { return entry->target == target; }

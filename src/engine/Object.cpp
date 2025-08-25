@@ -67,7 +67,7 @@ void Object::unscheduleSelf() {
     Scheduler::sharedScheduler()->unscheduleUpdate(this);
 }
 
-void Object::update(const double dt) {
+void Object::update(const long double dt) {
     if (m_updateCallback) (*m_updateCallback)(dt);
 }
 

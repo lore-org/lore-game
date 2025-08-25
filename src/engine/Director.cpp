@@ -53,12 +53,12 @@ void Director::pushScene(std::shared_ptr<Scene> scene) {
     this->_replaceSceneWithNext();
 }
 
-void Director::pushSceneWithTransition(std::shared_ptr<Scene> scene, double duration) {
+void Director::pushSceneWithTransition(std::shared_ptr<Scene> scene, long double duration) {
     m_nextScene = scene;
     this->_transitionBetweenScenes(duration);
 }
 
-void Director::popScene(unsigned long long depth) {
+void Director::popScene(uint64_t depth) {
     if (depth > m_sceneStack.size()) depth = m_sceneStack.size();
     m_nextScene = *(m_sceneStack.end() - depth);
 
@@ -70,7 +70,7 @@ void Director::popScene(unsigned long long depth) {
     this->_replaceSceneWithNext();
 }
 
-void Director::popSceneWithTransition(unsigned long long depth, double duration) {
+void Director::popSceneWithTransition(uint64_t depth, long double duration) {
     if (depth > m_sceneStack.size()) depth = m_sceneStack.size();
     m_nextScene = *(m_sceneStack.end() - depth);
 
@@ -88,7 +88,7 @@ void Director::replaceTopScene(std::shared_ptr<Scene> scene) {
     this->_replaceSceneWithNext();
 }
 
-void Director::replaceTopSceneWithTransition(std::shared_ptr<Scene> scene, double duration) {
+void Director::replaceTopSceneWithTransition(std::shared_ptr<Scene> scene, long double duration) {
     m_nextScene = scene;
     if (m_sceneStack.size() > 0) m_sceneStack.pop_back();
     this->_transitionBetweenScenes(duration);
@@ -111,7 +111,7 @@ std::vector<std::shared_ptr<Scene>> Director::getSceneStack() {
     return m_sceneStack;
 }
 
-void Director::draw(const double dt) {
+void Director::draw(const long double dt) {
     auto engine = Engine::sharedInstance();
     auto renderer = engine->getRenderer();
 
@@ -135,21 +135,21 @@ void Director::draw(const double dt) {
     m_transitionFader->setContentSize(engine->getWindowSize());
 
     auto normalisedOpacity = m_entering ?
-        this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<double>(SDL_GetTicks())) :
-        std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<double>(SDL_GetTicks())));
+        this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<long double>(SDL_GetTicks())) :
+        std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<long double>(SDL_GetTicks())));
     m_transitionFader->setOpacity(static_cast<unsigned char>(normalisedOpacity * 255));
 
     m_transitionFader->draw(dt);
 }
 
-void Director::_transitionBetweenScenes(double duration) {
+void Director::_transitionBetweenScenes(long double duration) {
     std::thread _transitionThread([this, duration]() {
         m_transitionDuration = duration * 1000;
 
         m_entering = true;
         m_transitionStart = SDL_GetTicks();
 
-        SDL_DelayPrecise(static_cast<unsigned long long>(m_transitionDuration * 1e6));
+        SDL_DelayPrecise(static_cast<uint64_t>(m_transitionDuration * 1e6));
         this->_replaceSceneWithNext();
 
         m_entering = false;

@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <engine/Engine.h>
 
 #include <algorithm>
@@ -32,15 +33,13 @@
 #include <engine/Scheduler.h>
 #include <engine/Director.h>
 
-#define Millisecond_Constant 1e-3
-
 std::shared_ptr<Engine> Engine::m_instance;
 
 Engine::Engine() :
     m_ticksPerSecond(240.f), m_secondsPerTick(1.f / m_ticksPerSecond),
-    m_ticksPerMillisecond(m_ticksPerSecond / 1e3), m_millisecondsPerTick(1.f / m_ticksPerMillisecond),
+    m_ticksPerNanosecond(m_ticksPerSecond / NanosecondsPerSecond), m_nanosecondsPerTick(1.f / m_ticksPerNanosecond),
     m_framesPerSecond(60.f), m_secondsPerFrame(1.f / m_framesPerSecond),
-    m_framesPerMillisecond(m_framesPerSecond / 1e3), m_millisecondsPerFrame(1.f / m_framesPerMillisecond),
+    m_framesPerNanosecond(m_framesPerSecond / NanosecondsPerSecond), m_nanosecondsPerFrame(1.f / m_framesPerNanosecond),
     m_usingVsync(true),
     m_isStopped(false),
     m_isSetup(false), m_isStarted(false),
@@ -55,26 +54,26 @@ std::shared_ptr<Engine> Engine::sharedInstance() {
     return m_instance;
 }
 
-double Engine::getTicksPerSecond() {
+long double Engine::getTicksPerSecond() {
     return m_ticksPerSecond;
 }
 
-void Engine::setTicksPerSecond(double tps) {
+void Engine::setTicksPerSecond(long double tps) {
     m_ticksPerSecond = tps;
-    m_secondsPerTick = 1.f / tps;
-    m_ticksPerMillisecond = tps / 1e3;
-    m_millisecondsPerTick = 1e3 / tps;
+    m_secondsPerTick = 1.L / m_ticksPerSecond;
+    m_ticksPerNanosecond = tps * NanosecondsPerSecond;
+    m_nanosecondsPerTick = 1.L / m_ticksPerNanosecond;
 }
 
 void Engine::resetTicksPerSecond() {
     this->setTicksPerSecond(240);
 }
 
-double Engine::getSecondsPerTick() {
+long double Engine::getSecondsPerTick() {
     return m_secondsPerTick;
 }
 
-void Engine::setSecondsPerTick(double spt) {
+void Engine::setSecondsPerTick(long double spt) {
     this->setTicksPerSecond(1.f / spt);
 }
 
@@ -82,29 +81,29 @@ void Engine::resetSecondsPerTick() {
     this->resetTicksPerSecond();
 }
 
-double Engine::getFramesPerSecond() {
+long double Engine::getFramesPerSecond() {
     return m_framesPerSecond;
 }
 
-void Engine::setFramesPerSecond(double fps) {
+void Engine::setFramesPerSecond(long double fps) {
     if (fps == 0) return void(m_usingVsync = true);
     else m_usingVsync = false;
 
     m_framesPerSecond = fps;
-    m_secondsPerFrame = 1.f / fps;
-    m_framesPerMillisecond = fps / 1e3;
-    m_millisecondsPerFrame = 1e3 / fps;
-}
+    m_secondsPerFrame = 1.L / m_framesPerSecond;
+    m_framesPerNanosecond = fps * NanosecondsPerSecond;
+    m_nanosecondsPerFrame = 1.L / m_nanosecondsPerFrame;
+};
 
 void Engine::resetFramesPerSecond() {
     this->setFramesPerSecond(0);
 }
 
-double Engine::getSecondsPerFrame() {
+long double Engine::getSecondsPerFrame() {
     return m_secondsPerFrame;
 }
 
-void Engine::setSecondsPerFrame(double spf) {
+void Engine::setSecondsPerFrame(long double spf) {
     this->setFramesPerSecond(1.f / spf);
 }
 
@@ -120,11 +119,11 @@ void Engine::showTPS(bool show) {
     m_showTPS = show;
 }
 
-void Engine::setTimeDisplayPrecision(unsigned long long precision) {
+void Engine::setTimeDisplayPrecision(uint64_t precision) {
     m_displayPrecision = precision;
 }
 
-void Engine::setTimeDisplaySampleSize(unsigned long long size) {
+void Engine::setTimeDisplaySampleSize(uint64_t size) {
     if (size < 1) throw std::length_error("Sample size must be greater than 0!");
     m_sampleSize = size;
     m_deltaAverageMult = 1.f / m_sampleSize;
@@ -189,7 +188,7 @@ std::shared_ptr<Engine::MouseData> Engine::getMouseData() {
     return std::make_shared<MouseData>(mouseData);
 }
 
-TTF_Font* Engine::getOrCreateFont(std::string file, double point) {
+TTF_Font* Engine::getOrCreateFont(std::string file, long double point) {
     if (m_fontMap.contains(file)) return m_fontMap.at(file);
 
     auto font = TTF_OpenFont(file.c_str(), point);
@@ -266,11 +265,11 @@ void Engine::runEngine() {
     std::thread updateThread([this]() {
         auto scheduler = Scheduler::sharedScheduler();
 
-        double lastTickTime = SDL_GetTicks();
+        uint64_t lastTickTime = SDL_GetTicksNS();
         while (!m_isStopped) {
-            double startTime = SDL_GetTicks();
+            uint64_t startTime = SDL_GetTicksNS();
 
-            const double dt = (startTime - lastTickTime) * Millisecond_Constant;
+            const long double dt = (startTime - lastTickTime) * SecondsPerNanosecond;
             if (m_showTPS) {
                 std::ranges::rotate(m_tickDeltas, m_tickDeltas.begin() + 1);
                 m_tickDeltas.back() = 1.f / dt;
@@ -280,41 +279,48 @@ void Engine::runEngine() {
 
             lastTickTime = startTime;
 
-            double endTime = SDL_GetTicks();
+            uint64_t endTime = SDL_GetTicksNS();
 
-            if (endTime - startTime < m_millisecondsPerTick)
-                SDL_DelayPrecise(static_cast<unsigned long long>(((startTime + m_millisecondsPerTick) - endTime) * 1e6));
+            if (endTime - startTime < m_nanosecondsPerTick)
+                SDL_DelayPrecise((startTime + m_nanosecondsPerTick) - endTime);
         }
     });
 
     // Specifically for engine-related processes that may take up computational time
     std::thread backgroundThread([this]() {
+        uint64_t lastUpdateTime = SDL_GetTicksNS();
+
         while (!m_isStopped) {
-            double startTime = SDL_GetTicks();
+            uint64_t startTime = SDL_GetTicksNS();
 
-            if (m_frameDeltas.size() == 0) return;
-            if (m_tickDeltas.size() == 0) return;
+            if (
+                lastUpdateTime + NanosecondsPerSecond < startTime &&
+                m_frameDeltas.size() > 0 &&
+                m_tickDeltas.size() > 0
+            ) {
+                lastUpdateTime = startTime;
 
-            m_frameAvg = m_showFPS ?
-                std::reduce(
-                    par_unseq
-                    m_frameDeltas.begin(),
-                    m_frameDeltas.end()
-                ) / m_sampleSize :
-                0;
+                m_frameAvg = m_showFPS ?
+                    std::reduce(
+                        par_unseq
+                        m_frameDeltas.begin(),
+                        m_frameDeltas.end()
+                    ) / m_sampleSize :
+                    0;
 
-            m_tickAvg = m_showTPS ?
-                std::reduce(
-                    par_unseq
-                    m_tickDeltas.begin(),
-                    m_tickDeltas.end()
-                ) / m_sampleSize :
-                0;
+                m_tickAvg = m_showTPS ?
+                    std::reduce(
+                        par_unseq
+                        m_tickDeltas.begin(),
+                        m_tickDeltas.end()
+                    ) / m_sampleSize :
+                    0;
+            }
             
-            double endTime = SDL_GetTicks();
+            uint64_t endTime = SDL_GetTicksNS();
 
-            if (endTime - startTime < m_millisecondsPerTick)
-                SDL_DelayPrecise(static_cast<unsigned long long>(((startTime + m_millisecondsPerTick) - endTime) * 1e6));
+            if (endTime - startTime < m_nanosecondsPerTick)
+                SDL_DelayPrecise((startTime + m_nanosecondsPerTick) - endTime);
         }
     });
 
@@ -324,9 +330,9 @@ void Engine::runEngine() {
     auto format = fmt::format("%.{}f", m_displayPrecision);
     SDL_Event event = {};
 
-    double lastFrameTime = SDL_GetTicks();
+    uint64_t lastFrameTime = SDL_GetTicksNS();
     while (!m_isStopped) {
-        double startTime = SDL_GetTicks();
+        uint64_t startTime = SDL_GetTicksNS();
 
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
@@ -341,7 +347,7 @@ void Engine::runEngine() {
             }
         }
 
-        const double dt = (startTime - lastFrameTime) * Millisecond_Constant;
+        const long double dt = (startTime - lastFrameTime) * SecondsPerNanosecond;
         if (m_showFPS) {
             std::ranges::rotate(m_frameDeltas, m_frameDeltas.begin() + 1);
             m_frameDeltas.back() = 1.f / dt;
@@ -379,10 +385,10 @@ void Engine::runEngine() {
         
         lastFrameTime = startTime;
 
-        double endTime = SDL_GetTicks();
+        uint64_t endTime = SDL_GetTicksNS();
 
-        if (endTime - startTime < m_millisecondsPerFrame)
-            SDL_DelayPrecise(static_cast<unsigned long long>(((startTime + m_millisecondsPerFrame) - endTime) * 1e6));
+        if (endTime - startTime < m_nanosecondsPerFrame)
+            SDL_DelayPrecise((startTime + m_nanosecondsPerFrame) - endTime);
     }
 
     m_isStopped = true;
