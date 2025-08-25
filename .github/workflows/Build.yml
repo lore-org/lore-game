@@ -10,54 +10,39 @@ on:
 env:
   NDK_VERSION: 29.0.13599879
   LINUX_PKGS: >
+    build-essential
+    git
+    make
+    pkg-config
+    cmake
+    ninja-build
+    gnome-desktop-testing
     libasound2-dev
-    libdbus-1-dev
-    libdecor-0-dev
-    libdrm-dev
-    libegl-dev
-    libgbm-dev
-    libgl-dev
-    libgles-dev
-    libibus-1.0-dev
-    libpipewire-0.3-dev
     libpulse-dev
+    libaudio-dev
+    libjack-dev
     libsndio-dev
-    libudev-dev
-    libwayland-dev
     libx11-dev
-    libxcursor-dev
     libxext-dev
+    libxrandr-dev
+    libxcursor-dev
     libxfixes-dev
     libxi-dev
-    libxinerama-dev
-    libxkbcommon-dev
-    libxrandr-dev
     libxss-dev
-    libxt-dev
-    libxv-dev
-    libxxf86vm-dev
-    libjpeg-dev
-    libpng-dev
-    libtiff-dev
-    libwebp-dev
-    libc6-dev
-    libfreetype-dev
-    libharfbuzz-dev
-    libbrotli-dev
-    libidn2-dev
-    libkrb5-dev
-    libldap-dev
-    libnghttp2-dev
-    libpsl-dev
-    librtmp-dev
-    libssh2-1-dev
-    libssl-dev
-    libzstd-dev
-    zlib1g-dev
-    libjack-jackd2-dev
-    libunwind-dev
-    libusb-1.0-0-dev
-    libusb-dev
+    libxtst-dev
+    libxkbcommon-dev
+    libdrm-dev
+    libgbm-dev
+    libgl1-mesa-dev
+    libgles2-mesa-dev
+    libegl1-mesa-dev
+    libdbus-1-dev
+    libibus-1.0-dev
+    libudev-dev
+    libpipewire-0.3-dev
+    libwayland-dev
+    libdecor-0-dev
+    liburing-dev
   WINDOWS_PKGS: >
     brotli
     libidn2
@@ -160,21 +145,21 @@ jobs:
       #   run: vcpkg install ${{ env.WINDOWS_PKGS }}
 
 
-      # - name: Update Linux Packages
-      #   if: matrix.config.id == 'linux' || matrix.config.id == 'android'
-      #   run: sudo apt-get update
+      - name: Update Linux Packages
+        if: matrix.config.id == 'linux' || matrix.config.id == 'android'
+        run: sudo apt-get update
 
-      # - name: Install and Cache Linux Packages
-      #   if: matrix.config.id == 'linux' || matrix.config.id == 'android'
-      #   uses: awalsh128/cache-apt-pkgs-action@latest
-      #   with:
-      #     packages: ${{ env.LINUX_PKGS }}
-      #     execute_install_scripts: true
-      #     version: ${{ steps.hash.outputs.LINUX_PKGS }}
+      - name: Install and Cache Linux Packages
+        if: matrix.config.id == 'linux' || matrix.config.id == 'android'
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: ${{ env.LINUX_PKGS }}
+          execute_install_scripts: true
+          version: ${{ steps.hash.outputs.LINUX_PKGS }}
 
-      # - name: Install Leftover Linux Packages
-      #   if: matrix.config.id == 'linux' || matrix.config.id == 'android'
-      #   run: sudo apt-get install ${{ env.LINUX_PKGS }}
+      - name: Install Leftover Linux Packages
+        if: matrix.config.id == 'linux' || matrix.config.id == 'android'
+        run: sudo apt-get install ${{ env.LINUX_PKGS }}
 
 
       # - name: Setup Homebrew
