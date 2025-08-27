@@ -31,10 +31,6 @@ std::shared_ptr<Scheduler> Scheduler::sharedScheduler() {
     return m_instance;
 }
 
-long double Scheduler::getTimeScale() {
-    return m_timeScale;
-}
-
 void Scheduler::setTimeScale(long double timeScale) {
     m_timeScale = timeScale;
 }

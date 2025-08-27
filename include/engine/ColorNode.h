@@ -12,16 +12,16 @@ public:
     static std::shared_ptr<ColorNode> create();
 
     void setOpacity(unsigned char opacity);
-    int8_t getOpacity();
+    inline int8_t getOpacity() { return m_color.a; }
 
     struct Color3 {
         unsigned char r;
         unsigned char g;
         unsigned char b;
 
-        operator SDL_Color();
+        inline operator SDL_Color() { return { r, g, b, 255 }; }
 
-        operator SDL_FColor();
+        inline operator SDL_FColor() { return { static_cast<float>(r), static_cast<float>(g), static_cast<float>(b), 255.f }; }
     };
 
     struct Color4 {
@@ -30,9 +30,9 @@ public:
         unsigned char b;
         unsigned char a;
 
-        operator SDL_Color();
+        inline operator SDL_Color() { return { r, g, b, a }; }
 
-        operator SDL_FColor();
+        inline operator SDL_FColor() { return { static_cast<float>(r), static_cast<float>(g), static_cast<float>(b), static_cast<float>(a) }; }
     };
 
     enum BlendMode {
@@ -49,12 +49,12 @@ public:
     // Includes alpha channel
     void setColorA(Color4 color);
 
-    Color3 getColor();
+    inline Color3 getColor() { return { m_color.r, m_color.g, m_color.b }; }
     // Includes alpha channel
-    Color4 getColorA();
+    inline Color4 getColorA() { return m_color; }
 
     void setBlendMode(BlendMode mode);
-    BlendMode getBlendMode();
+    inline BlendMode getBlendMode() { return m_blendMode; }
 
 protected:
     Color4 m_color;

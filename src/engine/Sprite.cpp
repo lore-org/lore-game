@@ -106,10 +106,6 @@ void Sprite::setTexture(SDL_Texture* texture) {
     m_texture = texture;
 }
 
-SDL_Texture* Sprite::getTexture() {
-    return m_texture;
-}
-
 void Sprite::draw(const long double dt) {
     ColorNode::draw(dt);
 

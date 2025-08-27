@@ -35,7 +35,7 @@ public:
     static std::shared_ptr<Sprite> createFromSprite(std::shared_ptr<Sprite> sprite);
 
     void setTexture(SDL_Texture* texture);
-    SDL_Texture* getTexture();
+    inline SDL_Texture* getTexture() { return m_texture; }
 
     virtual void draw(const long double dt) override;
 

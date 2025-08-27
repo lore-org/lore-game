@@ -4,6 +4,7 @@
 #include <engine/Engine.h>
 #include <engine/utils.hpp>
 
+// sets up events for interacting with Mouse input. Use `Engine::getMouseData()` to get the current data involving the mouse instead.
 class Touchable : public Node {
 public:
     struct Events {
@@ -11,14 +12,27 @@ public:
         CreateEventDecl(touchable, mouseenter);
         // Mouse left bounding box of node
         CreateEventDecl(touchable, mouseleave);
-        // LMB held down on node
+
+        // Mouse button held down on node
         CreateEventDecl(touchable, mousedown);
-        // LMB released from node
+        // Mouse button released from node
         CreateEventDecl(touchable, mouseup);
+        
+        // Node gained focus
+        CreateEventDecl(typeable, focusin);
+        // Node lost focus
+        CreateEventDecl(typeable, focusout);
+
         // LMB pressed on node
         CreateEventDecl(touchable, click);
+        // MMB pressed on node
+        CreateEventDecl(touchable, pick);
         // RMB pressed on node
         CreateEventDecl(touchable, context);
+        // Forwards Mouse Button pressed on node
+        CreateEventDecl(touchable, forward);
+        // Backwards Mouse Button pressed on node
+        CreateEventDecl(touchable, backward);
     };
 
     virtual bool init() override;
@@ -27,9 +41,16 @@ public:
 
     virtual void update(const long double dt) override;
 
+    inline bool isHovered() { return m_isHovered; }
+    inline bool isPressed() { return m_isHovered; }
+    inline bool isFocused() { return m_isFocused; }
+
 protected:
     Touchable();
 
     bool m_isHovered;
+    bool m_isPressed;
+    bool m_isFocused;
+    
     std::shared_ptr<Engine::MouseData> m_lastMouseData;
 };

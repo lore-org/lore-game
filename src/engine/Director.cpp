@@ -99,18 +99,6 @@ std::shared_ptr<Scene> Director::getTopScene() {
     return nullptr;
 }
 
-std::shared_ptr<Scene> Director::getDisplayedScene() {
-    return m_displayedScene;
-}
-
-size_t Director::getNumberOfScenes() {
-    return m_sceneStack.size();
-}
-
-std::vector<std::shared_ptr<Scene>> Director::getSceneStack() {
-    return m_sceneStack;
-}
-
 void Director::draw(const long double dt) {
     auto engine = Engine::sharedInstance();
     auto renderer = engine->getRenderer();

@@ -20,28 +20,28 @@ public:
     static std::shared_ptr<Engine> sharedInstance();
 
     // Gets the target TPS
-    long double getTicksPerSecond();
+    inline long double getTicksPerSecond() { return m_ticksPerSecond; }
     // Sets the target TPS -- default is 240
     void setTicksPerSecond(long double tps);
     // Sets TPS to 240
     void resetTicksPerSecond();
 
     // Gets the target SPT
-    long double getSecondsPerTick();
+    inline long double getSecondsPerTick() { return m_secondsPerTick; }
     // Sets the target SPF -- default is 1 / 240
     void setSecondsPerTick(long double spt);
     // Sets SPT to 1 / 240
     void resetSecondsPerTick();
 
     // Gets the target FPS
-    long double getFramesPerSecond();
+    inline long double getFramesPerSecond() { return m_framesPerSecond; }
     // Sets the target FPS -- 0 uses the monitor's target hz, otherwise known as vsync -- default is 0
     void setFramesPerSecond(long double fps);
     // Sets FPS to 0
     void resetFramesPerSecond();
 
     // Gets the target SPF
-    long double getSecondsPerFrame();
+    inline long double getSecondsPerFrame() { return m_secondsPerFrame; }
     // Sets the target SPF -- 0 uses the monitor's target hz, otherwise known as vsync -- default is 0
     void setSecondsPerFrame(long double spf);
     // Sets SPF to 0
@@ -61,7 +61,7 @@ public:
     // Gets the stored window size that is updated after each frame
     //
     // Does not require to be run in the main thread, as it is pulling a value from memory.
-    Size getStaticWindowSize();
+    inline Size getStaticWindowSize() { return m_windowSize; }
 
     struct MouseData {
         bool lmb;
@@ -73,9 +73,9 @@ public:
         float y;
     };
 
-    SDL_Window* getWindow();
-    SDL_Renderer* getRenderer();
-    const SDL_DisplayMode* getDisplayMode();
+    inline SDL_Window* getWindow() { return m_sdlWindow; }
+    inline SDL_Renderer* getRenderer() { return m_sdlRenderer; }
+    inline const SDL_DisplayMode* getDisplayMode() { return m_sdlDisplayMode; }
 
     // Gets the system time in nanoseconds. For a more performant method that doesn't rely on system time, use SDL_GetTicks
     static SDL_Time getTime();

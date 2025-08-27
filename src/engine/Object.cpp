@@ -24,14 +24,6 @@
 
 Object::Object() {}
 
-bool Object::isEqual(std::shared_ptr<Object> object) {
-    return this == object.get();
-}
-
-bool Object::operator==(std::shared_ptr<Object> object) {
-    return this->isEqual(object);
-}
-
 bool Object::init() {
     return true;
 }

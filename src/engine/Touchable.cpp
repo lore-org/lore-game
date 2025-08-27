@@ -21,7 +21,7 @@
 #include <engine/Scheduler.h>
 #include <engine/Engine.h>
 
-Touchable::Touchable() : m_isHovered(false), m_lastMouseData(nullptr) {}
+Touchable::Touchable() : m_isHovered(false), m_isPressed(false), m_isFocused(false), m_lastMouseData(nullptr) {}
 
 bool Touchable::init() {
     if (!Node::init()) return false;
@@ -41,23 +41,36 @@ void Touchable::update(const long double dt) {
     #define IsClicked(button) (!m_lastMouseData->button && mouseData->button)
     #define IsReleased(button) (m_lastMouseData->button && !mouseData->button)
 
+    #define NodeIsClicked(button) (m_isHovered && wasPressed && IsClicked(button))
+    #define NodeIsReleased(button) (m_isHovered && wasPressed && IsReleased(button))
+
     #define WithAll(method) (method(lmb) || method(mmb) || method(rmb) || method(side1) || method(side2))
 
 
-    auto rect = this->getRect();
-    auto containsLastMouse = rect.containsPoint({ m_lastMouseData->x, m_lastMouseData->y });
+    auto wasHovered = m_isHovered;
+    auto wasPressed = m_isPressed;
+    auto wasFocused = m_isFocused;
+
     auto mouseData = Engine::getMouseData();
 
-    m_isHovered = rect.containsPoint({ mouseData->x, mouseData->y });
+    m_isHovered = this->getRect().containsPoint({ mouseData->x, mouseData->y });
+    m_isPressed = m_isHovered && WithAll(IsClicked);
+    m_isFocused = !(WithAll(IsClicked) && !m_isHovered) && (wasFocused || (!wasPressed && m_isPressed));
 
-    if (!containsLastMouse && m_isHovered) this->_callEventListener(Events::mouseenter);
-    if (!m_isHovered && containsLastMouse) this->_callEventListener(Events::mouseleave);
+    if (!wasHovered && m_isHovered) this->_callEventListener(Events::mouseenter);
+    if (!m_isHovered && wasHovered) this->_callEventListener(Events::mouseleave);
 
-    if (m_isHovered && WithAll(IsClicked)) this->_callEventListener(Events::mousedown);
-    if (WithAll(IsReleased)) this->_callEventListener(Events::mouseup);
+    if (!wasPressed && m_isPressed) this->_callEventListener(Events::mousedown);
+    if (!m_isPressed && wasPressed) this->_callEventListener(Events::mouseup);
 
-    if (m_isHovered && IsReleased(lmb)) this->_callEventListener(Events::click);
-    if (m_isHovered && IsReleased(rmb)) this->_callEventListener(Events::context);
+    if (!wasFocused && m_isFocused) this->_callEventListener(Events::focusin);
+    if (!m_isFocused && wasFocused) this->_callEventListener(Events::focusout);
+
+    if (NodeIsReleased(lmb)) this->_callEventListener(Events::click);
+    if (NodeIsReleased(mmb)) this->_callEventListener(Events::pick);
+    if (NodeIsReleased(rmb)) this->_callEventListener(Events::context);
+    if (NodeIsReleased(side1)) this->_callEventListener(Events::forward);
+    if (NodeIsReleased(side2)) this->_callEventListener(Events::backward);
 
     m_lastMouseData = mouseData;
 

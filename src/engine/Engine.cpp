@@ -54,10 +54,6 @@ std::shared_ptr<Engine> Engine::sharedInstance() {
     return m_instance;
 }
 
-long double Engine::getTicksPerSecond() {
-    return m_ticksPerSecond;
-}
-
 void Engine::setTicksPerSecond(long double tps) {
     m_ticksPerSecond = tps;
     m_secondsPerTick = 1.L / m_ticksPerSecond;
@@ -69,20 +65,12 @@ void Engine::resetTicksPerSecond() {
     this->setTicksPerSecond(240);
 }
 
-long double Engine::getSecondsPerTick() {
-    return m_secondsPerTick;
-}
-
 void Engine::setSecondsPerTick(long double spt) {
     this->setTicksPerSecond(1.f / spt);
 }
 
 void Engine::resetSecondsPerTick() {
     this->resetTicksPerSecond();
-}
-
-long double Engine::getFramesPerSecond() {
-    return m_framesPerSecond;
 }
 
 void Engine::setFramesPerSecond(long double fps) {
@@ -97,10 +85,6 @@ void Engine::setFramesPerSecond(long double fps) {
 
 void Engine::resetFramesPerSecond() {
     this->setFramesPerSecond(0);
-}
-
-long double Engine::getSecondsPerFrame() {
-    return m_secondsPerFrame;
 }
 
 void Engine::setSecondsPerFrame(long double spf) {
@@ -140,22 +124,6 @@ void Engine::setTimeDisplaySampleSize(uint64_t size) {
 void Engine::setWindowSize(Size size) {
     m_windowSize = size;
     if (!SDL_SetWindowSize(m_sdlWindow, static_cast<int>(size.width), static_cast<int>(size.height))) LogSDLError();
-}
-
-Size Engine::getStaticWindowSize() {
-    return m_windowSize;
-}
-
-SDL_Window* Engine::getWindow() {
-    return m_sdlWindow;
-}
-
-SDL_Renderer* Engine::getRenderer() {
-    return m_sdlRenderer;
-}
-
-const SDL_DisplayMode* Engine::getDisplayMode() {
-    return m_sdlDisplayMode;
 }
 
 SDL_Time Engine::getTime() {

@@ -33,14 +33,6 @@ void PresenceManager::enableRPC(bool enable) {
     m_rpcIsEnabled = enable;
 }
 
-bool PresenceManager::isEnabled() {
-    return m_rpcIsEnabled;
-}
-
-bool PresenceManager::isActive() {
-    return m_rpcIsActive;
-}
-
 void PresenceManager::setActive(bool active) {
     m_rpcIsActive = active;
 }

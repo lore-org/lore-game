@@ -27,9 +27,9 @@ public:
     void replaceTopSceneWithTransition(std::shared_ptr<Scene> scene, long double duration = 5);
 
     std::shared_ptr<Scene> getTopScene();
-    std::shared_ptr<Scene> getDisplayedScene();
-    size_t getNumberOfScenes();
-    std::vector<std::shared_ptr<Scene>> getSceneStack();
+    inline std::shared_ptr<Scene> getDisplayedScene() { return m_displayedScene; }
+    inline size_t getNumberOfScenes() { return m_sceneStack.size(); }
+    inline std::vector<std::shared_ptr<Scene>> getSceneStack() { return m_sceneStack; }
     
     virtual void draw(const long double dt);
 

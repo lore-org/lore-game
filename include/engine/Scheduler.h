@@ -19,7 +19,7 @@ public:
 
     static std::shared_ptr<Scheduler> sharedScheduler();
 
-    long double getTimeScale();
+    inline long double getTimeScale() { return m_timeScale; }
     void setTimeScale(long double timeScale);
 
     virtual void update(long double dt) override;

@@ -17,8 +17,8 @@ namespace utils {
         // Default is false
         void enableRPC(bool enable);
 
-        bool isEnabled();
-        bool isActive();
+        inline bool isEnabled() { return m_rpcIsEnabled; }
+        inline bool isActive() { return m_rpcIsActive; }
 
     protected:
         PresenceManager();

@@ -47,24 +47,12 @@ void Node::setZOrder(int64_t zOrder) {
     if (m_parent) m_parent->sortAllChildren();
 }
 
-int64_t Node::getZOrder() {
-    return m_zOrder;
-}
-
 void Node::setScale(long double scale) {
     m_scale = scale;
 }
 
-long double Node::getScale() {
-    return m_scale;
-}
-
 void Node::setPosition(Point position) {
     m_position = position;
-}
-
-Point Node::getPosition() const {
-    return m_position;
 }
 
 void Node::setPosition(long double x, long double y) {
@@ -76,48 +64,24 @@ void Node::setPositionX(long double x) {
     m_position.x = x;
 }
 
-long double Node::getPositionX() const {
-    return m_position.x;
-}
-
 void Node::setPositionY(long double y) {
     m_position.y = y;
-}
-
-long double Node::getPositionY() const {
-    return m_position.y;
 }
 
 void Node::setAnchorPoint(Point anchorPoint) {
     m_anchorPoint = anchorPoint;
 }
 
-Point Node::getAnchorPoint() const {
-    return m_anchorPoint;
-}
-
 void Node::setContentSize(Size contentSize) {
     m_contentSize = contentSize;  // TODO - implement NULL for filling render target
-}
-
-Size Node::getContentSize() const {
-    return m_contentSize;
 }
 
 void Node::setVisible(bool visible) {
     m_visible = visible;
 }
 
-bool Node::isVisible() const {
-    return m_visible;
-}
-
 void Node::setRotation(long double rotation) {
     m_rotation = rotation;
-}
-
-long double Node::getRotation() const {
-    return m_rotation;
 }
 
 void Node::addChild(std::shared_ptr<Node> child) {
@@ -146,22 +110,10 @@ std::shared_ptr<Node> Node::getChildByTag(int64_t tag) {
     return nullptr;
 }
 
-std::vector<std::shared_ptr<Node>> Node::getChildren() {
-    return m_children;
-}
-
-uint64_t Node::getChildrenCount() const {
-    return m_children.size();
-}
-
 void Node::setParent(std::shared_ptr<Node> parent) {
     if (m_parent) m_parent->removeChild(utils::cast_shared<Node>(this));
     parent->addChild(utils::cast_shared<Node>(this));
     m_parent = parent;
-}
-
-std::shared_ptr<Node> Node::getParent() {
-    return m_parent;
 }
 
 void Node::removeFromParent() {
@@ -203,10 +155,6 @@ void Node::setTag(int64_t tag) {
     m_tag = tag;
 }
 
-std::shared_ptr<void> Node::getUserData() {
-    return m_userData;
-}
-
 void Node::setUserData(std::shared_ptr<void> userData) {
     m_userData = userData;
 }
@@ -221,10 +169,6 @@ void Node::draw(const long double dt) {
         m_children,
         [dt](std::shared_ptr<Node> child) { child->draw(dt); }
     );
-}
-
-Rect Node::getRect() {
-    return Rect(m_position, m_contentSize);
 }
 
 size_t Node::_getIndexOfChild(std::shared_ptr<Node> child) {
