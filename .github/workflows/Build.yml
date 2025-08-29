@@ -155,8 +155,7 @@ jobs:
 
       - name: Update Linux Packages
         if: matrix.config.id == 'linux' || matrix.config.id == 'android'
-        run: >
-          sudo apt-get update -y
+        run: sudo apt-get update -y
 
       - name: Install and Cache Linux Packages
         if: matrix.config.id == 'linux' || matrix.config.id == 'android'
@@ -165,11 +164,6 @@ jobs:
           packages: ${{ env.LINUX_PKGS }}
           execute_install_scripts: true
           version: ${{ steps.hash.outputs.LINUX_PKGS }}
-
-      - name: Install Leftover Linux Packages
-        if: matrix.config.id == 'linux' || matrix.config.id == 'android'
-        run: >
-          sudo apt-get install ${{ env.LINUX_PKGS }} -y
 
 
       # - name: Setup Homebrew
