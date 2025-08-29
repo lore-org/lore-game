@@ -155,7 +155,7 @@ jobs:
 
       - name: Update Linux Packages
         if: matrix.config.id == 'linux' || matrix.config.id == 'android'
-        run: sudo apt-get update
+        run: sudo apt-get update -y
 
       - name: Install and Cache Linux Packages
         if: matrix.config.id == 'linux' || matrix.config.id == 'android'
@@ -167,7 +167,7 @@ jobs:
 
       - name: Install Leftover Linux Packages
         if: matrix.config.id == 'linux' || matrix.config.id == 'android'
-        run: sudo apt-get install ${{ env.LINUX_PKGS }}
+        run: sudo apt-get install ${{ env.LINUX_PKGS }} -y
 
 
       # - name: Setup Homebrew
@@ -211,7 +211,7 @@ jobs:
       - name: Update Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.13.7'
           cache: 'pip'
       
       - name: Install Meson
