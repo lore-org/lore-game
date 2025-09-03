@@ -77,6 +77,9 @@ void Object::unregisterEventListener(std::string name, std::shared_ptr<Event_Cal
 }
 
 void Object::_callEventListener(std::string name, std::shared_ptr<void> data) {
+    // FIXME
+    LogInfo(fmt::format("Called Event '{}' from Class '{}'", name, typeid(*this).name() ));
+
     auto _listeners = m_callbacks.find(utils::toLowerCase(name));
     if (_listeners == m_callbacks.end()) return;
     auto listeners = _listeners->second;

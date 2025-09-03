@@ -72,8 +72,36 @@ void Node::setAnchorPoint(Point anchorPoint) {
     m_anchorPoint = anchorPoint;
 }
 
+void Node::setAnchorPoint(long double x, long double y) {
+    m_anchorPoint.x = x;
+    m_anchorPoint.y = y;
+}
+
+void Node::setAnchorX(long double x) {
+    m_anchorPoint.x = x;
+}
+
+void Node::setAnchorY(long double y) {
+    m_anchorPoint.y = y;
+}
+
+// TODO - implement NULL for filling render target with contentSize
+
 void Node::setContentSize(Size contentSize) {
-    m_contentSize = contentSize;  // TODO - implement NULL for filling render target
+    m_contentSize = contentSize;
+}
+
+void Node::setContentSize(long double width, long double height) {
+    m_contentSize.width = width;
+    m_contentSize.height = height;
+}
+
+void Node::setContentWidth(long double width) {
+    m_contentSize.width = width;
+}
+
+void Node::setContentHeight(long double height) {
+    m_contentSize.height = height;
 }
 
 void Node::setVisible(bool visible) {
@@ -82,6 +110,44 @@ void Node::setVisible(bool visible) {
 
 void Node::setRotation(long double rotation) {
     m_rotation = rotation;
+}
+
+// FIXME - point is always inside rect?
+bool Node::containsPoint(Point point) {
+    auto scaledWidth = m_contentSize.width * m_anchorPoint.x;
+    auto scaledHeight = m_contentSize.height * m_anchorPoint.y;
+
+    auto leftBound = m_position.x - scaledWidth;
+    auto rightBound = m_position.x + (m_contentSize.width - scaledWidth);
+    auto topBound = m_position.y - scaledHeight;
+    auto bottomBound = m_position.y + (m_contentSize.height - scaledHeight);
+
+    auto center = MakePoint(m_position.x + scaledWidth, m_position.y + scaledHeight);
+
+    /**
+     * A----------B
+     * |          |
+     * |          |
+     * D----------C
+     */
+
+    auto A = MakePoint(leftBound, topBound).rotateAroundCenter(center, m_rotation);
+    auto B = MakePoint(rightBound, topBound).rotateAroundCenter(center, m_rotation);
+    auto C = MakePoint(rightBound, bottomBound).rotateAroundCenter(center, m_rotation);
+    auto D = MakePoint(leftBound, bottomBound).rotateAroundCenter(center, m_rotation);
+
+    #define Vector(p1, p2) MakePoint(p2.x - p1.x, p2.y - p1.y)
+
+    auto AB = Vector(A, B);
+    auto AM = Vector(A, point);
+    auto BC = Vector(B, C);
+    auto BM = Vector(B, point);
+
+    return
+        0 <= utils::dot(AB, AM) &&
+        utils::dot(AB, AM) <= utils::dot(AB, AB) &&
+        0 <= utils::dot(BC, BM) &&
+        utils::dot(BC, BM) <= utils::dot(BC, BC);
 }
 
 void Node::addChild(std::shared_ptr<Node> child) {

@@ -35,6 +35,7 @@ public:
     operator SDL_FPoint() const;
 
     void setPoint(long double x, long double y);
+    void setPoint(Point point);
     bool equals(const Point& target) const;
     
     bool fuzzyEquals(const Point& target, long double variance) const;
@@ -47,7 +48,8 @@ public:
 
     Point normalise() const;
 
-    Point rotateByAngle(long double angle);
+    Point rotateAroundOrigin(long double angle);
+    Point rotateAroundCenter(Point center, long double angle);
 };
 
 class Size : public std::enable_shared_from_this<Size> {

@@ -1,5 +1,5 @@
-#include "SDL3/SDL_timer.h"
-#include "engine/Object.h"
+
+#include "engine/RectangleNode.h"
 #include <cmath>
 #include <memory>
 #define SDL_MAIN_HANDLED
@@ -23,6 +23,7 @@
 #include <engine/Scene.h>
 #include <engine/Sprite.h>
 #include <engine/Director.h>
+#include <engine/Typeable.h>
 
 int main(int argc, char* argv[]) {
     (void)argc; (void)argv;
@@ -57,25 +58,51 @@ int main(int argc, char* argv[]) {
     auto scene = Scene::create();
 
     auto kitty = Sprite::createFromFile("resources/kitty.png");
+    kitty->setContentSize(100, 100);
     kitty->setUpdate(std::make_shared<Update_Callback>([&kitty](auto dt) {
-        kitty->setPosition(Engine::sharedInstance()->getStaticWindowSize() / 2.f); // Make sure kitty is in the center of the screen
+        kitty->setPosition(Engine::sharedInstance()->getStaticWindowSize() / 2.L); // Make sure kitty is in the center of the screen
         kitty->setRotation(kitty->getRotation() + (45 * dt)); // Spin kitty 45deg / second
     }));
     kitty->scheduleSelf();
 
     scene->addChild(kitty);
 
-    auto furries = Sprite::createFromURL("https://static1.e621.net/data/a8/f2/a8f216299b6b4a83d6d8bf038300a0d0.jpg");
-    furries->setAnchorPoint(0);
-    furries->setZOrder(-1);
-    furries->setScale(0.2);
-    furries->setUpdate(std::make_shared<Update_Callback>([&furries](auto dt) {
-        auto x = cos(SDL_GetTicksNS() * SecondsPerNanosecond);
-        auto y = sin(SDL_GetTicksNS() * SecondsPerNanosecond);
-        furries->setPosition((MakePoint(x, y) * 50) + 100);
+    // auto furries = Sprite::createFromURL("https://static1.e621.net/data/a8/f2/a8f216299b6b4a83d6d8bf038300a0d0.jpg");
+    // furries->setAnchorPoint(0);
+    // furries->setZOrder(-1);
+    // furries->setScale(0.2);
+    // furries->setUpdate(std::make_shared<Update_Callback>([&furries](auto dt) {
+    //     auto x = cos(SDL_GetTicksNS() * SecondsPerNanosecond);
+    //     auto y = sin(SDL_GetTicksNS() * SecondsPerNanosecond);
+    //     furries->setPosition((MakePoint(x, y) * 50) + 100);
+    // }));
+    // furries->scheduleSelf();
+    // scene->addChild(furries);
+
+    auto textInput = Typeable::create();
+    textInput->setAnchorPoint(0);
+    textInput->setPosition(50, 100);
+    textInput->setContentSize(200, 30);
+
+    auto textBG = RectangleNode::createWithVec(textInput->getPosition(), textInput->getContentSize());
+    textBG->setAnchorPoint(textInput->getAnchorPoint());
+    
+    textInput->addChild(textBG);
+    scene->addChild(textInput);
+
+    auto cursor = RectangleNode::create();
+    cursor->setContentSize(10);
+    cursor->setUpdate(std::make_shared<Update_Callback>([&cursor](auto) {
+        auto mouseData = Engine::getMouseData();
+
+        cursor->setColor({ static_cast<unsigned char>(mouseData->lmb * 255), static_cast<unsigned char>(mouseData->rmb * 255), 255 });
+        cursor->setPosition({ mouseData->x, mouseData->y });
+
+        // LogInfo(fmt::format("   x: {}   y: {}", mouseData->x, mouseData->y));
     }));
-    furries->scheduleSelf();
-    scene->addChild(furries);
+    cursor->scheduleSelf();
+
+    scene->addChild(cursor);
 
     Director::sharedDirector()->pushScene(scene);
 

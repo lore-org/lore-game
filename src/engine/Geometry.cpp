@@ -101,14 +101,15 @@ Point Point::normalise() const {
     return *this / getLength();
 }
 
-Point Point::rotateByAngle(long double angle) {
-    long double oldAngle = this->getAngle();
-    long double newAngle = oldAngle - angle; // Clockwise rotation
+Point Point::rotateAroundOrigin(long double angle) {
+    return this->rotateAroundCenter(MakePoint(0, 0), angle);
+}
 
-    long double length = this->getLength();
-    this->setPoint(cos(angle) * length, sin(angle) * length);
+Point Point::rotateAroundCenter(Point center, long double angle) {
+    auto oldAngle = this->getAngle();
+    auto newAngle = oldAngle - angle; // Clockwise rotation
 
-    return *this;
+    return utils::rotatePointByCenter(*this, center, angle);
 }
 
 

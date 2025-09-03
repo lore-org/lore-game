@@ -4,6 +4,7 @@
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
+#include <cmath>
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
@@ -16,6 +17,7 @@
 #include <engine/Geometry.h>
 #include <engine/utils.hpp>
 
+#include <numbers>
 #include <string>
 #include <algorithm>
 #include <vector>
@@ -101,5 +103,35 @@ namespace utils {
 
     inline bool caseInsensitiveCompare(std::string first, std::string second) {
         return std::ranges::equal(first, second, [](char a, char b) { return tolower(a) == tolower(b); });
+    }
+
+    struct hash_pair final {
+        template<class TFirst, class TSecond>
+        size_t operator()(const std::pair<TFirst, TSecond>& p) const noexcept {
+            uintmax_t hash = std::hash<TFirst>{}(p.first);
+            hash <<= sizeof(uintmax_t) * 4;
+            hash ^= std::hash<TSecond>{}(p.second);
+            return std::hash<uintmax_t>{}(hash);
+        }
+    };
+    
+    inline long double dot(Point &p1, Point &p2) { return (p1.x * p2.x) + (p1.y * p2.y); };
+    inline long double dot(Point &p1, Size &p2) { return (p1.x * p2.width) + (p1.y * p2.height); };
+    inline long double dot(Size &p1, Point &p2) { return (p1.width * p2.x) + (p1.height * p2.y); };
+    inline long double dot(Size &p1, Size &p2) { return (p1.width * p2.width) + (p1.height * p2.height); };
+
+    // Clockwise rotation
+    inline Point rotatePointByCenter(Point &point, Point &center, long double degrees) {
+        auto radians = -degrees * (std::numbers::pi / 180.L);
+
+        auto angleCos = cosl(radians);
+        auto angleSin = sinl(radians);
+
+        auto translatedPoint = point - center;
+
+        return MakePoint(
+            translatedPoint.x * angleCos - translatedPoint.y * angleSin,
+            translatedPoint.x * angleSin + translatedPoint.y * angleCos
+        );
     }
 }

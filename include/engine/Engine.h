@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utils.hpp"
 #include <memory>
 #include <vector>
 #include <unordered_map>
@@ -86,7 +87,7 @@ public:
     // Be sure to run this in the main thread
     static std::shared_ptr<MouseData> getMouseData();
 
-    TTF_Font* getOrCreateFont(std::string file, long double point = 100);
+    TTF_Font* getOrCreateFont(std::string file, float point = 100.f);
 
     void setupEngine();
 
@@ -130,7 +131,7 @@ protected:
     const SDL_DisplayMode* m_sdlDisplayMode;
     TTF_TextEngine* m_sdlTextEngine;
 
-    std::unordered_map<std::string, TTF_Font*> m_fontMap;
+    std::unordered_map<std::pair<std::string, float>, TTF_Font*, utils::hash_pair> m_fontMap;
 
     // ------------------
 

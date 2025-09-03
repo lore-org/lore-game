@@ -140,6 +140,8 @@ Size Engine::getWindowSize() {
     return MakeSize(size.first, size.second);
 }
 
+// TODO - fix button masks
+
 std::shared_ptr<Engine::MouseData> Engine::getMouseData() {
     MouseData mouseData = {};
 
@@ -156,15 +158,16 @@ std::shared_ptr<Engine::MouseData> Engine::getMouseData() {
     return std::make_shared<MouseData>(mouseData);
 }
 
-TTF_Font* Engine::getOrCreateFont(std::string file, long double point) {
-    if (m_fontMap.contains(file)) return m_fontMap.at(file);
+TTF_Font* Engine::getOrCreateFont(std::string file, float point) {
+    std::pair<std::string, float> key(file, point);
+    if (m_fontMap.contains(key)) return m_fontMap.at(key);
 
     auto font = TTF_OpenFont(file.c_str(), point);
     if (!font) {
         LogSDLError();
         return nullptr;
     }
-    m_fontMap.insert({ file, font });
+    m_fontMap.insert({ key, font });
     return font;
 }
 
@@ -368,7 +371,7 @@ void Engine::runEngine() {
     TTF_DestroyRendererTextEngine(m_sdlTextEngine);
     std::ranges::for_each(
         m_fontMap,
-        [](std::pair<std::string, TTF_Font*> font) {
+        [](std::pair<std::pair<std::string, long double>, TTF_Font*> font) {
             TTF_CloseFont(font.second);
         }
     );

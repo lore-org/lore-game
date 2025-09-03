@@ -60,8 +60,6 @@ void RectangleNode::draw(const long double dt) {
     auto xOffset = IsZero(m_anchorPoint.x) ? 0 : scaledWidth * m_anchorPoint.x;
     auto yOffset = IsZero(m_anchorPoint.y) ? 0 : scaledHeight * m_anchorPoint.y;
 
-    auto translatedPosition = m_position - Point(xOffset, yOffset);
-
     if (!SDL_SetRenderDrawColor(
         renderer,
         m_color.r,
@@ -75,8 +73,8 @@ void RectangleNode::draw(const long double dt) {
     )) LogSDLError();
 
     SDL_FRect rect = {
-        static_cast<float>(translatedPosition.x),
-        static_cast<float>(translatedPosition.y),
+        static_cast<float>(m_position.x - xOffset),
+        static_cast<float>(m_position.y - yOffset),
         static_cast<float>(scaledWidth),
         static_cast<float>(scaledHeight)
     };

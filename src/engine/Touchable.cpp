@@ -21,7 +21,7 @@
 #include <engine/Scheduler.h>
 #include <engine/Engine.h>
 
-Touchable::Touchable() : m_isHovered(false), m_isPressed(false), m_isFocused(false), m_lastMouseData(nullptr) {}
+Touchable::Touchable() : m_isHovered(false), m_isPressed(false), m_isFocused(false), m_lastMouseData(Engine::getMouseData()) {}
 
 bool Touchable::init() {
     if (!Node::init()) return false;
@@ -53,18 +53,27 @@ void Touchable::update(const long double dt) {
 
     auto mouseData = Engine::getMouseData();
 
-    m_isHovered = this->getRect().containsPoint({ mouseData->x, mouseData->y });
+    // LogInfo("----------------------------------");
+    // LogInfo(fmt::format("mouseData->lmb     {}", mouseData->lmb));
+    // LogInfo(fmt::format("mouseData->mmb     {}", mouseData->mmb));
+    // LogInfo(fmt::format("mouseData->rmb     {}", mouseData->rmb));
+    // LogInfo(fmt::format("mouseData->side1   {}", mouseData->side1));
+    // LogInfo(fmt::format("mouseData->side2   {}", mouseData->side2));
+    // LogInfo(fmt::format("mouseData->x       {}", mouseData->x));
+    // LogInfo(fmt::format("mouseData->y       {}", mouseData->y));
+
+    m_isHovered = this->containsPoint({ mouseData->x, mouseData->y });
     m_isPressed = m_isHovered && WithAll(IsClicked);
     m_isFocused = !(WithAll(IsClicked) && !m_isHovered) && (wasFocused || (!wasPressed && m_isPressed));
 
     if (!wasHovered && m_isHovered) this->_callEventListener(Events::mouseenter);
-    if (!m_isHovered && wasHovered) this->_callEventListener(Events::mouseleave);
+    else if (!m_isHovered && wasHovered) this->_callEventListener(Events::mouseleave);
 
     if (!wasPressed && m_isPressed) this->_callEventListener(Events::mousedown);
-    if (!m_isPressed && wasPressed) this->_callEventListener(Events::mouseup);
+    else if (!m_isPressed && wasPressed) this->_callEventListener(Events::mouseup);
 
     if (!wasFocused && m_isFocused) this->_callEventListener(Events::focusin);
-    if (!m_isFocused && wasFocused) this->_callEventListener(Events::focusout);
+    else if (!m_isFocused && wasFocused) this->_callEventListener(Events::focusout);
 
     if (NodeIsReleased(lmb)) this->_callEventListener(Events::click);
     if (NodeIsReleased(mmb)) this->_callEventListener(Events::pick);
