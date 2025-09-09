@@ -1,4 +1,5 @@
 include(CheckCXXCompilerFlag)
+include(CheckCCompilerFlag)
 include(CheckLinkerFlag)
 include(CheckCXXSourceCompiles)
 
@@ -514,45 +515,100 @@ execute_process(COMMAND ${VIRTUAL_PYTHON} ${CMAKE_SOURCE_DIR}/python/icon_genera
 
 # Linker/Compiler checking
 
-check_cxx_compiler_flag(-fexperimental-library EXPER_LIB_SUPPORTED)
-
-if (DEBUG)
-    check_cxx_compiler_flag(-gcodeview CODEVIEW_SUPPORTED)
-    check_cxx_compiler_flag(-gcolumn-info COLUMN_INFO_SUPPORTED)
-    check_cxx_compiler_flag(-g CXX_DEBUG_SUPPORTED)
-    check_cxx_compiler_flag(-fsanitize=address CXX_ASAN_SUPPORTED)
-    check_cxx_compiler_flag(-fno-omit-frame-pointer NO_OMIT_FRAME_POINTER_SUPPORTED)
-endif()
-
-if (DEBUG)
-    check_linker_flag(CXX -fuse-ld=lld USE_LLD_SUPPORTED)
-    check_linker_flag(CXX -g LD_DEBUG_SUPPORTED)
-    check_linker_flag(CXX -fsanitize=address LD_ASAN_SUPPORTED)
-    check_linker_flag(CXX -Wl,--pdb= PDB_SUPPORTED)
-endif()
-
-target_compile_options("${SANITISED_PROJECT_NAME}" PUBLIC
-    $<$<BOOL:${EXPER_LIB_SUPPORTED}>:-fexperimental-library>
+list(APPEND CXX_COMPILER_FLAGS
+    "-Wno-c++98-compat"
+    "-fexperimental-library"
+    "-Wno-error"
 )
 
 if (DEBUG)
-    target_compile_options("${SANITISED_PROJECT_NAME}" PUBLIC
-        $<$<BOOL:${CXX_DEBUG_SUPPORTED}>:-g>
-        $<$<BOOL:${CXX_ASAN_SUPPORTED}>:-fsanitize=address>
-        $<$<BOOL:${CODEVIEW_SUPPORTED}>:-gcodeview>
-        $<$<BOOL:${COLUMN_INFO_SUPPORTED}>:-gcolumn-info>
-        $<$<BOOL:${NO_OMIT_FRAME_POINTER_SUPPORTED}>:-fno-omit-frame-pointer>
+    list(APPEND CXX_COMPILER_FLAGS
+        "-gcodeview"
+        "-gcolumn-info"
+        "-g"
+        "-fsanitize=address"
+        "-fno-omit-frame-pointer"
     )
 endif()
 
+list(APPEND C_COMPILER_FLAGS
+
+)
+
+list(APPEND CXX_LINKER_FLAGS
+
+)
+
 if (DEBUG)
-    target_link_options("${SANITISED_PROJECT_NAME}" PUBLIC
-        $<$<BOOL:${USE_LLD_SUPPORTED}>:-fuse-ld=lld>
-        $<$<BOOL:${LD_DEBUG_SUPPORTED}>:-g>
-        $<$<BOOL:${CXX_ASAN_SUPPORTED}>:-fsanitize=address>
-        $<$<BOOL:${PDB_SUPPORTED}>:-Wl,--pdb=>
+    list(APPEND CXX_LINKER_FLAGS
+        "-fuse-ld=lld"
+        "-g"
+        "-fsanitize=address"
+        "-Wl,--pdb="
     )
 endif()
+
+list(APPEND C_LINKER_FLAGS
+
+)
+
+macro(check_set_cxx_compiler_flag FLAG)
+    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
+    check_cxx_compiler_flag("${FLAG}" "SUPPORTS_CMP_${SANITISED_FLAG}")
+endmacro()
+
+macro(check_set_c_compiler_flag FLAG)
+    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
+    check_c_compiler_flag("${FLAG}" "SUPPORTS_CMP_${SANITISED_FLAG}")
+endmacro()
+
+
+macro(set_compile_flag_if_supported FLAG)
+    string(REGEX REPLACE "[^a-zA-Z0-9_\\.+-]" "_" SANITISED_FLAG "${FLAG}")
+    add_compile_options($<$<BOOL:${SUPPORTS_CMP_${SANITISED_FLAG}}>:"${FLAG}">)
+endmacro()
+
+
+macro(check_set_cxx_linker_flag FLAG)
+    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
+    check_linker_flag(CXX "${FLAG}" "SUPPORTS_LNK_${SANITISED_FLAG}")
+endmacro()
+
+macro(check_set_c_linker_flag FLAG)
+    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
+    check_linker_flag(C "${FLAG}" "SUPPORTS_LNK_${SANITISED_FLAG}")
+endmacro()
+
+
+set(TEMP_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+list(APPEND CMAKE_REQUIRED_FLAGS "-Werror")
+
+macro(set_linker_flag_if_supported FLAG)
+    string(REGEX REPLACE "[^a-zA-Z0-9_\\.+-]" "_" SANITISED_FLAG "${FLAG}")
+    add_link_options($<$<BOOL:${SUPPORTS_LNK_${SANITISED_FLAG}}>:"${FLAG}">)
+endmacro()
+
+foreach (FLAG IN LISTS CXX_COMPILER_FLAGS)
+    check_set_cxx_compiler_flag("${FLAG}")
+    set_compile_flag_if_supported("${FLAG}")
+endforeach()
+
+foreach (FLAG IN LISTS C_COMPILER_FLAGS)
+    check_set_c_compiler_flag("${FLAG}")
+    set_compile_flag_if_supported("${FLAG}")
+endforeach()
+
+foreach (FLAG IN LISTS CXX_LINKER_FLAGS)
+    check_set_cxx_linker_flag("${FLAG}")
+    set_linker_flag_if_supported("${FLAG}")
+endforeach()
+
+foreach (FLAG IN LISTS C_LINKER_FLAGS)
+    check_set_c_linker_flag("${FLAG}")
+    set_linker_flag_if_supported("${FLAG}")
+endforeach()
+
+set(CMAKE_REQUIRED_FLAGS "${TEMP_CMAKE_REQUIRED_FLAGS}")
 
 check_cxx_source_compiles("
     #include <execution>

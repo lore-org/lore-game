@@ -10,8 +10,7 @@
             "request": "launch",
             "name": "Debug target",
             "cwd": "${workspaceFolder}/build/bin",
-            // "preLaunchTask": "Build",
-            // "internalConsoleOptions": "openOnSessionStart",
+            // "preLaunchTask": "Build", // Uncomment to build the project on debug
             "program": "${workspaceFolder}/build/bin/Lore Game.exe"
         }
     ]
