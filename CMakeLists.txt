@@ -516,6 +516,8 @@ execute_process(COMMAND ${VIRTUAL_PYTHON} ${CMAKE_SOURCE_DIR}/python/icon_genera
 # Linker/Compiler checking
 
 list(APPEND CXX_COMPILER_FLAGS
+    "-Wa,-mbig-obj"
+    "/bigobj"
     "-Wno-c++98-compat"
     "-fexperimental-library"
     "-Wno-error"
@@ -565,7 +567,7 @@ endmacro()
 
 macro(set_compile_flag_if_supported FLAG)
     string(REGEX REPLACE "[^a-zA-Z0-9_\\.+-]" "_" SANITISED_FLAG "${FLAG}")
-    add_compile_options($<$<BOOL:${SUPPORTS_CMP_${SANITISED_FLAG}}>:"${FLAG}">)
+    add_compile_options($<$<BOOL:${SUPPORTS_CMP_${SANITISED_FLAG}}>:${FLAG}>)
 endmacro()
 
 
@@ -580,12 +582,9 @@ macro(check_set_c_linker_flag FLAG)
 endmacro()
 
 
-set(TEMP_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
-list(APPEND CMAKE_REQUIRED_FLAGS "-Werror")
-
 macro(set_linker_flag_if_supported FLAG)
     string(REGEX REPLACE "[^a-zA-Z0-9_\\.+-]" "_" SANITISED_FLAG "${FLAG}")
-    add_link_options($<$<BOOL:${SUPPORTS_LNK_${SANITISED_FLAG}}>:"${FLAG}">)
+    add_link_options($<$<BOOL:${SUPPORTS_LNK_${SANITISED_FLAG}}>:${FLAG}>)
 endmacro()
 
 foreach (FLAG IN LISTS CXX_COMPILER_FLAGS)
@@ -608,14 +607,12 @@ foreach (FLAG IN LISTS C_LINKER_FLAGS)
     set_linker_flag_if_supported("${FLAG}")
 endforeach()
 
-set(CMAKE_REQUIRED_FLAGS "${TEMP_CMAKE_REQUIRED_FLAGS}")
-
 check_cxx_source_compiles("
     #include <execution>
     #include <vector>
 
     int main(void) {
-        std::vector<char> v = {};
+        std::vector<char> v;
         std::sort(std::execution::par, v.begin(), v.end());
     }
 " HAS_PAR)
@@ -625,7 +622,7 @@ check_cxx_source_compiles("
     #include <vector>
 
     int main(void) {
-        std::vector<char> v = {};
+        std::vector<char> v;
         std::sort(std::execution::par_unseq, v.begin(), v.end());
     }
 " HAS_PAR_UNSEQ)
