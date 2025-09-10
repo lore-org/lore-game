@@ -44,7 +44,9 @@ You will need to build the project before debugging if you want changes to prope
 
 ## Adding Dependencies
 
-When adding a dependency, first make sure it has CMake support, or there is another repository which adds cmake support. If it does not, please follow the guide for [CPM.cmake](https://github.com/cpm-cmake/CPM.cmake#readme)
+When adding a dependency, first make sure it has CMake support, or there is another repository which adds cmake support. Otherwise you may add custom configuration, compilation, and installation commands via the FetchContent interface.
+
+For more information, please follow the guide for [CPM.cmake](https://github.com/cpm-cmake/CPM.cmake#readme)
 
 It is recommended to add `CPM_SOURCE_CACHE` to the systems PATH in order to cache dependency sources.
 
