@@ -110,12 +110,10 @@ void Sprite::draw(const long double dt) {
     ColorNode::draw(dt);
 
     auto renderer = Engine::sharedInstance()->getRenderer();
+    auto rect = this->getRect();
 
-    auto scaledWidth = m_contentSize.width * m_scale;
-    auto scaledHeight = m_contentSize.height * m_scale;
-
-    auto xOffset = IsZero(m_anchorPoint.x) ? 0 : scaledWidth * m_anchorPoint.x;
-    auto yOffset = IsZero(m_anchorPoint.y) ? 0 : scaledHeight * m_anchorPoint.y;
+    auto xOffset = IsZero(this->getAnchorX()) ? 0 : rect.getWidth() * this->getAnchorX();
+    auto yOffset = IsZero(this->getAnchorY()) ? 0 : rect.getHeight() * this->getAnchorY();
 
     if (!SDL_SetTextureColorMod(
         m_texture,
@@ -129,16 +127,18 @@ void Sprite::draw(const long double dt) {
     )) LogSDLError();
     if (!SDL_SetRenderDrawBlendMode(
         renderer,
-        m_blendMode
+        static_cast<SDL_BlendMode>(m_blendMode)
     )) LogSDLError();
 
-    SDL_FPoint rotationalAxis = { static_cast<float>(xOffset), static_cast<float>(yOffset) };
-    SDL_FRect destinationRect = {
-        static_cast<float>(m_position.x - xOffset),
-        static_cast<float>(m_position.y - yOffset),
-        static_cast<float>(scaledWidth),
-        static_cast<float>(scaledHeight)
-    };
+    SDL_FPoint rotationalAxis(
+        static_cast<float>(xOffset), static_cast<float>(yOffset)
+    );
+    SDL_FRect destinationRect(
+        static_cast<float>(rect.getX()),
+        static_cast<float>(rect.getY()),
+        static_cast<float>(rect.getWidth()),
+        static_cast<float>(rect.getHeight())
+    );
 
     if (!SDL_RenderTextureRotated(
         renderer,

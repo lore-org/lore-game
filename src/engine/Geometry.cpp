@@ -106,9 +106,6 @@ Point Point::rotateAroundOrigin(long double angle) {
 }
 
 Point Point::rotateAroundCenter(Point center, long double angle) {
-    auto oldAngle = this->getAngle();
-    auto newAngle = oldAngle - angle; // Clockwise rotation
-
     return utils::rotatePointByCenter(*this, center, angle);
 }
 
@@ -215,19 +212,19 @@ bool Rect::equals(const Rect& other) const {
 }
 
 long double Rect::getMinX() const {
-    return this->getX() - (this->getWidth() / 2.f);
+    return this->getX();
 }
 
 long double Rect::getMaxX() const {
-    return this->getX() + (this->getWidth() / 2.f);
+    return this->getX() + this->getWidth();
 }
 
 long double Rect::getMinY() const {
-    return this->getY() + (this->getHeight() / 2.f);
+    return this->getY();
 }
 
 long double Rect::getMaxY() const {
-    return this->getY() - (this->getHeight() / 2.f);
+    return this->getY() + this->getHeight();
 }
 
 std::tuple<long double, long double, long double, long double> Rect::getBounds() const {

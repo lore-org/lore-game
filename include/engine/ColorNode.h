@@ -3,7 +3,7 @@
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_blendmode.h>
 
-#include "Node.h"
+#include <engine/Node.h>
 
 class ColorNode : public Node {
 public:
@@ -35,7 +35,7 @@ public:
         inline operator SDL_FColor() { return { static_cast<float>(r), static_cast<float>(g), static_cast<float>(b), static_cast<float>(a) }; }
     };
 
-    enum BlendMode {
+    enum class BlendMode : SDL_BlendMode {
         None = SDL_BLENDMODE_NONE,
         Blend = SDL_BLENDMODE_BLEND,
         Blend_Premultiplied = SDL_BLENDMODE_BLEND_PREMULTIPLIED,

@@ -53,12 +53,7 @@ void RectangleNode::draw(const long double dt) {
     ColorNode::draw(dt);
 
     auto renderer = Engine::sharedInstance()->getRenderer();
-    
-    auto scaledWidth = m_contentSize.width * m_scale;
-    auto scaledHeight = m_contentSize.height * m_scale;
-
-    auto xOffset = IsZero(m_anchorPoint.x) ? 0 : scaledWidth * m_anchorPoint.x;
-    auto yOffset = IsZero(m_anchorPoint.y) ? 0 : scaledHeight * m_anchorPoint.y;
+    auto rect = this->getRect();
 
     if (!SDL_SetRenderDrawColor(
         renderer,
@@ -69,18 +64,18 @@ void RectangleNode::draw(const long double dt) {
     )) LogSDLError();
     if (!SDL_SetRenderDrawBlendMode(
         renderer,
-        m_blendMode
+        static_cast<SDL_BlendMode>(m_blendMode)
     )) LogSDLError();
 
-    SDL_FRect rect = {
-        static_cast<float>(m_position.x - xOffset),
-        static_cast<float>(m_position.y - yOffset),
-        static_cast<float>(scaledWidth),
-        static_cast<float>(scaledHeight)
-    };
+    SDL_FRect sdlRect(
+        static_cast<float>(rect.getX()),
+        static_cast<float>(rect.getY()),
+        static_cast<float>(rect.getWidth()),
+        static_cast<float>(rect.getHeight())
+    );
 
     if (!(m_filled ? SDL_RenderFillRect : SDL_RenderRect)(
         renderer,
-        &rect
+        &sdlRect
     )) LogSDLError();
 }

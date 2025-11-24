@@ -6,6 +6,7 @@
 #include <string>
 
 #include <SDL3/SDL_rect.h>
+#include <fmt/format.h>
 
 class Size;
 
@@ -52,6 +53,8 @@ public:
     Point rotateAroundCenter(Point center, long double angle);
 };
 
+inline std::string format_as(Point p) { return p; }
+
 class Size : public std::enable_shared_from_this<Size> {
 public:
     long double width;
@@ -78,6 +81,8 @@ public:
     bool equals(const Size& target) const;
 };
 
+inline std::string format_as(Size s) { return s; }
+
 class Rect : public std::enable_shared_from_this<Rect> {
 public:
     Point origin;
@@ -89,9 +94,8 @@ public:
 
     bool operator==(const Rect& right) const;
 
-    operator SDL_FRect() const;
-
     operator std::string() const;
+    operator SDL_FRect() const;
 
     void setRect(long double x, long double y, long double width, long double height);
     void setOrigin(const Point& point);
@@ -112,3 +116,5 @@ public:
     long double getWidth() const;
     long double getHeight() const;
 };
+
+inline std::string format_as(Rect r) { return r; }

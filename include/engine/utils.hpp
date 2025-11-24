@@ -13,9 +13,7 @@
 #include <discord-rpc.hpp>
 
 #include <engine/config.hpp>
-#include <engine/Engine.h>
 #include <engine/Geometry.h>
-#include <engine/utils.hpp>
 
 #include <numbers>
 #include <string>
@@ -38,14 +36,14 @@
 #define GetLine() fmt::format("{}:{}", __FILE__, __LINE__).c_str()
 #define GetWithTag(tag, x) fmt::format("[{}]: '{}': {}", tag, GetLine(), x).c_str()
 
-#define Log(x) SDL_Log(x, NULL)
-#define LogCritical(x) SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, GetWithTag("CRITICAL", x), NULL )
-#define LogDebug(x)    SDL_LogDebug(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("DEBUG",    x), NULL )
-#define LogError(x)    SDL_LogError(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("ERROR",    x), NULL )
-#define LogInfo(x)     SDL_LogInfo(     SDL_LOG_CATEGORY_APPLICATION, GetWithTag("INFO",     x), NULL )
-#define LogTrace(x)    SDL_LogTrace(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("TRACE",    x), NULL )
-#define LogVerbose(x)  SDL_LogVerbose(  SDL_LOG_CATEGORY_APPLICATION, GetWithTag("VERBOSE",  x), NULL )
-#define LogWarn(x)     SDL_LogWarn(     SDL_LOG_CATEGORY_APPLICATION, GetWithTag("WARN",     x), NULL )
+#define Log(x) SDL_Log(x, 0)
+#define LogCritical(x) SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, GetWithTag("CRITICAL", x), 0 )
+#define LogDebug(x)    SDL_LogDebug(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("DEBUG",    x), 0 )
+#define LogError(x)    SDL_LogError(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("ERROR",    x), 0 )
+#define LogInfo(x)     SDL_LogInfo(     SDL_LOG_CATEGORY_APPLICATION, GetWithTag("INFO",     x), 0 )
+#define LogTrace(x)    SDL_LogTrace(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("TRACE",    x), 0 )
+#define LogVerbose(x)  SDL_LogVerbose(  SDL_LOG_CATEGORY_APPLICATION, GetWithTag("VERBOSE",  x), 0 )
+#define LogWarn(x)     SDL_LogWarn(     SDL_LOG_CATEGORY_APPLICATION, GetWithTag("WARN",     x), 0 )
 
 #define LogSDLError() LogError(SDL_GetError())
 
@@ -120,18 +118,21 @@ namespace utils {
     inline long double dot(Size &p1, Point &p2) { return (p1.width * p2.x) + (p1.height * p2.y); };
     inline long double dot(Size &p1, Size &p2) { return (p1.width * p2.width) + (p1.height * p2.height); };
 
+    constexpr long double radDivisor = std::numbers::pi / 180.L;
+
     // Clockwise rotation
-    inline Point rotatePointByCenter(Point &point, Point &center, long double degrees) {
-        auto radians = -degrees * (std::numbers::pi / 180.L);
+    inline Point rotatePointByCenter(Point& point, Point& center, long double& degrees) {
+        auto radians = -degrees * radDivisor;
 
-        auto angleCos = cosl(radians);
-        auto angleSin = sinl(radians);
+        auto cos = std::cosl(radians);
+        auto sin = std::sinl(radians);
 
-        auto translatedPoint = point - center;
+        auto translatedX = point.x - center.x;
+        auto translatedY = point.y - center.y;
 
-        return MakePoint(
-            translatedPoint.x * angleCos - translatedPoint.y * angleSin,
-            translatedPoint.x * angleSin + translatedPoint.y * angleCos
-        );
+        return {
+            (translatedX * cos - translatedY * sin) + center.x,
+            (translatedX * sin + translatedY * cos) + center.y
+        };
     }
 }

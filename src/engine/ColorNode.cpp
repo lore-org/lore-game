@@ -13,7 +13,7 @@
 #include <engine/Geometry.h>
 #include <engine/utils.hpp>
 
-ColorNode::ColorNode() : m_color({ 255, 255, 255, 255 }), m_blendMode(Blend) {}
+ColorNode::ColorNode() : m_color({ 255, 255, 255, 255 }), m_blendMode(BlendMode::Blend) {}
 
 std::shared_ptr<ColorNode> ColorNode::create() {
     auto ret = utils::protected_make_shared<ColorNode>();

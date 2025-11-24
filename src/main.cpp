@@ -1,10 +1,8 @@
-
-#include "engine/RectangleNode.h"
-#include <cmath>
-#include <memory>
 #define SDL_MAIN_HANDLED
 #define SDL_MAIN_NEEDED
 #include <SDL3/SDL_main.h>
+
+#include <memory>
 
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
@@ -24,6 +22,7 @@
 #include <engine/Sprite.h>
 #include <engine/Director.h>
 #include <engine/Typeable.h>
+#include <engine/RectangleNode.h>
 
 int main(int argc, char* argv[]) {
     (void)argc; (void)argv;
@@ -81,21 +80,28 @@ int main(int argc, char* argv[]) {
 
     auto textInput = Typeable::create();
     textInput->setAnchorPoint(0);
-    textInput->setPosition(50, 100);
+    textInput->setPosition(100, 100);
     textInput->setContentSize(200, 30);
+    textInput->setUpdate(std::make_shared<Update_Callback>([&textInput](auto) {
+        auto textBG = dynamic_pointer_cast<RectangleNode>(textInput->getChildren()[0]);
+        textBG->setOpacity(textInput->isPressed() ? 150 : 255);
+    }));
+    textInput->scheduleSelf();
 
-    auto textBG = RectangleNode::createWithVec(textInput->getPosition(), textInput->getContentSize());
-    textBG->setAnchorPoint(textInput->getAnchorPoint());
+    auto textBG = RectangleNode::createWithVec(
+        textInput->getPosition() + (textInput->getContentSize() * 0.5L),
+        textInput->getContentSize()
+    );
     
     textInput->addChild(textBG);
     scene->addChild(textInput);
 
     auto cursor = RectangleNode::create();
-    cursor->setContentSize(10);
+    cursor->setContentSize(3);
     cursor->setUpdate(std::make_shared<Update_Callback>([&cursor](auto) {
         auto mouseData = Engine::getMouseData();
 
-        cursor->setColor({ static_cast<unsigned char>(mouseData->lmb * 255), static_cast<unsigned char>(mouseData->rmb * 255), 255 });
+        cursor->setColor({ static_cast<unsigned char>(mouseData->lmb * 255), 255, static_cast<unsigned char>(mouseData->rmb * 255) });
         cursor->setPosition({ mouseData->x, mouseData->y });
 
         // LogInfo(fmt::format("   x: {}   y: {}", mouseData->x, mouseData->y));

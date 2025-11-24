@@ -56,9 +56,9 @@ std::shared_ptr<Engine> Engine::sharedInstance() {
 
 void Engine::setTicksPerSecond(long double tps) {
     m_ticksPerSecond = tps;
-    m_secondsPerTick = 1.L / m_ticksPerSecond;
-    m_ticksPerNanosecond = tps * NanosecondsPerSecond;
-    m_nanosecondsPerTick = 1.L / m_ticksPerNanosecond;
+    m_secondsPerTick = 1.f / m_ticksPerSecond;
+    m_ticksPerNanosecond = tps / NanosecondsPerSecond;
+    m_nanosecondsPerTick = 1.f / m_ticksPerNanosecond;
 }
 
 void Engine::resetTicksPerSecond() {
@@ -78,9 +78,9 @@ void Engine::setFramesPerSecond(long double fps) {
     else m_usingVsync = false;
 
     m_framesPerSecond = fps;
-    m_secondsPerFrame = 1.L / m_framesPerSecond;
-    m_framesPerNanosecond = fps * NanosecondsPerSecond;
-    m_nanosecondsPerFrame = 1.L / m_nanosecondsPerFrame;
+    m_secondsPerFrame = 1.f / m_framesPerSecond;
+    m_framesPerNanosecond = fps / NanosecondsPerSecond;
+    m_nanosecondsPerFrame = 1.f / m_framesPerNanosecond;
 };
 
 void Engine::resetFramesPerSecond() {
@@ -140,8 +140,6 @@ Size Engine::getWindowSize() {
     return MakeSize(size.first, size.second);
 }
 
-// TODO - fix button masks
-
 std::shared_ptr<Engine::MouseData> Engine::getMouseData() {
     MouseData mouseData = {};
 
@@ -198,13 +196,13 @@ void Engine::setupEngine() {
     m_fpsText = TTF_CreateText(
         m_sdlTextEngine, this->getOrCreateFont("resources/Noto Sans.ttf"),
         "",
-        NULL
+        0
     );
     if (!m_fpsText) LogSDLError();
     m_tpsText = TTF_CreateText(
         m_sdlTextEngine, this->getOrCreateFont("resources/Noto Sans.ttf"),
         "",
-        NULL
+        0
     );
     if (!m_tpsText) LogSDLError();
 
@@ -331,14 +329,14 @@ void Engine::runEngine() {
             if (!TTF_SetTextString(
                 m_fpsText,
                 fmt::format("{} FPS", fmt::sprintf(format, m_frameAvg.load())).c_str(),
-                NULL
+                0
             )) LogSDLError();
         }
         if (m_showTPS) {
             if (!TTF_SetTextString(
                 m_tpsText,
                 fmt::format("{} TPS", fmt::sprintf(format, m_tickAvg.load())).c_str(),
-                NULL
+                0
             )) LogSDLError();
         }
 

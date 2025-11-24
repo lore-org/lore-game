@@ -64,21 +64,20 @@ void Object::update(const long double dt) {
 }
 
 void Object::registerEventListener(std::string name, std::shared_ptr<Event_Callback> callback) {
-    auto listeners = this->_getOrCreateListeners(name);
+    auto& listeners = this->_getOrCreateListeners(name);
 
     listeners.push_back(callback);
 }
 
 void Object::unregisterEventListener(std::string name, std::shared_ptr<Event_Callback> callback) {
-    auto listeners = this->_getOrCreateListeners(name);
+    auto& listeners = this->_getOrCreateListeners(name);
     auto find = std::ranges::find(listeners, callback);
 
     if (find != listeners.end()) listeners.erase(find);
 }
 
 void Object::_callEventListener(std::string name, std::shared_ptr<void> data) {
-    // FIXME
-    LogInfo(fmt::format("Called Event '{}' from Class '{}'", name, typeid(*this).name() ));
+    // LogInfo(fmt::format("Called Event '{}' from Class '{}'", name, typeid(*this).name() ));
 
     auto _listeners = m_callbacks.find(utils::toLowerCase(name));
     if (_listeners == m_callbacks.end()) return;
@@ -91,7 +90,7 @@ void Object::_callEventListener(std::string name, std::shared_ptr<void> data) {
     );
 }
 
-std::vector<std::shared_ptr<Event_Callback>> Object::_getOrCreateListeners(std::string name) {
+std::vector<std::shared_ptr<Event_Callback>>& Object::_getOrCreateListeners(std::string name) {
     auto _listeners = m_callbacks.find(name);
     if (_listeners == m_callbacks.end()) m_callbacks[name] = {};
     return m_callbacks[name];

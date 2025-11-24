@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <vector>
 
-#include "Object.h"
+#include <engine/Object.h>
+#include <engine/utils.hpp>
 #include <engine/Geometry.h>
 
 class Node : public Object {
@@ -84,7 +85,20 @@ public:
     virtual void draw(const long double dt);
 
     
-    inline Rect getRect() { return Rect(m_position, m_contentSize); }
+    inline Rect getRect() {
+        auto scaledWidth = this->getContentWidth() * this->getScale();
+        auto scaledHeight = this->getContentHeight() * this->getScale();
+
+        auto xOffset = IsZero(this->getAnchorX()) ? 0 : scaledWidth * this->getAnchorX();
+        auto yOffset = IsZero(this->getAnchorY()) ? 0 : scaledHeight * this->getAnchorY();
+
+        return {
+            this->getPositionX() - xOffset,
+            this->getPositionY() - yOffset,
+            scaledWidth,
+            scaledHeight
+        };
+    }
 
 protected:
     Node();

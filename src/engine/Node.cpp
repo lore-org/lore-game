@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <memory>
 #include <vector>
+#include <cmath>
 
 #include <engine/Object.h>
 #include <engine/Geometry.h>
@@ -92,8 +93,7 @@ void Node::setContentSize(Size contentSize) {
 }
 
 void Node::setContentSize(long double width, long double height) {
-    m_contentSize.width = width;
-    m_contentSize.height = height;
+    m_contentSize = MakePoint(width, height);
 }
 
 void Node::setContentWidth(long double width) {
@@ -112,42 +112,54 @@ void Node::setRotation(long double rotation) {
     m_rotation = rotation;
 }
 
-// FIXME - point is always inside rect?
 bool Node::containsPoint(Point point) {
-    auto scaledWidth = m_contentSize.width * m_anchorPoint.x;
-    auto scaledHeight = m_contentSize.height * m_anchorPoint.y;
+    auto rect = this->getRect();
 
-    auto leftBound = m_position.x - scaledWidth;
-    auto rightBound = m_position.x + (m_contentSize.width - scaledWidth);
-    auto topBound = m_position.y - scaledHeight;
-    auto bottomBound = m_position.y + (m_contentSize.height - scaledHeight);
+    auto screenOrigin = MakePoint(
+        this->getPositionX() + (this->getContentWidth() * this->getAnchorX()),
+        this->getPositionY() + (this->getContentHeight() * this->getAnchorY())
+    );
 
-    auto center = MakePoint(m_position.x + scaledWidth, m_position.y + scaledHeight);
+    Point rotatedRect[4] = {
+        Point(rect.getMinX(), rect.getMaxY()).rotateAroundCenter(screenOrigin, this->getRotation()),
+        Point(rect.getMaxX(), rect.getMaxY()).rotateAroundCenter(screenOrigin, this->getRotation()),
+        Point(rect.getMaxX(), rect.getMinY()).rotateAroundCenter(screenOrigin, this->getRotation()),
+        Point(rect.getMinX(), rect.getMinY()).rotateAroundCenter(screenOrigin, this->getRotation())
+    };
 
-    /**
-     * A----------B
-     * |          |
-     * |          |
-     * D----------C
-     */
+    auto x1 = rotatedRect[0].x;
+    auto x2 = rotatedRect[1].x;
+    auto x3 = rotatedRect[2].x;
+    auto x4 = rotatedRect[3].x;
 
-    auto A = MakePoint(leftBound, topBound).rotateAroundCenter(center, m_rotation);
-    auto B = MakePoint(rightBound, topBound).rotateAroundCenter(center, m_rotation);
-    auto C = MakePoint(rightBound, bottomBound).rotateAroundCenter(center, m_rotation);
-    auto D = MakePoint(leftBound, bottomBound).rotateAroundCenter(center, m_rotation);
+    auto y1 = rotatedRect[0].y;
+    auto y2 = rotatedRect[1].y;
+    auto y3 = rotatedRect[2].y;
+    auto y4 = rotatedRect[3].y;
 
-    #define Vector(p1, p2) MakePoint(p2.x - p1.x, p2.y - p1.y)
+    auto a1 = std::sqrtl((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    auto a2 = std::sqrtl((x2 - x3) * (x2 - x3) + (y2 - y3) * (y2 - y3));
+    auto a3 = std::sqrtl((x3 - x4) * (x3 - x4) + (y3 - y4) * (y3 - y4));
+    auto a4 = std::sqrtl((x4 - x1) * (x4 - x1) + (y4 - y1) * (y4 - y1));
 
-    auto AB = Vector(A, B);
-    auto AM = Vector(A, point);
-    auto BC = Vector(B, C);
-    auto BM = Vector(B, point);
+    auto b1 = std::sqrtl((x1 - point.x) * (x1 - point.x) + (y1 - point.y) * (y1 - point.y));
+    auto b2 = std::sqrtl((x2 - point.x) * (x2 - point.x) + (y2 - point.y) * (y2 - point.y));
+    auto b3 = std::sqrtl((x3 - point.x) * (x3 - point.x) + (y3 - point.y) * (y3 - point.y));
+    auto b4 = std::sqrtl((x4 - point.x) * (x4 - point.x) + (y4 - point.y) * (y4 - point.y));
 
-    return
-        0 <= utils::dot(AB, AM) &&
-        utils::dot(AB, AM) <= utils::dot(AB, AB) &&
-        0 <= utils::dot(BC, BM) &&
-        utils::dot(BC, BM) <= utils::dot(BC, BC);
+    auto u1 = (a1 + b1 + b2) / 2.L;
+    auto u2 = (a2 + b2 + b3) / 2.L;
+    auto u3 = (a3 + b3 + b4) / 2.L;
+    auto u4 = (a4 + b4 + b1) / 2.L;
+
+    auto A1 = std::sqrtl(u1 * (u1 - a1) * (u1 - b1) * (u1 - b2));
+    auto A2 = std::sqrtl(u2 * (u2 - a2) * (u2 - b2) * (u2 - b3));
+    auto A3 = std::sqrtl(u3 * (u3 - a3) * (u3 - b3) * (u3 - b4));
+    auto A4 = std::sqrtl(u4 * (u4 - a4) * (u4 - b4) * (u4 - b1));
+
+    auto diff = A1 + A2 + A3 + A4 - a1 * a2;
+
+    return diff < 1.L;
 }
 
 void Node::addChild(std::shared_ptr<Node> child) {

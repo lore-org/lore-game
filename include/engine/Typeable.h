@@ -6,9 +6,14 @@ public:
     struct Events {
         // Input of node was modified
         CreateEventDecl(typeable, changed);
+        
+        // Node gained focus
+        CreateEventDecl(typeable, focusin);
+        // Node lost focus
+        CreateEventDecl(typeable, focusout);
     };
 
-    enum InputType {
+    enum class InputType {
         Text = SDL_TEXTINPUT_TYPE_TEXT,                                 /**< The input is text */
         Name = SDL_TEXTINPUT_TYPE_TEXT_NAME,                            /**< The input is a person's name */
         Email = SDL_TEXTINPUT_TYPE_TEXT_EMAIL,                          /**< The input is an e-mail address */
@@ -21,6 +26,8 @@ public:
     };
 
     virtual bool init() override;
+
+    static std::shared_ptr<Typeable> create();
 
     void setInputText(std::string text);
     inline std::string getInputText() { return m_inputText; }

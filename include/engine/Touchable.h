@@ -17,11 +17,6 @@ public:
         CreateEventDecl(touchable, mousedown);
         // Mouse button released from node
         CreateEventDecl(touchable, mouseup);
-        
-        // Node gained focus
-        CreateEventDecl(typeable, focusin);
-        // Node lost focus
-        CreateEventDecl(typeable, focusout);
 
         // LMB pressed on node
         CreateEventDecl(touchable, click);
@@ -42,7 +37,7 @@ public:
     virtual void update(const long double dt) override;
 
     inline bool isHovered() { return m_isHovered; }
-    inline bool isPressed() { return m_isHovered; }
+    inline bool isPressed() { return m_isPressed; }
     inline bool isFocused() { return m_isFocused; }
 
 protected:

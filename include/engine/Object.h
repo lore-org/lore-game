@@ -40,7 +40,8 @@ protected:
 
     void _callEventListener(std::string name, std::shared_ptr<void> data  = nullptr);
     
-    std::vector<std::shared_ptr<Event_Callback>> _getOrCreateListeners(std::string name);
+    // TODO - fix any other functions that need to return refs
+    std::vector<std::shared_ptr<Event_Callback>>& _getOrCreateListeners(std::string name);
 
 private:
     std::shared_ptr<Update_Callback> m_updateCallback;

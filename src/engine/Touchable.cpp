@@ -38,14 +38,15 @@ std::shared_ptr<Touchable> Touchable::create() {
 }
 
 void Touchable::update(const long double dt) {
+    #define IsHeld(button) (mouseData->button)
+
     #define IsClicked(button) (!m_lastMouseData->button && mouseData->button)
     #define IsReleased(button) (m_lastMouseData->button && !mouseData->button)
 
     #define NodeIsClicked(button) (m_isHovered && wasPressed && IsClicked(button))
-    #define NodeIsReleased(button) (m_isHovered && wasPressed && IsReleased(button))
+    #define NodeIsReleased(button) (wasPressed && IsReleased(button))
 
     #define WithAll(method) (method(lmb) || method(mmb) || method(rmb) || method(side1) || method(side2))
-
 
     auto wasHovered = m_isHovered;
     auto wasPressed = m_isPressed;
@@ -53,27 +54,23 @@ void Touchable::update(const long double dt) {
 
     auto mouseData = Engine::getMouseData();
 
-    // LogInfo("----------------------------------");
-    // LogInfo(fmt::format("mouseData->lmb     {}", mouseData->lmb));
-    // LogInfo(fmt::format("mouseData->mmb     {}", mouseData->mmb));
-    // LogInfo(fmt::format("mouseData->rmb     {}", mouseData->rmb));
-    // LogInfo(fmt::format("mouseData->side1   {}", mouseData->side1));
-    // LogInfo(fmt::format("mouseData->side2   {}", mouseData->side2));
-    // LogInfo(fmt::format("mouseData->x       {}", mouseData->x));
-    // LogInfo(fmt::format("mouseData->y       {}", mouseData->y));
-
     m_isHovered = this->containsPoint({ mouseData->x, mouseData->y });
-    m_isPressed = m_isHovered && WithAll(IsClicked);
+    m_isPressed = m_isHovered && WithAll(IsHeld);
     m_isFocused = !(WithAll(IsClicked) && !m_isHovered) && (wasFocused || (!wasPressed && m_isPressed));
+
+    // LogInfo("----------------------------------");
+    // LogInfo(fmt::format("wasHovered     {}", wasHovered));
+    // LogInfo(fmt::format("m_isHovered    {}", m_isHovered));
+    // LogInfo(fmt::format("wasPressed     {}", wasPressed));
+    // LogInfo(fmt::format("m_isPressed    {}", m_isPressed));
+    // LogInfo(fmt::format("wasFocused     {}", wasFocused));
+    // LogInfo(fmt::format("m_isFocused    {}", m_isFocused));
 
     if (!wasHovered && m_isHovered) this->_callEventListener(Events::mouseenter);
     else if (!m_isHovered && wasHovered) this->_callEventListener(Events::mouseleave);
 
     if (!wasPressed && m_isPressed) this->_callEventListener(Events::mousedown);
     else if (!m_isPressed && wasPressed) this->_callEventListener(Events::mouseup);
-
-    if (!wasFocused && m_isFocused) this->_callEventListener(Events::focusin);
-    else if (!m_isFocused && wasFocused) this->_callEventListener(Events::focusout);
 
     if (NodeIsReleased(lmb)) this->_callEventListener(Events::click);
     if (NodeIsReleased(mmb)) this->_callEventListener(Events::pick);

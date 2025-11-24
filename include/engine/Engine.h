@@ -1,6 +1,5 @@
 #pragma once
 
-#include "utils.hpp"
 #include <memory>
 #include <vector>
 #include <unordered_map>
@@ -12,6 +11,7 @@
 #include <SDL3/SDL_video.h>
 
 #include <engine/Geometry.h>
+#include <engine/utils.hpp>
 
 #define NanosecondsPerSecond 1e9L
 #define SecondsPerNanosecond 1e-9L
