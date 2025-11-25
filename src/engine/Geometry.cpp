@@ -177,21 +177,30 @@ bool Rect::operator==(const Rect& right) const {
     return this->equals(right);
 }
 
-Rect::operator SDL_FRect() const {
-    return {
-        static_cast<float>(this->getX()),
-        static_cast<float>(this->getY()),
-        static_cast<float>(this->getHeight()),
-        static_cast<float>(this->getWidth())
-    };
-}
-
 Rect::operator std::string() const {
     return fmt::format(
         "Rect {{ {}, {} }}", 
         std::string(origin),
         std::string(size)
     );
+}
+
+Rect::operator SDL_FRect() const {
+    return {
+        static_cast<float>(this->getX()),
+        static_cast<float>(this->getY()),
+        static_cast<float>(this->getWidth()),
+        static_cast<float>(this->getHeight())
+    };
+}
+
+Rect::operator SDL_Rect() const {
+    return {
+        static_cast<int>(this->getX()),
+        static_cast<int>(this->getY()),
+        static_cast<int>(this->getWidth()),
+        static_cast<int>(this->getHeight())
+    };
 }
 
 void Rect::setRect(long double x, long double y, long double width, long double height) {

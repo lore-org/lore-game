@@ -53,7 +53,6 @@ void RectangleNode::draw(const long double dt) {
     ColorNode::draw(dt);
 
     auto renderer = Engine::sharedInstance()->getRenderer();
-    auto rect = this->getRect();
 
     if (!SDL_SetRenderDrawColor(
         renderer,
@@ -67,12 +66,7 @@ void RectangleNode::draw(const long double dt) {
         static_cast<SDL_BlendMode>(m_blendMode)
     )) LogSDLError();
 
-    SDL_FRect sdlRect(
-        static_cast<float>(rect.getX()),
-        static_cast<float>(rect.getY()),
-        static_cast<float>(rect.getWidth()),
-        static_cast<float>(rect.getHeight())
-    );
+    SDL_FRect sdlRect = this->getRect();
 
     if (!(m_filled ? SDL_RenderFillRect : SDL_RenderRect)(
         renderer,

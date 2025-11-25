@@ -9,12 +9,12 @@ bool Typeable::init() {
 
     this->registerEventListener(
         Typeable::Events::focusin,
-        std::make_shared<Event_Callback>(Typeable::_focusIn)
+        std::make_shared<Event_Callback>([this](auto data) { this->_focusIn(data); })
     );
 
     this->registerEventListener(
         Typeable::Events::focusout,
-        std::make_shared<Event_Callback>(Typeable::_focusOut)
+        std::make_shared<Event_Callback>([this](auto data) { this->_focusOut(data); })
     );
 
     return true;
@@ -40,6 +40,9 @@ void Typeable::update(const long double dt) {
 
 void Typeable::_focusIn(std::shared_ptr<void> data) {
     auto window = Engine::sharedInstance()->getWindow();
+    SDL_Rect rect = this->getRect();
+
+    SDL_SetTextInputArea(window, &rect, 0);
 
     // TODO - impl Typeable::InputType
     // TODO - add text capturing in main loop
@@ -48,6 +51,8 @@ void Typeable::_focusIn(std::shared_ptr<void> data) {
 
 void Typeable::_focusOut(std::shared_ptr<void> data) {
     auto window = Engine::sharedInstance()->getWindow();
+
+    SDL_SetTextInputArea(window, nullptr, 0);
         
     if (SDL_TextInputActive(window)) SDL_StopTextInput(window);
 }

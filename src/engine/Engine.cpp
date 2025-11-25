@@ -1,4 +1,3 @@
-#include <cstdint>
 #include <engine/Engine.h>
 
 #include <algorithm>
@@ -7,6 +6,7 @@
 #include <thread>
 #include <atomic>
 #include <utility>
+#include <cstdint>
 
 #ifdef HAS_PAR_UNSEQ
     #include <execution>
@@ -312,6 +312,12 @@ void Engine::runEngine() {
                 case SDL_EVENT_QUIT:
                 case SDL_EVENT_TERMINATING:
                     m_isStopped = true;
+                    break;
+                case SDL_EVENT_TEXT_INPUT:
+                    // TODO
+                    break;
+                case SDL_EVENT_TEXT_EDITING:
+                    // TODO
                     break;
             }
         }

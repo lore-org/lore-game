@@ -96,6 +96,7 @@ public:
 
     operator std::string() const;
     operator SDL_FRect() const;
+    operator SDL_Rect() const;
 
     void setRect(long double x, long double y, long double width, long double height);
     void setOrigin(const Point& point);

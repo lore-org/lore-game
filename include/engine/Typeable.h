@@ -49,6 +49,6 @@ protected:
     InputType m_inputType;
 
 private:
-    static void _focusIn(std::shared_ptr<void> data);
-    static void _focusOut(std::shared_ptr<void> data);
+    void _focusIn(std::shared_ptr<void> data);
+    void _focusOut(std::shared_ptr<void> data);
 };

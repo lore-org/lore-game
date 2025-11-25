@@ -133,12 +133,7 @@ void Sprite::draw(const long double dt) {
     SDL_FPoint rotationalAxis(
         static_cast<float>(xOffset), static_cast<float>(yOffset)
     );
-    SDL_FRect destinationRect(
-        static_cast<float>(rect.getX()),
-        static_cast<float>(rect.getY()),
-        static_cast<float>(rect.getWidth()),
-        static_cast<float>(rect.getHeight())
-    );
+    SDL_FRect destinationRect = rect;
 
     if (!SDL_RenderTextureRotated(
         renderer,

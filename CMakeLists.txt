@@ -545,7 +545,7 @@ if (DEBUG)
     list(APPEND CXX_LINKER_FLAGS
         "-fuse-ld=lld"
         "-g"
-        "-fsanitize=address"
+        # "-fsanitize=address"
         "-Wl,--pdb="
     )
 endif()
