@@ -1,3 +1,5 @@
+#include "SDL3/SDL_events.h"
+#include "SDL3/SDL_keycode.h"
 #include <engine/Engine.h>
 
 #include <algorithm>
@@ -32,6 +34,7 @@
 #include <engine/PresenceManager.h>
 #include <engine/Scheduler.h>
 #include <engine/Director.h>
+#include <engine/Typeable.h>
 
 std::shared_ptr<Engine> Engine::m_instance;
 
@@ -167,6 +170,24 @@ TTF_Font* Engine::getOrCreateFont(std::string file, float point) {
     }
     m_fontMap.insert({ key, font });
     return font;
+}
+
+void Engine::requestTextInputCapturing(std::shared_ptr<Typeable> node) {
+    for (auto& capture : m_textInputCaptures) {
+        if (capture == node) return;
+    }
+
+    m_textInputCaptures.push_back(node);
+}
+
+void Engine::removeTextInputCapturing(std::shared_ptr<Typeable> node) {
+    for (size_t i = 0; i < m_textInputCaptures.size(); i++) {
+        auto& capture = m_textInputCaptures.at(i);
+
+        if (capture == node) {
+            m_textInputCaptures.erase(m_textInputCaptures.begin() + i);
+        }
+    }
 }
 
 void Engine::setupEngine() {
@@ -313,12 +334,86 @@ void Engine::runEngine() {
                 case SDL_EVENT_TERMINATING:
                     m_isStopped = true;
                     break;
-                case SDL_EVENT_TEXT_INPUT:
-                    // TODO
+                case SDL_EVENT_TEXT_INPUT: {
+                    auto textInputEvent = *reinterpret_cast<SDL_TextInputEvent*>(&event);
+                    std::string text(textInputEvent.text);
+
+                    LogInfo(text);
+
+                    for (auto& node : m_textInputCaptures) {
+                        if (!node->isFocused()) return;
+
+                        node->_handleText(text);
+                    }
+                    
                     break;
-                case SDL_EVENT_TEXT_EDITING:
-                    // TODO
-                    break;
+                }
+                case SDL_EVENT_KEY_DOWN: {
+                    auto keyDownEvent = *reinterpret_cast<SDL_KeyboardEvent*>(&event);
+
+                    switch (keyDownEvent.key) {
+                        case SDLK_BACKSPACE:
+                            LogInfo("SDLK_BACKSPACE");
+
+                            for (auto& node : m_textInputCaptures) {
+                                if (!node->isFocused()) continue;
+
+                                node->_handleDelete(Typeable::DeleteType::Backwards);
+                            }
+                            break;
+                        case SDLK_DELETE:
+                            LogInfo("SDLK_DELETE");
+
+                            for (auto& node : m_textInputCaptures) {
+                                if (!node->isFocused()) continue;
+
+                                node->_handleDelete(Typeable::DeleteType::Forwards);
+                            }
+                            break;
+                        case SDLK_LEFT:
+                            LogInfo("SDLK_LEFT");
+
+                            for (auto& node : m_textInputCaptures) {
+                                if (!node->isFocused()) continue;
+
+                                auto& seekBounds = node->m_seekBounds;
+                                if (seekBounds.start <= 0) continue;
+
+                                node->_handleSeeking(seekBounds.start - 1, 0);
+                            }
+                            break;
+                        case SDLK_RIGHT:
+                            LogInfo("SDLK_RIGHT");
+
+                            for (auto& node : m_textInputCaptures) {
+                                if (!node->isFocused()) continue;
+
+                                auto& seekBounds = node->m_seekBounds;
+                                if (seekBounds.start >= node->m_inputText.size()) continue;
+
+                                node->_handleSeeking(seekBounds.start + 1, 0);
+                            }
+                            break;
+                        case SDLK_END:
+                            LogInfo("SDLK_END");
+
+                            for (auto& node : m_textInputCaptures) {
+                                if (!node->isFocused()) continue;
+
+                                node->_handleSeeking(node->m_inputText.size(), 0);
+                            }
+                            break;
+                        case SDLK_HOME:
+                            LogInfo("SDLK_HOME");
+
+                            for (auto& node : m_textInputCaptures) {
+                                if (!node->isFocused()) continue;
+
+                                node->_handleSeeking(0, 0);
+                            }
+                            break;
+                    }
+                }
             }
         }
 
@@ -346,8 +441,12 @@ void Engine::runEngine() {
             )) LogSDLError();
         }
 
-        if (!SDL_SetRenderDrawColor(
-            m_sdlRenderer,
+        if (!TTF_SetTextColor(
+            m_fpsText,
+            255, 255, 255, 255
+        )) LogSDLError();
+        if (!TTF_SetTextColor(
+            m_tpsText,
             255, 255, 255, 255
         )) LogSDLError();
 

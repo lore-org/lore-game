@@ -76,7 +76,7 @@ void Object::unregisterEventListener(std::string name, std::shared_ptr<Event_Cal
     if (find != listeners.end()) listeners.erase(find);
 }
 
-void Object::_callEventListener(std::string name, std::shared_ptr<void> data) {
+void Object::_callEventListener(std::string name, void* data) {
     // LogInfo(fmt::format("Called Event '{}' from Class '{}'", name, typeid(*this).name() ));
 
     auto _listeners = m_callbacks.find(utils::toLowerCase(name));

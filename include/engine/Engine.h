@@ -7,11 +7,12 @@
 #include <stdfloat>
 
 #include <SDL3_ttf/SDL_ttf.h>
-#include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_video.h>
+#include <SDL3/SDL.h>
 
 #include <engine/Geometry.h>
 #include <engine/utils.hpp>
+
+class Typeable;
 
 #define NanosecondsPerSecond 1e9L
 #define SecondsPerNanosecond 1e-9L
@@ -77,6 +78,7 @@ public:
     inline SDL_Window* getWindow() { return m_sdlWindow; }
     inline SDL_Renderer* getRenderer() { return m_sdlRenderer; }
     inline const SDL_DisplayMode* getDisplayMode() { return m_sdlDisplayMode; }
+    inline TTF_TextEngine* getTextEngine() { return m_sdlTextEngine; }
 
     // Gets the system time in nanoseconds. For a more performant method that doesn't rely on system time, use SDL_GetTicks
     static SDL_Time getTime();
@@ -88,6 +90,9 @@ public:
     static std::shared_ptr<MouseData> getMouseData();
 
     TTF_Font* getOrCreateFont(std::string file, float point = 100.f);
+
+    void requestTextInputCapturing(std::shared_ptr<Typeable> node);
+    void removeTextInputCapturing(std::shared_ptr<Typeable> node);
 
     void setupEngine();
 
@@ -132,6 +137,8 @@ protected:
     TTF_TextEngine* m_sdlTextEngine;
 
     std::unordered_map<std::pair<std::string, float>, TTF_Font*, utils::hash_pair> m_fontMap;
+
+    std::vector<std::shared_ptr<Typeable>> m_textInputCaptures;
 
     // ------------------
 

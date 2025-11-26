@@ -233,7 +233,7 @@ void Node::setTag(int64_t tag) {
     m_tag = tag;
 }
 
-void Node::setUserData(std::shared_ptr<void> userData) {
+void Node::setUserData(void* userData) {
     m_userData = userData;
 }
 

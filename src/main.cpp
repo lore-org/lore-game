@@ -81,13 +81,14 @@ int main(int argc, char* argv[]) {
     auto textInput = Typeable::create();
     textInput->setAnchorPoint(0);
     textInput->setPosition(100, 100);
-    textInput->setContentSize(200, 30);
+    textInput->setContentSize(350, 30);
     textInput->setUpdate(std::make_shared<Update_Callback>([&textInput](auto) {
         auto textBG = dynamic_pointer_cast<RectangleNode>(textInput->getChildren()[0]);
         textBG->setOpacity(textInput->isPressed() ? 150 : 255);
     }));
     textInput->scheduleSelf();
 
+    // TODO - add background as built-in part of Typeable
     auto textBG = RectangleNode::createWithVec(
         textInput->getPosition() + (textInput->getContentSize() * 0.5L),
         textInput->getContentSize()

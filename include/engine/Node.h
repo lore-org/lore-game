@@ -77,8 +77,8 @@ public:
     
     void setTag(int64_t tag);
     
-    inline std::shared_ptr<void> getUserData() { return m_userData; }
-    void setUserData(std::shared_ptr<void> userData);
+    inline void* getUserData() { return m_userData; }
+    void setUserData(void* userData);
 
 
     virtual void cleanup();
@@ -115,7 +115,7 @@ protected:
     std::shared_ptr<Node> m_parent;
     
     int64_t m_tag;
-    std::shared_ptr<void> m_userData;
+    void* m_userData;
 
     bool m_visible;
 

@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <memory>
 
-#define Event_Callback std::function<void(std::shared_ptr<void>)>
+#define Event_Callback std::function<void(void*)>
 #define Update_Callback std::function<void(const long double)>
 
 // This uses Object* instead of std::shared_ptr<Object> for updates as the Object is never deconstructed
@@ -38,9 +38,8 @@ protected:
 
     std::unordered_map<std::string, std::vector<std::shared_ptr<Event_Callback>>> m_callbacks;
 
-    void _callEventListener(std::string name, std::shared_ptr<void> data  = nullptr);
+    void _callEventListener(std::string name, void* data  = nullptr);
     
-    // TODO - fix any other functions that need to return refs
     std::vector<std::shared_ptr<Event_Callback>>& _getOrCreateListeners(std::string name);
 
 private:
