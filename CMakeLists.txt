@@ -527,7 +527,7 @@ if (DEBUG)
     list(APPEND CXX_COMPILER_FLAGS
         "-gcodeview"
         "-gcolumn-info"
-        "-g"
+        # "-g"
         "-fsanitize=address"
         "-fno-omit-frame-pointer"
     )
@@ -544,7 +544,7 @@ list(APPEND CXX_LINKER_FLAGS
 if (DEBUG)
     list(APPEND CXX_LINKER_FLAGS
         "-fuse-ld=lld"
-        "-g"
+        # "-g"
         # "-fsanitize=address"
         "-Wl,--pdb="
     )

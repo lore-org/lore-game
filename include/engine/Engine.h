@@ -4,7 +4,6 @@
 #include <vector>
 #include <unordered_map>
 #include <atomic>
-#include <stdfloat>
 
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3/SDL.h>
@@ -102,7 +101,7 @@ protected:
     Engine();
 
     // ---- Target Updates ----
-        
+
     long double m_ticksPerSecond;
     long double m_secondsPerTick;
     long double m_ticksPerNanosecond;

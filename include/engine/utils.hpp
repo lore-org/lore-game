@@ -124,8 +124,8 @@ namespace utils {
     inline Point rotatePointByCenter(Point& point, Point& center, long double& degrees) {
         auto radians = -degrees * radDivisor;
 
-        auto cos = std::cosl(radians);
-        auto sin = std::sinl(radians);
+        auto cos = std::cos(radians);
+        auto sin = std::sin(radians);
 
         auto translatedX = point.x - center.x;
         auto translatedY = point.y - center.y;
