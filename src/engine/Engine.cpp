@@ -430,14 +430,14 @@ void Engine::runEngine() {
         if (m_showFPS) {
             if (!TTF_SetTextString(
                 m_fpsText,
-                fmt::format("{} FPS", fmt::sprintf(format, m_frameAvg.load())).c_str(),
+                fmt::format("{} FPS", fmt::sprintf(format, m_frameAvg)).c_str(),
                 0
             )) LogSDLError();
         }
         if (m_showTPS) {
             if (!TTF_SetTextString(
                 m_tpsText,
-                fmt::format("{} TPS", fmt::sprintf(format, m_tickAvg.load())).c_str(),
+                fmt::format("{} TPS", fmt::sprintf(format, m_tickAvg)).c_str(),
                 0
             )) LogSDLError();
         }
