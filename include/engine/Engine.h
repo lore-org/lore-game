@@ -3,7 +3,6 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
-#include <atomic>
 
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3/SDL.h>
@@ -118,7 +117,7 @@ protected:
 
     // ---- Engine Status ----
 
-    std::atomic<bool> m_isStopped;
+    bool m_isStopped;
 
     bool m_isSetup;
     bool m_isStarted;
@@ -154,8 +153,8 @@ protected:
     std::vector<long double> m_frameDeltas;
     std::vector<long double> m_tickDeltas;
 
-    std::atomic<long double> m_frameAvg;
-    std::atomic<long double> m_tickAvg;
+    long double m_frameAvg;
+    long double m_tickAvg;
 
     uint64_t m_displayPrecision;
 

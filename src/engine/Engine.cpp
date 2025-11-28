@@ -4,7 +4,6 @@
 #include <memory>
 #include <stdexcept>
 #include <thread>
-#include <atomic>
 #include <utility>
 #include <cstdint>
 
