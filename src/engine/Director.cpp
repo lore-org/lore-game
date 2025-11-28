@@ -5,11 +5,13 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
+
+#include <discord-rpc.hpp>
+
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
-#include <discord-rpc.hpp>
 
 #include <engine/config.hpp>
 #include <engine/Engine.h>
@@ -99,6 +101,20 @@ std::shared_ptr<Scene> Director::getTopScene() {
     return nullptr;
 }
 
+void Director::setClearColor(ColorNode::Color3 clearColor) {
+    m_clearColor.r = clearColor.r;
+    m_clearColor.g = clearColor.g;
+    m_clearColor.b = clearColor.b;
+}
+
+void Director::setClearColorA(ColorNode::Color4 clearColor) {
+    m_clearColor = clearColor;
+}
+
+void Director::setClearOpacity(uint8_t clearOpacity) {
+    m_clearColor.a = clearOpacity;
+}
+
 void Director::draw(const long double dt) {
     auto engine = Engine::sharedInstance();
     auto renderer = engine->getRenderer();
@@ -125,7 +141,7 @@ void Director::draw(const long double dt) {
     auto normalisedOpacity = m_entering ?
         this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<long double>(SDL_GetTicks())) :
         std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<long double>(SDL_GetTicks())));
-    m_transitionFader->setOpacity(static_cast<unsigned char>(normalisedOpacity * 255));
+    m_transitionFader->setOpacity(static_cast<uint8_t>(normalisedOpacity * 255));
 
     m_transitionFader->draw(dt);
 }

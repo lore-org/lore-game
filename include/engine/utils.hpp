@@ -1,10 +1,17 @@
 #pragma once
 
+#include <cmath>
+#include <numbers>
+#include <string>
+#include <algorithm>
+#include <vector>
+#include <regex>
+#include <cctype>
+
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
-#include <cmath>
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
@@ -14,17 +21,7 @@
 
 #include <engine/config.hpp>
 #include <engine/Geometry.h>
-
-#include <numbers>
-#include <string>
-#include <algorithm>
-#include <vector>
-#include <regex>
-#include <cctype>
-
-#include <SDL3/SDL_log.h>
-
-#include "Object.h"
+#include <engine/Object.h>
 
 #define MakePoint(x, y) Point(static_cast<long double>(x), static_cast<long double>(y))
 #define MakeSize(width, height) Size(static_cast<long double>(width), static_cast<long double>(height))

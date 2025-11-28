@@ -1,7 +1,6 @@
 #pragma once
 
-#include <SDL3/SDL_pixels.h>
-#include <SDL3/SDL_blendmode.h>
+#include <SDL3/SDL.h>
 
 #include <engine/Node.h>
 
@@ -11,28 +10,31 @@ public:
 
     static std::shared_ptr<ColorNode> create();
 
-    void setOpacity(unsigned char opacity);
-    inline int8_t getOpacity() { return m_color.a; }
+    void setOpacity(uint8_t opacity);
+    inline uint8_t getOpacity() { return m_color.a; }
+
+    struct Color4;
 
     struct Color3 {
-        unsigned char r;
-        unsigned char g;
-        unsigned char b;
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
 
         inline operator SDL_Color() { return { r, g, b, 255 }; }
-
         inline operator SDL_FColor() { return { static_cast<float>(r), static_cast<float>(g), static_cast<float>(b), 255.f }; }
+        inline bool operator==(Color3& right) { return r == right.r && g == right.g && b == right.b; }
+        inline operator Color4() { return { r, g, b, 255 }; }
     };
 
     struct Color4 {
-        unsigned char r;
-        unsigned char g;
-        unsigned char b;
-        unsigned char a;
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+        uint8_t a;
 
         inline operator SDL_Color() { return { r, g, b, a }; }
-
         inline operator SDL_FColor() { return { static_cast<float>(r), static_cast<float>(g), static_cast<float>(b), static_cast<float>(a) }; }
+        inline bool operator==(Color4& right) { return r == right.r && g == right.g && b == right.b && a == right.a; }
     };
 
     enum class BlendMode : SDL_BlendMode {

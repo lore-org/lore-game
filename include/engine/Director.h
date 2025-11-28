@@ -2,9 +2,9 @@
 
 #include <vector>
 
-#include "Object.h"
-#include "Scene.h"
-#include "RectangleNode.h"
+#include <engine/Object.h>
+#include <engine/Scene.h>
+#include <engine/RectangleNode.h>
 
 class Director : public Object {
 public:
@@ -30,6 +30,15 @@ public:
     inline std::shared_ptr<Scene> getDisplayedScene() { return m_displayedScene; }
     inline size_t getNumberOfScenes() { return m_sceneStack.size(); }
     inline std::vector<std::shared_ptr<Scene>> getSceneStack() { return m_sceneStack; }
+
+    void setClearColor(ColorNode::Color3 clearColor);
+    inline ColorNode::Color3 getClearColor() { return { m_clearColor.r, m_clearColor.g, m_clearColor.b }; }
+
+    void setClearColorA(ColorNode::Color4 clearColor);
+    inline ColorNode::Color4 getClearColorA() { return m_clearColor; }
+
+    void setClearOpacity(uint8_t clearOpacity);
+    inline uint8_t getClearOpacity() { return m_clearColor.a; }
     
     virtual void draw(const long double dt);
 

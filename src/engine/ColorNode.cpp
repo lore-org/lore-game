@@ -3,6 +3,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
+
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
@@ -22,7 +23,7 @@ std::shared_ptr<ColorNode> ColorNode::create() {
     return ret;
 }
 
-void ColorNode::setOpacity(unsigned char opacity) {
+void ColorNode::setOpacity(uint8_t opacity) {
     m_color.a = opacity;
 }
 

@@ -4,7 +4,7 @@
 #include <vector>
 #include <unordered_set>
 
-#include "Object.h"
+#include <engine/Object.h>
 
 struct _entry {
     Object* target;

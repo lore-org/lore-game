@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "ColorNode.h"
+#include <engine/ColorNode.h>
 
 class Sprite : public ColorNode {
 public:

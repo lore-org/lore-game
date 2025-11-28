@@ -1,5 +1,10 @@
 #include <engine/Node.h>
 
+#include <algorithm>
+#include <memory>
+#include <vector>
+#include <cmath>
+
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -15,16 +20,8 @@
 #include <engine/Engine.h>
 #include <engine/Geometry.h>
 #include <engine/utils.hpp>
-
-#include <algorithm>
-#include <memory>
-#include <vector>
-#include <cmath>
-
 #include <engine/Object.h>
-#include <engine/Geometry.h>
 #include <engine/Scheduler.h>
-#include <engine/Engine.h>
 
 Node::Node() :
     m_rotation(.0f), m_scale(1.f), m_position(0),
@@ -137,25 +134,25 @@ bool Node::containsPoint(Point point) {
     auto y3 = rotatedRect[2].y;
     auto y4 = rotatedRect[3].y;
 
-    auto a1 = std::sqrtl((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-    auto a2 = std::sqrtl((x2 - x3) * (x2 - x3) + (y2 - y3) * (y2 - y3));
-    auto a3 = std::sqrtl((x3 - x4) * (x3 - x4) + (y3 - y4) * (y3 - y4));
-    auto a4 = std::sqrtl((x4 - x1) * (x4 - x1) + (y4 - y1) * (y4 - y1));
+    auto a1 = std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    auto a2 = std::sqrt((x2 - x3) * (x2 - x3) + (y2 - y3) * (y2 - y3));
+    auto a3 = std::sqrt((x3 - x4) * (x3 - x4) + (y3 - y4) * (y3 - y4));
+    auto a4 = std::sqrt((x4 - x1) * (x4 - x1) + (y4 - y1) * (y4 - y1));
 
-    auto b1 = std::sqrtl((x1 - point.x) * (x1 - point.x) + (y1 - point.y) * (y1 - point.y));
-    auto b2 = std::sqrtl((x2 - point.x) * (x2 - point.x) + (y2 - point.y) * (y2 - point.y));
-    auto b3 = std::sqrtl((x3 - point.x) * (x3 - point.x) + (y3 - point.y) * (y3 - point.y));
-    auto b4 = std::sqrtl((x4 - point.x) * (x4 - point.x) + (y4 - point.y) * (y4 - point.y));
+    auto b1 = std::sqrt((x1 - point.x) * (x1 - point.x) + (y1 - point.y) * (y1 - point.y));
+    auto b2 = std::sqrt((x2 - point.x) * (x2 - point.x) + (y2 - point.y) * (y2 - point.y));
+    auto b3 = std::sqrt((x3 - point.x) * (x3 - point.x) + (y3 - point.y) * (y3 - point.y));
+    auto b4 = std::sqrt((x4 - point.x) * (x4 - point.x) + (y4 - point.y) * (y4 - point.y));
 
     auto u1 = (a1 + b1 + b2) / 2.L;
     auto u2 = (a2 + b2 + b3) / 2.L;
     auto u3 = (a3 + b3 + b4) / 2.L;
     auto u4 = (a4 + b4 + b1) / 2.L;
 
-    auto A1 = std::sqrtl(u1 * (u1 - a1) * (u1 - b1) * (u1 - b2));
-    auto A2 = std::sqrtl(u2 * (u2 - a2) * (u2 - b2) * (u2 - b3));
-    auto A3 = std::sqrtl(u3 * (u3 - a3) * (u3 - b3) * (u3 - b4));
-    auto A4 = std::sqrtl(u4 * (u4 - a4) * (u4 - b4) * (u4 - b1));
+    auto A1 = std::sqrt(u1 * (u1 - a1) * (u1 - b1) * (u1 - b2));
+    auto A2 = std::sqrt(u2 * (u2 - a2) * (u2 - b2) * (u2 - b3));
+    auto A3 = std::sqrt(u3 * (u3 - a3) * (u3 - b3) * (u3 - b4));
+    auto A4 = std::sqrt(u4 * (u4 - a4) * (u4 - b4) * (u4 - b1));
 
     auto diff = A1 + A2 + A3 + A4 - a1 * a2;
 
@@ -181,7 +178,7 @@ void Node::addChild(std::shared_ptr<Node> child, int64_t zOrder, int64_t tag) {
 std::shared_ptr<Node> Node::getChildByTag(int64_t tag) {
     auto find = std::ranges::find_if(
         m_children,
-        [tag](std::shared_ptr<Node> node) { return node->m_tag == tag; }
+        [tag](std::shared_ptr<Node>& node) { return node->m_tag == tag; }
     );
 
     if (find != m_children.end()) return *find;
@@ -212,7 +209,7 @@ void Node::removeChildByTag(int64_t tag) {
 void Node::removeAllChildren() {
     std::ranges::for_each(
         m_children,
-        [this](std::shared_ptr<Node> child) { this->removeChild(child); }
+        [this](std::shared_ptr<Node>& child) { this->removeChild(child); }
     );
 }
 
@@ -225,7 +222,7 @@ void Node::reorderChild(std::shared_ptr<Node> child, int64_t zOrder) {
 void Node::sortAllChildren() {
     std::ranges::sort(
         m_children,
-        [](std::shared_ptr<Node> a, std::shared_ptr<Node> b) { return a->getZOrder() < b->getZOrder(); }
+        [](std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) { return a->getZOrder() < b->getZOrder(); }
     );
 }
 
@@ -245,7 +242,7 @@ void Node::cleanup() {
 void Node::draw(const long double dt) {
     std::ranges::for_each(
         m_children,
-        [dt](std::shared_ptr<Node> child) { child->draw(dt); }
+        [dt](std::shared_ptr<Node>& child) { child->draw(dt); }
     );
 }
 

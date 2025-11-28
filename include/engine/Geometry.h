@@ -6,6 +6,7 @@
 #include <string>
 
 #include <SDL3/SDL_rect.h>
+
 #include <fmt/format.h>
 
 class Size;

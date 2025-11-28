@@ -1,26 +1,25 @@
 #include <engine/Sprite.h>
 
+#include <memory>
+#include <regex>
+
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
+
+#include <discord-rpc.hpp>
+
+#include <cpr/cpr.h>
 
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
 
-#include <discord-rpc.hpp>
-
 #include <engine/config.hpp>
 #include <engine/Engine.h>
 #include <engine/Geometry.h>
 #include <engine/utils.hpp>
-
-#include <memory>
-#include <regex>
-
-#include <cpr/cpr.h>
-
 #include <engine/Geometry.h>
 #include <engine/ColorNode.h>
 #include <engine/Engine.h>
@@ -108,6 +107,8 @@ void Sprite::setTexture(SDL_Texture* texture) {
 
 void Sprite::draw(const long double dt) {
     ColorNode::draw(dt);
+
+    if (!this->isVisible()) return;
 
     auto renderer = Engine::sharedInstance()->getRenderer();
     auto rect = this->getRect();

@@ -1,18 +1,68 @@
-#include "SDL3/SDL_timer.h"
-#include "SDL3_ttf/SDL_ttf.h"
-#include "engine/ColorNode.h"
-#include "engine/Touchable.h"
-#include <cstdint>
 #include <engine/Typeable.h>
 
 #include <memory>
+#include <cstdint>
 
 #include <SDL3/SDL.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
-Typeable::Typeable() : m_inputText(""), m_placeholderText("") {}
+#include <engine/ColorNode.h>
+#include <engine/RectangleNode.h>
+#include <engine/TextNode.h>
+#include <engine/Touchable.h>
 
-bool Typeable::init() {
+typedef ColorNode::Color4 Color4;
+
+Typeable::Typeable() :
+    m_inputType(InputType::Text), m_seekBounds({ 0, 0 }) {}
+
+bool Typeable::init(Color4 displayTextColor, Color4 placeholderTextColor, Color4 backgroundColor) {
     if (!Touchable::init()) return false;
+
+    auto rect = this->getRect();
+
+    // ---- Display Text ----
+
+    m_displayText = TextNode::createWithData(
+        "resources/Noto Sans.ttf",
+        rect.getHeight() - 8,
+        { rect.getMinX() + 2, rect.getMinY() + 2 }
+    );
+    m_displayText->setAnchorPoint(0);
+    m_displayText->setColorA(displayTextColor);
+
+    // ---- Placeholder Text ----
+
+    m_placeholderText = TextNode::createWithData(
+        "resources/Noto Sans.ttf",
+        m_displayText->getFontSize(),
+        m_displayText->getPosition()
+    );
+    m_placeholderText->setAnchorPoint(m_displayText->getAnchorPoint());
+    m_placeholderText->setColorA(placeholderTextColor);
+
+    // ---- Cursor ----
+
+    m_cursor = RectangleNode::createWithRect({
+        rect.getMinX() + 2, rect.getMinY() + 3,
+        2, rect.getHeight() - 6
+    });
+    m_cursor->setAnchorPoint(0);
+    m_cursor->setColor(m_displayText->getColor());
+    m_cursor->setOpacity(190);
+
+    // ---- Background ----
+
+    m_background = RectangleNode::createWithRect(rect);
+    m_background->setAnchorPoint(0);
+    m_background->setColorA(backgroundColor);
+
+    // --------------------
+
+    this->addChild(m_displayText, 1);
+    this->addChild(m_placeholderText, 1);
+    this->addChild(m_cursor, 2);
+    this->addChild(m_background, 0);
 
     this->registerEventListener(
         Typeable::Events::focusin,
@@ -34,7 +84,18 @@ bool Typeable::init() {
 std::shared_ptr<Typeable> Typeable::create() {
     auto ret = utils::protected_make_shared<Typeable>();
 
-    if (!ret->init()) return nullptr;
+    if (!ret->init(
+        { 0, 0, 0, 255 },
+        { 0, 0, 0, 155 },
+        { 255, 255, 255, 255 }
+    )) return nullptr;
+    return ret;
+}
+
+std::shared_ptr<Typeable> Typeable::createWithColors(Color4 displayTextColor, Color4 placeholderTextColor, Color4 backgroundColor) {
+    auto ret = utils::protected_make_shared<Typeable>();
+
+    if (!ret->init(displayTextColor, placeholderTextColor, backgroundColor)) return nullptr;
     return ret;
 }
 
@@ -50,88 +111,70 @@ void Typeable::update(const long double dt) {
 }
 
 void Typeable::draw(const long double dt) {
-    Touchable::draw(dt);
-    
-    auto engine = Engine::sharedInstance();
-
-    // ---- Displayed Text ----
-
-    // TODO - create Text node and add as child
-
-    // TODO - add as member of class
-    auto notoSans = engine->getOrCreateFont("resources/Noto Sans.ttf");
-    // TODO - add as member of class
-    auto displayText = TTF_CreateText(
-        engine->getTextEngine(), notoSans,
-        "", 0
-    );
+    if (!this->isVisible()) {
+        Touchable::draw(dt);
+        return;
+    }
 
     auto rect = this->getRect();
+    auto& inputText = m_displayText->m_displayedText;
 
-    if (!TTF_SetFontSize(notoSans, rect.getHeight() - 8.)) LogSDLError();
-
-    if (!TTF_SetTextString(
-        displayText,
-        m_inputText.c_str(), 0
-    )) LogSDLError();
+    m_displayText->_updateFontSize();
     
-    if (!TTF_SetTextColor(
-        displayText,
-        0, 0, 0, 255
-    )) LogSDLError();
-
-    if (!TTF_DrawRendererText(
-        displayText,
-        rect.getMinX() + 2., rect.getMinY() + 2.
-    )) LogSDLError();
-    
-    // ------------------------
-
-    // ---- Cursor ----
-
-    auto renderer = engine->getRenderer();
-
-    if (!SDL_SetRenderDrawColor(
-        renderer,
-        0,
-        0,
-        0,
-        m_isFocused ? ((SDL_GetTicks() % 700) > 350 ? 155 : 0) : 0 // blink every 500ms
-    )) LogSDLError();
-    if (!SDL_SetRenderDrawBlendMode(
-        renderer,
-        static_cast<SDL_BlendMode>(ColorNode::BlendMode::Blend)
-    )) LogSDLError();
-
     int measuredWidth;
-    size_t measuredLength;
+    size_t _measuredLength;
 
     TTF_MeasureString(
-        notoSans, m_inputText.substr(0, m_seekBounds.start).c_str(),
+        m_displayText->m_font, inputText.substr(0, m_seekBounds.start).c_str(),
         0, 0,
-        &measuredWidth, &measuredLength
+        &measuredWidth, &_measuredLength
     );
 
-    SDL_FRect sdlRect = Rect {
-        rect.getMinX() + static_cast<float>(measuredWidth) + 2., rect.getMinY() + 3.,
-        1, rect.getHeight() - 6.
-    };
+    // ---- Display Text ----
 
-    if (!SDL_RenderFillRect(
-        renderer,
-        &sdlRect
-    )) LogSDLError();
+    m_displayText->setPosition(
+        rect.getMinX() + 2,
+        rect.getMinY() + 2
+    );
+    m_displayText->setFontSize(rect.getHeight() - 8);
+    
+    // ---- Placeholder Text ----
 
-    // ----------------
+    m_placeholderText->setPosition(m_displayText->getPosition());
+    m_placeholderText->setFontSize(m_displayText->getFontSize());
+    
+    // ---- Cursor ----
+
+    m_cursor->setPosition(
+        rect.getMinX() + 2 + measuredWidth,
+        rect.getMinY() + 3
+    );
+    m_cursor->setContentHeight(rect.getHeight() - 6);
+    
+    // ---- Background ----
+
+    m_background->setPosition(rect.origin);
+    m_background->setContentSize(rect.size);
+    
+    // --------------------
+
+    // Placeholder Swapping
+    m_placeholderText->setVisible(inputText.empty());
+
+    // Cursor Blinking
+    m_cursor->setVisible(m_isFocused && (SDL_GetTicks() % 700) > 350);
+
+    Touchable::draw(dt);
 }
 
 void Typeable::_focusIn(void* data) {
     auto engine = Engine::sharedInstance();
+    auto& inputText = m_displayText->m_displayedText;
 
     auto window = engine->getWindow();
     engine->requestTextInputCapturing(utils::cast_shared<Typeable>(this));
 
-    m_seekBounds.start = m_inputText.size();
+    m_seekBounds.start = inputText.size();
 
     SDL_Rect rect = this->getRect();
     SDL_SetTextInputArea(window, &rect, 0);
@@ -156,41 +199,49 @@ void Typeable::_focusOut(void* data) {
 
 void Typeable::_handleText(std::string text) {
     if (m_seekBounds.length > 0) this->_handleDelete(DeleteType::Backwards);
+
+    auto& inputText = m_displayText->m_displayedText;
     
-    m_inputText.insert(m_seekBounds.start, text);
+    inputText.insert(m_seekBounds.start, text);
     m_seekBounds.start += text.size();
 
     this->_callEventListener(Events::changed, &text);
+    
+    m_displayText->_updateTextString();
 
-    LogInfo(fmt::format("start: {}; size: {}", m_seekBounds.start, m_inputText.size()));
+    LogInfo(fmt::format("start: {}; size: {}", m_seekBounds.start, inputText.size()));
 }
 
 void Typeable::_handleDelete(DeleteType type) {
-    if (m_inputText.empty()) return;
+    auto& inputText = m_displayText->m_displayedText;
+    if (inputText.empty()) return;
 
     if (m_seekBounds.length <= 0) {
         switch (type) {
             case DeleteType::Backwards:
-                if (m_inputText.empty()) break;
-                m_inputText.erase(--m_seekBounds.start, 1);
+                if (inputText.empty()) break;
+                inputText.erase(--m_seekBounds.start, 1);
                 break;
             case DeleteType::Forwards:
-                if (m_seekBounds.start >= m_inputText.size()) break;
-                m_inputText.erase(m_seekBounds.start, 1);
+                if (m_seekBounds.start >= inputText.size()) break;
+                inputText.erase(m_seekBounds.start, 1);
                 break;
         }
     } else {
-        m_inputText.erase(m_seekBounds.start, m_seekBounds.length);
+        inputText.erase(m_seekBounds.start, m_seekBounds.length);
     }
 
-    LogInfo(fmt::format("start: {}; size: {}", m_seekBounds.start, m_inputText.size()));
+    m_displayText->_updateTextString();
+
+    LogInfo(fmt::format("start: {}; size: {}", m_seekBounds.start, inputText.size()));
 }
 
 void Typeable::_handleSeeking(int32_t start, int32_t length) {
     SeekBounds seekBounds { start, length };
+    auto& inputText = m_displayText->m_displayedText;
 
     m_seekBounds = seekBounds;
     this->_callEventListener(Events::seeked, &seekBounds);
 
-    LogInfo(fmt::format("start: {}; size: {}", m_seekBounds.start, m_inputText.size()));
+    LogInfo(fmt::format("start: {}; size: {}", m_seekBounds.start, inputText.size()));
 }

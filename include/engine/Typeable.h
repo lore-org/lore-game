@@ -1,8 +1,13 @@
 #pragma once
 
-#include <engine/Touchable.h>
+#include <memory>
 
 #include <SDL3/SDL.h>
+
+#include <engine/TextNode.h>
+#include <engine/ColorNode.h>
+#include <engine/RectangleNode.h>
+#include <engine/Touchable.h>
 
 class Typeable : public Touchable {
 public:
@@ -26,7 +31,7 @@ public:
         HiddenPassword = SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN,       /**< The input is a secure password that is hidden */
         VisiblePassword = SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE,     /**< The input is a secure password that is visible */
         Number = SDL_TEXTINPUT_TYPE_NUMBER,                             /**< The input is a number */
-        HiddenPIN, SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN,           /**< The input is a secure PIN that is hidden */
+        HiddenPIN = SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN,           /**< The input is a secure PIN that is hidden */
         VisiblePIN = SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE         /**< The input is a secure PIN that is visible */
     };
 
@@ -35,31 +40,27 @@ public:
         int32_t length;
     };
 
-    virtual bool init() override;
+    virtual bool init(ColorNode::Color4 displayTextColor, ColorNode::Color4 placeholderTextColor, ColorNode::Color4 backgroundColor);
 
     static std::shared_ptr<Typeable> create();
-
-    void setInputText(std::string text);
-    inline std::string getInputText() { return m_inputText; }
-
-    void setPlaceholderText(std::string text);
-    inline std::string getPlaceholderText() { return m_placeholderText; }
+    static std::shared_ptr<Typeable> createWithColors(ColorNode::Color4 displayTextColor, ColorNode::Color4 placeholderTextColor, ColorNode::Color4 backgroundColor);
 
     void setInputType(InputType type);
-    inline InputType getInputType() { return m_inputType; }    
+    inline InputType getInputType() { return m_inputType; }
 
     virtual void update(const long double dt) override;
-    virtual void draw(const long double dt) override;
+    virtual void draw(const long double dt) override;    
+
+    std::shared_ptr<TextNode> m_displayText;
+    std::shared_ptr<TextNode> m_placeholderText;
+    std::shared_ptr<RectangleNode> m_cursor;
+    std::shared_ptr<RectangleNode> m_background;
 
 protected:
     Typeable();
 
-    std::string m_inputText;
-    std::string m_placeholderText;
-
     InputType m_inputType;
-
-    SeekBounds m_seekBounds = { 0, 0 };
+    SeekBounds m_seekBounds;
 
 private:
     void _focusIn(void* data);

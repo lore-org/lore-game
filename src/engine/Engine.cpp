@@ -1,5 +1,3 @@
-#include "SDL3/SDL_events.h"
-#include "SDL3/SDL_keycode.h"
 #include <engine/Engine.h>
 
 #include <algorithm>
@@ -17,11 +15,12 @@
     #define par_unseq
 #endif
 
-#include <discord-rpc.hpp>
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
-#include <SDL3/SDL_main.h>
+
+#include <discord-rpc.hpp>
+
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
@@ -197,8 +196,6 @@ void Engine::setupEngine() {
     m_frameDeltas.resize(m_sampleSize, 0);
     m_tickDeltas.resize(m_sampleSize, 0);
 
-    SDL_SetMainReady();
-
     if (!SDL_SetAppMetadata(__APP_NAME__, __APP_VERSION__, __APP_NAMESPACE__)) LogSDLError();
     if (!SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO)) LogSDLError();
     if (!TTF_Init()) LogSDLError();
@@ -351,6 +348,8 @@ void Engine::runEngine() {
                 case SDL_EVENT_KEY_DOWN: {
                     auto keyDownEvent = *reinterpret_cast<SDL_KeyboardEvent*>(&event);
 
+                    // TODO - impl mod keys (ctrl, shift, etc.)
+
                     switch (keyDownEvent.key) {
                         case SDLK_BACKSPACE:
                             LogInfo("SDLK_BACKSPACE");
@@ -387,9 +386,10 @@ void Engine::runEngine() {
 
                             for (auto& node : m_textInputCaptures) {
                                 if (!node->isFocused()) continue;
+                                auto inputText = node->m_displayText->getDisplayedText();
 
                                 auto& seekBounds = node->m_seekBounds;
-                                if (seekBounds.start >= node->m_inputText.size()) continue;
+                                if (seekBounds.start >= inputText.size()) continue;
 
                                 node->_handleSeeking(seekBounds.start + 1, 0);
                             }
@@ -399,8 +399,9 @@ void Engine::runEngine() {
 
                             for (auto& node : m_textInputCaptures) {
                                 if (!node->isFocused()) continue;
+                                auto inputText = node->m_displayText->getDisplayedText();
 
-                                node->_handleSeeking(node->m_inputText.size(), 0);
+                                node->_handleSeeking(inputText.size(), 0);
                             }
                             break;
                         case SDLK_HOME:
@@ -426,6 +427,7 @@ void Engine::runEngine() {
         
         if (!TTF_SetFontSize(notoSans, 20)) LogSDLError();
 
+        // TODO - use TextNode
         if (m_showFPS) {
             if (!TTF_SetTextString(
                 m_fpsText,

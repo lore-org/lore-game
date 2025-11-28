@@ -1,17 +1,15 @@
-#define SDL_MAIN_HANDLED
-#define SDL_MAIN_NEEDED
-#include <SDL3/SDL_main.h>
-
 #include <memory>
 
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
+
+#include <discord-rpc.hpp>
+
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
-#include <discord-rpc.hpp>
 
 #include <engine/config.hpp>
 #include <engine/Engine.h>
@@ -24,9 +22,7 @@
 #include <engine/Typeable.h>
 #include <engine/RectangleNode.h>
 
-int main(int argc, char* argv[]) {
-    (void)argc; (void)argv;
-
+int main() {
     auto engine = Engine::sharedInstance();
     auto presence = utils::PresenceManager::sharedManager();
 
@@ -78,23 +74,20 @@ int main(int argc, char* argv[]) {
     // furries->scheduleSelf();
     // scene->addChild(furries);
 
-    auto textInput = Typeable::create();
+    auto textInput = Typeable::createWithColors(
+        { 30, 25, 40, 255 },
+        { 30, 25, 40, 190 },
+        { 210, 205, 220, 255 }
+    );
+    textInput->m_placeholderText->setDisplayedText("Placeholder...");
     textInput->setAnchorPoint(0);
     textInput->setPosition(100, 100);
-    textInput->setContentSize(350, 30);
+    textInput->setContentSize(250, 30);
     textInput->setUpdate(std::make_shared<Update_Callback>([&textInput](auto) {
-        auto textBG = dynamic_pointer_cast<RectangleNode>(textInput->getChildren()[0]);
-        textBG->setOpacity(textInput->isPressed() ? 150 : 255);
+        textInput->m_background->setOpacity(!textInput->isPressed() ? 255 : 200);
     }));
     textInput->scheduleSelf();
-
-    // TODO - add background as built-in part of Typeable
-    auto textBG = RectangleNode::createWithVec(
-        textInput->getPosition() + (textInput->getContentSize() * 0.5L),
-        textInput->getContentSize()
-    );
     
-    textInput->addChild(textBG);
     scene->addChild(textInput);
 
     auto cursor = RectangleNode::create();
@@ -112,6 +105,7 @@ int main(int argc, char* argv[]) {
     scene->addChild(cursor);
 
     Director::sharedDirector()->pushScene(scene);
+    Director::sharedDirector()->setClearColor({ 10, 5, 20 });
 
     // ---------------------------
 
@@ -130,3 +124,29 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
+// ------ cross-platform compatibility ------
+
+#if _WIN32
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    return main();
+}
+
+#endif /* _WIN32 */
+
+#if __ANDROID__
+
+#include <android_native_app_glue.h>
+
+void __stdcall android_main(android_app* state) {
+    main();
+}
+
+#endif /* __ANDROID__ */
+
+// ------ cross-platform compatibility ------
+// ------------------------------------------
