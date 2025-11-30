@@ -3,12 +3,12 @@
 #include <memory>
 
 #include <engine/Object.h>
-#include <engine/Engine.h>
+
+class Engine;
 
 namespace utils {
     class PresenceManager : public Object {
-        friend class ::std::shared_ptr<PresenceManager>;
-        friend class ::Engine;
+        friend Engine;
 
     public:
 

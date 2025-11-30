@@ -25,7 +25,7 @@ std::shared_ptr<PresenceManager> PresenceManager::m_instance;
 PresenceManager::PresenceManager() : m_rpcIsEnabled(false), m_rpcIsActive(false) {}
 
 std::shared_ptr<PresenceManager> PresenceManager::sharedManager() {
-    if (!m_instance) m_instance = protected_make_shared<PresenceManager>();
+    if (!m_instance) m_instance = utils::protected_make_shared<PresenceManager>();
     return m_instance;
 }
 

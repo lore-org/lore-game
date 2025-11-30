@@ -14,7 +14,8 @@
 typedef ColorNode::Color4 Color4;
 
 Typeable::Typeable() :
-    m_inputType(InputType::Text), m_seekBounds({ 0, 0 }) {}
+    m_inputType(InputType::Text), m_seekBounds({ 0, 0 }),
+    m_widthToCursor(0) {}
 
 bool Typeable::init(Color4 displayTextColor, Color4 placeholderTextColor, Color4 backgroundColor) {
     if (!Touchable::init()) return false;
@@ -119,17 +120,6 @@ void Typeable::draw(const long double dt) {
     auto rect = this->getRect();
     auto& inputText = m_displayText->m_displayedText;
 
-    m_displayText->_updateFontSize();
-    
-    int measuredWidth;
-    size_t _measuredLength;
-
-    TTF_MeasureString(
-        m_displayText->m_font, inputText.substr(0, m_seekBounds.start).c_str(),
-        0, 0,
-        &measuredWidth, &_measuredLength
-    );
-
     // ---- Display Text ----
 
     m_displayText->setPosition(
@@ -146,7 +136,7 @@ void Typeable::draw(const long double dt) {
     // ---- Cursor ----
 
     m_cursor->setPosition(
-        rect.getMinX() + 2 + measuredWidth,
+        rect.getMinX() + 2 + m_widthToCursor,
         rect.getMinY() + 3
     );
     m_cursor->setContentHeight(rect.getHeight() - 6);
@@ -208,6 +198,7 @@ void Typeable::_handleText(std::string text) {
     this->_callEventListener(Events::changed, &text);
     
     m_displayText->_updateTextString();
+    this->_measureString();
 
     LogInfo(fmt::format("start: {}; size: {}", m_seekBounds.start, inputText.size()));
 }
@@ -232,6 +223,7 @@ void Typeable::_handleDelete(DeleteType type) {
     }
 
     m_displayText->_updateTextString();
+    this->_measureString();
 
     LogInfo(fmt::format("start: {}; size: {}", m_seekBounds.start, inputText.size()));
 }
@@ -242,6 +234,23 @@ void Typeable::_handleSeeking(int32_t start, int32_t length) {
 
     m_seekBounds = seekBounds;
     this->_callEventListener(Events::seeked, &seekBounds);
+    
+    this->_measureString();
 
     LogInfo(fmt::format("start: {}; size: {}", m_seekBounds.start, inputText.size()));
+}
+
+void Typeable::_measureString() {
+    auto& inputText = m_displayText->m_displayedText;
+
+    int measuredWidth;
+    size_t _measuredLength;
+
+    TTF_MeasureString(
+        m_displayText->m_font, inputText.substr(0, m_seekBounds.start).c_str(),
+        0, 0,
+        &measuredWidth, &_measuredLength
+    );
+
+    m_widthToCursor = measuredWidth;
 }

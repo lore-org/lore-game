@@ -10,6 +10,9 @@
 #include <engine/Touchable.h>
 
 class Typeable : public Touchable {
+    friend class Engine;
+    friend class TextNode;
+
 public:
     struct Events {
         // Input of node was modified. Provides std::string
@@ -62,6 +65,8 @@ protected:
     InputType m_inputType;
     SeekBounds m_seekBounds;
 
+    int m_widthToCursor;
+
 private:
     void _focusIn(void* data);
     void _focusOut(void* data);
@@ -75,5 +80,5 @@ private:
     void _handleDelete(DeleteType type);
     void _handleSeeking(int32_t start, int32_t length);
 
-    friend void Engine::runEngine();
+    void _measureString();
 };

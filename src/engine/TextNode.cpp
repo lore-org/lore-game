@@ -4,29 +4,28 @@
 
 #include <engine/utils.hpp>
 #include <engine/Engine.h>
+#include <engine/Typeable.h>
 
 TextNode::TextNode() :
     m_displayedText(""), m_fontSize(14) {}
 
 TextNode::~TextNode() {
     TTF_DestroyText(m_text);
+    TTF_CloseFont(m_font);
 }
 
 bool TextNode::init(TTF_Font* font, float fontSize, Point position) {
     if (!ColorNode::init()) return false;
 
-    auto engine = Engine::sharedInstance();
+    this->_copyAndVerifyFont(font);
 
-    if (font == nullptr) {
-        font = engine->getOrCreateFont("resources/Noto Sans.ttf");
-    }
+    m_fontSize = fontSize;
+    m_position = position;
 
-    m_font = font;
     m_text = TTF_CreateText(
-        engine->getTextEngine(), m_font,
+        Engine::sharedInstance()->getTextEngine(), m_font,
         "", 0
     );
-    m_position = position;
 
     this->_updateTextString();
     this->_updateTextColor();
@@ -56,6 +55,8 @@ std::shared_ptr<TextNode> TextNode::createWithFont(std::string fontFile, float f
     return ret;
 }
 
+// Making font `nullptr` will default to `resources/Noto Sans.ttf`
+// Pointer will be copied, be sure to destroy it if necessary!
 std::shared_ptr<TextNode> TextNode::createWithFont(TTF_Font* font, float fontSize) {
     auto ret = utils::protected_make_shared<TextNode>();
 
@@ -86,6 +87,8 @@ std::shared_ptr<TextNode> TextNode::createWithData(std::string fontFile, float f
     return ret;
 }
 
+// Making font `nullptr` will default to `resources/Noto Sans.ttf`
+// Pointer will be copied, be sure to destroy it if necessary!
 std::shared_ptr<TextNode> TextNode::createWithData(TTF_Font* font, float fontSize, Point position) {
     auto ret = utils::protected_make_shared<TextNode>();
 
@@ -102,8 +105,6 @@ void TextNode::draw(const long double dt) {
     if (!this->isVisible()) return;
 
     auto rect = this->getRect();
-    
-    this->_updateFontSize();
 
     if (!TTF_DrawRendererText(
         m_text,
@@ -113,7 +114,7 @@ void TextNode::draw(const long double dt) {
 
 void TextNode::setDisplayedText(std::string displayedText) {
     if (m_displayedText == displayedText) return;
-
+    
     m_displayedText = displayedText;
     this->_updateTextString();
     this->_updateContentSize();
@@ -130,10 +131,13 @@ void TextNode::changeFont(std::string fontFile) {
     this->changeFont(Engine::sharedInstance()->getOrCreateFont(fontFile));
 }
 
+// Making font `nullptr` will default to `resources/Noto Sans.ttf`
+// Pointer will be copied, be sure to destroy it if necessary!
 void TextNode::changeFont(TTF_Font* font) {
     if (m_font == font) return;
 
-    m_font = font;
+    this->_copyAndVerifyFont(font);
+
     this->_updateTextFont();
     this->_updateContentSize();
 }
@@ -168,6 +172,8 @@ void TextNode::_updateTextString() {
         m_text,
         m_displayedText.c_str(), m_displayedText.size()
     )) LogSDLError();
+
+    this->_measureString();
 }
 
 void TextNode::_updateTextColor() {
@@ -181,10 +187,17 @@ void TextNode::_updateTextFont() {
     if (!TTF_SetTextFont(
         m_text, m_font
     )) LogSDLError();
+
+    this->_measureString();
 }
 
+// Also calls TTF_SetFontSize
 void TextNode::_updateContentSize() {
-    this->_updateFontSize();
+    if (!TTF_SetFontSize(
+        m_font, m_fontSize
+    )) LogSDLError();
+
+    this->_measureString();
 
     int width;
     int height;
@@ -197,8 +210,20 @@ void TextNode::_updateContentSize() {
     this->setContentSize(width, height);
 }
 
-void TextNode::_updateFontSize() {
-    if (!TTF_SetFontSize(
-        m_font, m_fontSize
-    )) LogSDLError();
+// Replaces default font if needed, copies the font to its own buffer, and checks for any errors.
+void TextNode::_copyAndVerifyFont(TTF_Font* font) {
+    if (!font) {
+        font = Engine::sharedInstance()->getOrCreateFont(
+            "resources/Noto Sans.ttf"
+        );
+    }
+
+    m_font = TTF_CopyFont(font);
+    if (!m_font) LogSDLError();
+}
+
+void TextNode::_measureString() {
+    if (auto typeable = dynamic_pointer_cast<Typeable>(m_parent)) {
+        typeable->_measureString();
+    }
 }

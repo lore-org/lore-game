@@ -33,6 +33,7 @@
 #include <engine/Scheduler.h>
 #include <engine/Director.h>
 #include <engine/Typeable.h>
+#include <engine/TextNode.h>
 
 std::shared_ptr<Engine> Engine::m_instance;
 
@@ -45,7 +46,6 @@ Engine::Engine() :
     m_isStopped(false),
     m_isSetup(false), m_isStarted(false),
     m_windowSize(720, 480),
-    m_showFPS(false), m_showTPS(false),
     m_sampleSize(10), m_deltaAverageMult(1.f / m_sampleSize), 
     m_frameAvg(0), m_tickAvg(0),
     m_displayPrecision(0) {}
@@ -97,11 +97,22 @@ void Engine::resetSecondsPerFrame() {
 }
 
 void Engine::showFPS(bool show) {
-    m_showFPS = show;
+    if (m_fpsText) m_fpsText->setVisible(show);
+    if (m_tpsText) m_tpsText->setPositionY(show ? 30. : 5.);
+
+    if (!show) return;
+
+    std::ranges::fill(m_frameDeltas, m_framesPerSecond);
+    m_frameAvg = m_framesPerSecond;
 }
 
 void Engine::showTPS(bool show) {
-    m_showTPS = show;
+    if (m_tpsText) m_tpsText->setVisible(show);
+
+    if (!show) return;
+
+    std::ranges::fill(m_tickDeltas, m_ticksPerSecond);
+    m_tickAvg = m_ticksPerSecond;
 }
 
 void Engine::setTimeDisplayPrecision(uint64_t precision) {
@@ -114,12 +125,12 @@ void Engine::setTimeDisplaySampleSize(uint64_t size) {
     m_deltaAverageMult = 1.f / m_sampleSize;
 
     if (m_frameDeltas.capacity() > size) m_frameDeltas.resize(m_sampleSize);
-    else m_frameDeltas.resize(m_sampleSize, 0);
-    std::ranges::fill(m_frameDeltas, 0);
+    else m_frameDeltas.resize(m_sampleSize);
+    std::ranges::fill(m_frameDeltas, m_framesPerSecond);
 
     if (m_tickDeltas.capacity() > size) m_tickDeltas.resize(m_sampleSize);
-    else m_tickDeltas.resize(m_sampleSize, 0);
-    std::ranges::fill(m_tickDeltas, 0);
+    else m_tickDeltas.resize(m_sampleSize);
+    std::ranges::fill(m_tickDeltas, m_ticksPerSecond);
 }
 
 void Engine::setWindowSize(Size size) {
@@ -157,17 +168,26 @@ std::shared_ptr<Engine::MouseData> Engine::getMouseData() {
     return std::make_shared<MouseData>(mouseData);
 }
 
-TTF_Font* Engine::getOrCreateFont(std::string file, float point) {
-    std::pair<std::string, float> key(file, point);
-    if (m_fontMap.contains(key)) return m_fontMap.at(key);
-
+TTF_Font* Engine::createFont(std::string file, float point) {
     auto font = TTF_OpenFont(file.c_str(), point);
     if (!font) {
         LogSDLError();
         return nullptr;
     }
-    m_fontMap.insert({ key, font });
+
+    std::pair<std::string, float> key(file, point);
+    if (!m_fontMap.contains(key)) {
+        m_fontMap.insert({ key, font });
+    }
+
     return font;
+}
+
+TTF_Font* Engine::getOrCreateFont(std::string file, float point) {
+    std::pair<std::string, float> key(file, point);
+    if (m_fontMap.contains(key)) return m_fontMap.at(key);
+
+    return this->createFont(file, point);
 }
 
 void Engine::requestTextInputCapturing(std::shared_ptr<Typeable> node) {
@@ -192,8 +212,8 @@ void Engine::setupEngine() {
     if (m_isSetup) return LogWarn("Engine has already been set up!");
     m_isSetup = true;
 
-    m_frameDeltas.resize(m_sampleSize, 0);
-    m_tickDeltas.resize(m_sampleSize, 0);
+    m_frameDeltas.resize(m_sampleSize, m_framesPerSecond);
+    m_tickDeltas.resize(m_sampleSize, m_ticksPerSecond);
 
     if (!SDL_SetAppMetadata(__APP_NAME__, __APP_VERSION__, __APP_NAMESPACE__)) LogSDLError();
     if (!SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO)) LogSDLError();
@@ -210,24 +230,24 @@ void Engine::setupEngine() {
     m_sdlTextEngine = TTF_CreateRendererTextEngine(m_sdlRenderer);
     if (!m_sdlTextEngine) LogSDLError();
 
-    m_fpsText = TTF_CreateText(
-        m_sdlTextEngine, this->getOrCreateFont("resources/Noto Sans.ttf"),
-        "",
-        0
+    m_fpsText = TextNode::createWithData(
+        nullptr, 20,
+        { 5, 5 }
     );
-    if (!m_fpsText) LogSDLError();
-    m_tpsText = TTF_CreateText(
-        m_sdlTextEngine, this->getOrCreateFont("resources/Noto Sans.ttf"),
-        "",
-        0
+    m_fpsText->setAnchorPoint(0);
+
+    m_tpsText = TextNode::createWithData(
+        nullptr, 20,
+        { 5, m_fpsText->isVisible() ? 30. : 5. }
     );
-    if (!m_tpsText) LogSDLError();
+    m_tpsText->setAnchorPoint(0);
 
     auto presenceManager = utils::PresenceManager::sharedManager();
 
     auto clientID = config->at("DISCORD_CLIENT_ID");
     if (!clientID) clientID = "0";
 
+    // TODO - flesh this out more
     if (presenceManager->isEnabled()) {
         presenceManager->setActive(false);
         discord::RPCManager::get()
@@ -256,7 +276,7 @@ void Engine::runEngine() {
             uint64_t startTime = SDL_GetTicksNS();
 
             const long double dt = (startTime - lastTickTime) * SecondsPerNanosecond;
-            if (m_showTPS) {
+            if (m_tpsText->isVisible()) {
                 std::ranges::rotate(m_tickDeltas, m_tickDeltas.begin() + 1);
                 m_tickDeltas.back() = 1.f / dt;
             }
@@ -286,21 +306,17 @@ void Engine::runEngine() {
             ) {
                 lastUpdateTime = startTime;
 
-                m_frameAvg = m_showFPS ?
-                    std::reduce(
+                m_frameAvg = std::reduce(
                         par_unseq
                         m_frameDeltas.begin(),
                         m_frameDeltas.end()
-                    ) / m_sampleSize :
-                    0;
+                    ) * m_deltaAverageMult;
 
-                m_tickAvg = m_showTPS ?
-                    std::reduce(
+                m_tickAvg = std::reduce(
                         par_unseq
                         m_tickDeltas.begin(),
                         m_tickDeltas.end()
-                    ) / m_sampleSize :
-                    0;
+                    ) * m_deltaAverageMult;
             }
             
             uint64_t endTime = SDL_GetTicksNS();
@@ -310,8 +326,6 @@ void Engine::runEngine() {
         }
     });
 
-    
-    auto notoSans = this->getOrCreateFont("resources/Noto Sans.ttf");
     auto director = Director::sharedDirector();
     auto format = fmt::format("%.{}f", m_displayPrecision);
     SDL_Event event = {};
@@ -418,43 +432,17 @@ void Engine::runEngine() {
         }
 
         const long double dt = (startTime - lastFrameTime) * SecondsPerNanosecond;
-        if (m_showFPS) {
+        if (m_fpsText->isVisible()) {
             std::ranges::rotate(m_frameDeltas, m_frameDeltas.begin() + 1);
             m_frameDeltas.back() = 1.f / dt;
         }
+
+        if (m_fpsText->isVisible()) m_fpsText->setDisplayedText(fmt::format("{} FPS", fmt::sprintf(format, m_frameAvg)));
+        if (m_tpsText->isVisible()) m_tpsText->setDisplayedText(fmt::format("{} TPS", fmt::sprintf(format, m_tickAvg)));
+
         director->draw(dt);
-        
-        if (!TTF_SetFontSize(notoSans, 20)) LogSDLError();
-
-        // TODO - use TextNode
-        if (m_showFPS) {
-            if (!TTF_SetTextString(
-                m_fpsText,
-                fmt::format("{} FPS", fmt::sprintf(format, m_frameAvg)).c_str(),
-                0
-            )) LogSDLError();
-        }
-        if (m_showTPS) {
-            if (!TTF_SetTextString(
-                m_tpsText,
-                fmt::format("{} TPS", fmt::sprintf(format, m_tickAvg)).c_str(),
-                0
-            )) LogSDLError();
-        }
-
-        if (!TTF_SetTextColor(
-            m_fpsText,
-            255, 255, 255, 255
-        )) LogSDLError();
-        if (!TTF_SetTextColor(
-            m_tpsText,
-            255, 255, 255, 255
-        )) LogSDLError();
-
-        if (m_showFPS && m_fpsText)
-            if (!TTF_DrawRendererText(m_fpsText, 5, 5)) LogSDLError();
-        if (m_showTPS && m_tpsText)
-            if (!TTF_DrawRendererText(m_tpsText, 5, m_showFPS ? 30 : 5)) LogSDLError();
+        m_fpsText->draw(dt);
+        m_tpsText->draw(dt);
 
         if (!SDL_RenderPresent(m_sdlRenderer)) LogSDLError();
         

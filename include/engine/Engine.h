@@ -11,6 +11,7 @@
 #include <engine/utils.hpp>
 
 class Typeable;
+class TextNode;
 
 #define NanosecondsPerSecond 1e9L
 #define SecondsPerNanosecond 1e-9L
@@ -87,7 +88,8 @@ public:
     // Be sure to run this in the main thread
     static std::shared_ptr<MouseData> getMouseData();
 
-    TTF_Font* getOrCreateFont(std::string file, float point = 100.f);
+    TTF_Font* createFont(std::string file, float point = 100);
+    TTF_Font* getOrCreateFont(std::string file, float point = 100);
 
     void requestTextInputCapturing(std::shared_ptr<Typeable> node);
     void removeTextInputCapturing(std::shared_ptr<Typeable> node);
@@ -142,10 +144,8 @@ protected:
 
     // ---- FPS/TPS ----
 
-    bool m_showFPS;
-    TTF_Text* m_fpsText;
-    bool m_showTPS;
-    TTF_Text* m_tpsText;
+    std::shared_ptr<TextNode> m_fpsText;
+    std::shared_ptr<TextNode> m_tpsText;
 
     uint64_t m_sampleSize;
     long double m_deltaAverageMult;

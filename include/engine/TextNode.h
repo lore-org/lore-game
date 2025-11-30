@@ -6,6 +6,9 @@
 class Typeable;
 
 class TextNode : public ColorNode {
+    friend class Typeable;
+    friend class Engine;
+
 public:
     virtual ~TextNode();
 
@@ -28,6 +31,8 @@ public:
 
     void setFontSize(float fontSize);
     inline float getFontSize() { return m_fontSize; }
+
+    // TODO - impl changeFontHeight, which changes the font size to the desired height, calculates the difference from the actual height, and adjusts for the pt ratio
 
     inline TTF_Font* getSDLFont() { return m_font; }
     inline TTF_Text* getSDLText() { return m_text; }
@@ -54,16 +59,15 @@ protected:
     TTF_Font* m_font;
     TTF_Text* m_text;
 
-    friend Typeable;
-    friend void Engine::runEngine();
-
 private:
 
     // TODO - impl TTF_SetTextWrapWidth, TTF_SetTextDirection
 
-    void _updateTextString();
-    void _updateTextColor();
-    void _updateTextFont();
+    inline void _updateTextString();
+    inline void _updateTextColor();
+    inline void _updateTextFont();
     void _updateContentSize();
-    void _updateFontSize();
+
+    void _copyAndVerifyFont(TTF_Font* font);
+    inline void _measureString();
 };
