@@ -4,10 +4,11 @@
 
 #include <SDL3/SDL.h>
 
-#include <engine/TextNode.h>
 #include <engine/ColorNode.h>
 #include <engine/RectangleNode.h>
 #include <engine/Touchable.h>
+
+class TextNode;
 
 class Typeable : public Touchable {
     friend class Engine;

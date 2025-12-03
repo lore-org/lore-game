@@ -11,6 +11,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ----- Options -----
 
+set(CMAKE_SYSTEM_NAME Android)
+
 set(CMAKE_ANDROID_ARCH_ABI arm64-v8a CACHE STRING "What architecture to compile the Android application for")
 
 set(CMAKE_ANDROID_API 33 CACHE STRING "Target Android API version. Default is Android 13.")
@@ -225,14 +227,16 @@ if (NOT DEFINED ANDROID_NDK)
     if (ANDROID AND NOT DEFINED ENV{ANDROID_NDK}) # don't error on non-android build platforms
         message(FATAL_ERROR "ANDROID_NDK must be defined as a cmake variable or environment variable.")
     endif()
-    set(ANDROID_NDK $ENV{ANDROID_NDK} CACHE STRING "") # libwebp relies on a cmake ANDROID_NDK instead of an env ANDROID_NDK
+    file(TO_CMAKE_PATH $ENV{ANDROID_NDK} ANDROID_NDK)
+    set(ANDROID_NDK ${ANDROID_NDK} CACHE STRING "") # libwebp relies on a cmake ANDROID_NDK instead of an env ANDROID_NDK
 endif()
 
 if (NOT DEFINED JAVA_HOME)
     if (ANDROID AND NOT DEFINED ENV{JAVA_HOME}) # don't error on non-android build platforms
         message(FATAL_ERROR "JAVA_HOME must be defined as a cmake variable or environment variable.")
     endif()
-    set(JAVA_HOME $ENV{JAVA_HOME} CACHE STRING "")
+    file(TO_CMAKE_PATH $ENV{JAVA_HOME} JAVA_HOME)
+    set(JAVA_HOME ${JAVA_HOME} CACHE STRING "")
 endif()
 
 # Getting pre-installed libraries
@@ -370,11 +374,12 @@ if (ANDROID)
 
     list(APPEND CMAKE_PREFIX_PATH ${OPENSSL_LIB_DIR})
 
-    if (BUILD_SHARED_LIBS)
-        set(WANTED_LIBRARY_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}")
-    else()
-        set(WANTED_LIBRARY_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    endif()
+    # if (BUILD_SHARED_LIBS)
+    #     set(WANTED_LIBRARY_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    # else()
+    #     set(WANTED_LIBRARY_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    # endif()
+    set(WANTED_LIBRARY_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}")
 
     if (DEFINED crypto_LIBRARY)
         set(crypto ${crypto_LIBRARY})
@@ -420,13 +425,15 @@ if (ANDROID)
     endfunction()
 
 
-    if (BUILD_SHARED_LIBS)
-        add_imported_library(libcrypto SHARED)
-        add_imported_library(libssl SHARED)
-    else()
-        add_imported_library(libcrypto STATIC)
-        add_imported_library(libssl STATIC)
-    endif()
+    # if (BUILD_SHARED_LIBS)
+    #     add_imported_library(libcrypto SHARED)
+    #     add_imported_library(libssl SHARED)
+    # else()
+    #     add_imported_library(libcrypto STATIC)
+    #     add_imported_library(libssl STATIC)
+    # endif()
+    add_imported_library(libcrypto STATIC)
+    add_imported_library(libssl STATIC)
 
     set_target_properties(libcrypto PROPERTIES
         IMPORTED_LOCATION ${crypto}
@@ -763,12 +770,6 @@ CPMAddPackage(
         "SDLTTF_VENDORED ON"
 )
 
-function(link_if_valid TARGET TYPE ITEM)
-    if (TARGET "${TARGET}" AND TARGET "${ITEM}")
-        target_link_libraries("${TARGET}" "${TYPE}" "${ITEM}")
-    endif()
-endfunction()
-
 # Add libraries to project
 
 set(LIBRARIES
@@ -784,6 +785,17 @@ set(LIBRARIES
     SDL3_ttf::SDL3_ttf
     SDL3_image::SDL3_image
 )
+
+macro(append_if_valid TARGET)
+    if (TARGET "${TARGET}")
+        list(APPEND LIBRARIES "${TARGET}")
+    endif()
+endmacro()
+
+if (ANDROID)
+    append_if_valid(OpenSSL::Crypto)
+    append_if_valid(OpenSSL::SSL)
+endif()
 
 target_link_libraries("${SANITISED_PROJECT_NAME}" ${LIBRARIES})
 
@@ -821,16 +833,33 @@ add_custom_command(
     COMMAND_EXPAND_LISTS
 )
 
-add_custom_command(
-    TARGET "${SANITISED_PROJECT_NAME}"
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_RUNTIME_DLLS:${SANITISED_PROJECT_NAME}>
-            $<TARGET_FILE:${SANITISED_PROJECT_NAME}>
-            "${LIB_COPY_DIR}"
-    COMMENT "Copying runtime artifacts to ${LIB_COPY_DIR}"
-    COMMAND_EXPAND_LISTS
-)
+if (WIN32)
+    # TARGET_RUNTIME_DLLS
+    add_custom_command(
+        TARGET "${SANITISED_PROJECT_NAME}"
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_RUNTIME_DLLS:${SANITISED_PROJECT_NAME}>
+                $<TARGET_FILE:${SANITISED_PROJECT_NAME}>
+                "${LIB_COPY_DIR}"
+        COMMENT "Copying runtime artifacts to ${LIB_COPY_DIR}"
+        COMMAND_EXPAND_LISTS
+    )
+else()
+    # GLOB_RECURSE
+    file(GLOB_RECURSE SHARED_LIBS CONFIGURE_DEPENDS ${CMAKE_BINARY_DIR}/_deps/*-build/**${CMAKE_SHARED_LIBRARY_SUFFIX})
+
+    add_custom_command(
+        TARGET "${SANITISED_PROJECT_NAME}"
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${SHARED_LIBS}
+                $<TARGET_FILE:${SANITISED_PROJECT_NAME}>
+                "${LIB_COPY_DIR}"
+        COMMENT "Copying runtime artifacts to ${LIB_COPY_DIR}"
+        COMMAND_EXPAND_LISTS
+    )
+endif()
 
 if (EXISTS ${CMAKE_BINARY_DIR}/${APP_NAME}.pdb)
     add_custom_command(
@@ -873,6 +902,5 @@ if (ANDROID)
         POST_BUILD
         COMMAND ${GRADLE} -p ${CMAKE_BINARY_DIR}/android $<IF:$<BOOL:DEBUG>,assembleDebug,assembleRelease>
         VERBATIM
-        USES_TERMINAL
     )
 endif()

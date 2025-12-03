@@ -1,9 +1,6 @@
 #pragma once
 
 #include <engine/ColorNode.h>
-#include <engine/Engine.h>
-
-class Typeable;
 
 class TextNode : public ColorNode {
     friend class Typeable;
@@ -63,11 +60,14 @@ private:
 
     // TODO - impl TTF_SetTextWrapWidth, TTF_SetTextDirection
 
-    inline void _updateTextString();
-    inline void _updateTextColor();
-    inline void _updateTextFont();
+    void _updateTextString();
+    void _updateTextColor();
+    void _updateTextFont();
+    // Also calls TTF_SetFontSize
     void _updateContentSize();
 
+
+    // Replaces default font if needed, copies the font to its own buffer, and checks for any errors.
     void _copyAndVerifyFont(TTF_Font* font);
-    inline void _measureString();
+    void _measureString();
 };

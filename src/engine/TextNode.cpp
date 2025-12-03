@@ -191,7 +191,6 @@ void TextNode::_updateTextFont() {
     this->_measureString();
 }
 
-// Also calls TTF_SetFontSize
 void TextNode::_updateContentSize() {
     if (!TTF_SetFontSize(
         m_font, m_fontSize
@@ -210,7 +209,6 @@ void TextNode::_updateContentSize() {
     this->setContentSize(width, height);
 }
 
-// Replaces default font if needed, copies the font to its own buffer, and checks for any errors.
 void TextNode::_copyAndVerifyFont(TTF_Font* font) {
     if (!font) {
         font = Engine::sharedInstance()->getOrCreateFont(

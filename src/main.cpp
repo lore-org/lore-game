@@ -1,5 +1,8 @@
 #include <memory>
 
+#if __ANDROID__
+    #include <SDL3/SDL_main.h>
+#endif /* __ANDROID__ */
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -21,6 +24,7 @@
 #include <engine/Director.h>
 #include <engine/Typeable.h>
 #include <engine/RectangleNode.h>
+#include <engine/TextNode.h>
 
 int main() {
     auto engine = Engine::sharedInstance();
@@ -140,13 +144,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 #if __ANDROID__
 
-#include <android_native_app_glue.h>
+#include <jni.h>
 
-void __stdcall android_main(android_app* state) {
-    main();
+extern "C" JNIEXPORT jint JNICALL 
+Java_com_furred_loader_NativeActivity_androidMain(JNIEnv* env, jobject ) {
+    return main();
 }
 
 #endif /* __ANDROID__ */
 
-// ------ cross-platform compatibility ------
 // ------------------------------------------

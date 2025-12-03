@@ -10,8 +10,8 @@
 #include <engine/Geometry.h>
 #include <engine/utils.hpp>
 
-class Typeable;
 class TextNode;
+class Typeable;
 
 #define NanosecondsPerSecond 1e9L
 #define SecondsPerNanosecond 1e-9L
