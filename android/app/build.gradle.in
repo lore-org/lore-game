@@ -26,13 +26,16 @@ android {
         
         release {
             minifyEnabled = false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
     signingConfigs {
         debug {
-            storeFile file('@HOME_DIR@/.android/debug.keystore')
+            storeFile file('@ANDROID_DEBUG_KEYSTORE@')
+            storePassword "android"
+            keyPassword "android"
+            keyAlias "AndroidDebugKey"
         }
     }
 }

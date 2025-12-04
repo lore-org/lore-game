@@ -223,20 +223,67 @@ execute_process(COMMAND ${VIRTUAL_PYTHON} -m pip install -r ${CMAKE_SOURCE_DIR}/
 
 # Env detection
 
+if (NOT DEFINED ANDROID_SDK OR NOT DEFINED ANDROID_HOME)
+    if (ANDROID AND NOT DEFINED ENV{ANDROID_SDK} AND NOT DEFINED ENV{ANDROID_HOME}) # don't error on non-android build platforms
+        message(FATAL_ERROR "ANDROID_SDK or ANDROID_HOME must be defined as a cmake variable or environment variable.")
+    endif()
+
+    if (DEFINED ENV{ANDROID_SDK})
+        set(ANDROID_SDK "$ENV{ANDROID_SDK}")
+    endif()
+    if (DEFINED ENV{ANDROID_HOME})
+        set(ANDROID_HOME "$ENV{ANDROID_HOME}")
+    endif()
+
+    if (NOT DEFINED ANDROID_SDK AND DEFINED ANDROID_HOME)
+        set(ANDROID_SDK "${ANDROID_HOME}")
+    elseif (NOT DEFINED ANDROID_HOME AND DEFINED ANDROID_SDK)
+        set(ANDROID_HOME "${ANDROID_SDK}")
+    endif()
+
+    file(TO_CMAKE_PATH "${ANDROID_SDK}" ANDROID_SDK)
+    set(ANDROID_SDK "${ANDROID_SDK}" CACHE STRING "")
+
+    file(TO_CMAKE_PATH "${ANDROID_HOME}" ANDROID_HOME)
+    set(ANDROID_HOME "${ANDROID_HOME}" CACHE STRING "")
+endif()
+
 if (NOT DEFINED ANDROID_NDK)
     if (ANDROID AND NOT DEFINED ENV{ANDROID_NDK}) # don't error on non-android build platforms
         message(FATAL_ERROR "ANDROID_NDK must be defined as a cmake variable or environment variable.")
     endif()
-    file(TO_CMAKE_PATH $ENV{ANDROID_NDK} ANDROID_NDK)
-    set(ANDROID_NDK ${ANDROID_NDK} CACHE STRING "") # libwebp relies on a cmake ANDROID_NDK instead of an env ANDROID_NDK
+    file(TO_CMAKE_PATH "$ENV{ANDROID_NDK}" ANDROID_NDK)
+    set(ANDROID_NDK "${ANDROID_NDK}" CACHE STRING "") # libwebp relies on a cmake ANDROID_NDK instead of an env ANDROID_NDK
 endif()
 
 if (NOT DEFINED JAVA_HOME)
     if (ANDROID AND NOT DEFINED ENV{JAVA_HOME}) # don't error on non-android build platforms
         message(FATAL_ERROR "JAVA_HOME must be defined as a cmake variable or environment variable.")
     endif()
-    file(TO_CMAKE_PATH $ENV{JAVA_HOME} JAVA_HOME)
-    set(JAVA_HOME ${JAVA_HOME} CACHE STRING "")
+    file(TO_CMAKE_PATH "$ENV{JAVA_HOME}" JAVA_HOME)
+    set(JAVA_HOME "${JAVA_HOME}" CACHE STRING "")
+endif()
+
+file(TO_CMAKE_PATH ${HOME_DIR}/.android/${SANITISED_PROJECT_NAME}_debug.keystore ANDROID_DEBUG_KEYSTORE)
+if (NOT EXISTS ${ANDROID_DEBUG_KEYSTORE})
+    find_program(KEYTOOL keytool REQUIRED)
+
+    string(TIMESTAMP CURRENT_UNIX_TIME "%s")
+    set(MAXIMUM_UNIX_TIME "253402232400")
+
+    math(EXPR MAX_VALIDITY_DAYS "((${MAXIMUM_UNIX_TIME}+0) - (${CURRENT_UNIX_TIME}+0)) / 60 / 60 / 24")
+
+    execute_process(
+        COMMAND ${KEYTOOL}
+        -genkey
+        -keystore ${ANDROID_DEBUG_KEYSTORE}
+        -storepass android
+        -keypass android
+        -alias AndroidDebugKey
+        -keyalg RSA
+        -validity ${MAX_VALIDITY_DAYS}
+        -dname "CN=Unknown,OU=Unknown,O=Unknown,L=Unknown,ST=Unknown,C=Unknown"
+    )
 endif()
 
 # Getting pre-installed libraries
@@ -522,16 +569,17 @@ execute_process(COMMAND ${VIRTUAL_PYTHON} ${CMAKE_SOURCE_DIR}/python/icon_genera
 
 # Linker/Compiler checking
 
-list(APPEND CXX_COMPILER_FLAGS
-    "-Wa,-mbig-obj"
-    "/bigobj"
+list(APPEND COMPILER_FLAGS
+    # "-Wa,-mbig-obj"
+    # "/bigobj"
     "-Wno-c++98-compat"
     "-fexperimental-library"
     "-Wno-error"
+    "-fPIC"
 )
 
 if (DEBUG)
-    list(APPEND CXX_COMPILER_FLAGS
+    list(APPEND COMPILER_FLAGS
         "-gcodeview"
         "-gcolumn-info"
         # "-g"
@@ -540,16 +588,12 @@ if (DEBUG)
     )
 endif()
 
-list(APPEND C_COMPILER_FLAGS
-
-)
-
-list(APPEND CXX_LINKER_FLAGS
+list(APPEND LINKER_FLAGS
 
 )
 
 if (DEBUG)
-    list(APPEND CXX_LINKER_FLAGS
+    list(APPEND LINKER_FLAGS
         "-fuse-ld=lld"
         # "-g"
         # "-fsanitize=address"
@@ -557,60 +601,44 @@ if (DEBUG)
     )
 endif()
 
-list(APPEND C_LINKER_FLAGS
-
-)
-
-macro(check_set_cxx_compiler_flag FLAG)
+macro(check_set_compiler_flag FLAG)
     string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
-    check_cxx_compiler_flag("${FLAG}" "SUPPORTS_CMP_${SANITISED_FLAG}")
-endmacro()
 
-macro(check_set_c_compiler_flag FLAG)
-    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
-    check_c_compiler_flag("${FLAG}" "SUPPORTS_CMP_${SANITISED_FLAG}")
+    check_cxx_compiler_flag("${FLAG}" "SUPPORTS_CXX_CMP_${SANITISED_FLAG}")
+    check_c_compiler_flag("${FLAG}" "SUPPORTS_C_CMP_${SANITISED_FLAG}")
 endmacro()
-
 
 macro(set_compile_flag_if_supported FLAG)
     string(REGEX REPLACE "[^a-zA-Z0-9_\\.+-]" "_" SANITISED_FLAG "${FLAG}")
-    add_compile_options($<$<BOOL:${SUPPORTS_CMP_${SANITISED_FLAG}}>:${FLAG}>)
+
+    if (SUPPORTS_CXX_CMP_${SANITISED_FLAG} OR SUPPORTS_C_CMP_${SANITISED_FLAG})
+        target_compile_options("${SANITISED_PROJECT_NAME}" PUBLIC "${FLAG}")
+    endif()
 endmacro()
 
 
-macro(check_set_cxx_linker_flag FLAG)
+macro(check_set_linker_flag FLAG)
     string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
-    check_linker_flag(CXX "${FLAG}" "SUPPORTS_LNK_${SANITISED_FLAG}")
+    
+    check_linker_flag(CXX "${FLAG}" "SUPPORTS_CXX_LNK_${SANITISED_FLAG}")
+    check_linker_flag(C "${FLAG}" "SUPPORTS_C_LNK_${SANITISED_FLAG}")
 endmacro()
-
-macro(check_set_c_linker_flag FLAG)
-    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
-    check_linker_flag(C "${FLAG}" "SUPPORTS_LNK_${SANITISED_FLAG}")
-endmacro()
-
 
 macro(set_linker_flag_if_supported FLAG)
     string(REGEX REPLACE "[^a-zA-Z0-9_\\.+-]" "_" SANITISED_FLAG "${FLAG}")
-    add_link_options($<$<BOOL:${SUPPORTS_LNK_${SANITISED_FLAG}}>:${FLAG}>)
+
+    if (SUPPORTS_CXX_LNK_${SANITISED_FLAG} OR SUPPORTS_C_LNK_${SANITISED_FLAG})
+        target_link_options("${SANITISED_PROJECT_NAME}" PUBLIC "${FLAG}")
+    endif()
 endmacro()
 
-foreach (FLAG IN LISTS CXX_COMPILER_FLAGS)
-    check_set_cxx_compiler_flag("${FLAG}")
+foreach (FLAG IN LISTS COMPILER_FLAGS)
+    check_set_compiler_flag("${FLAG}")
     set_compile_flag_if_supported("${FLAG}")
 endforeach()
 
-foreach (FLAG IN LISTS C_COMPILER_FLAGS)
-    check_set_c_compiler_flag("${FLAG}")
-    set_compile_flag_if_supported("${FLAG}")
-endforeach()
-
-foreach (FLAG IN LISTS CXX_LINKER_FLAGS)
-    check_set_cxx_linker_flag("${FLAG}")
-    set_linker_flag_if_supported("${FLAG}")
-endforeach()
-
-foreach (FLAG IN LISTS C_LINKER_FLAGS)
-    check_set_c_linker_flag("${FLAG}")
+foreach (FLAG IN LISTS LINKER_FLAGS)
+    check_set_linker_flag("${FLAG}")
     set_linker_flag_if_supported("${FLAG}")
 endforeach()
 
@@ -901,6 +929,5 @@ if (ANDROID)
         TARGET "${SANITISED_PROJECT_NAME}"
         POST_BUILD
         COMMAND ${GRADLE} -p ${CMAKE_BINARY_DIR}/android $<IF:$<BOOL:DEBUG>,assembleDebug,assembleRelease>
-        VERBATIM
     )
 endif()
