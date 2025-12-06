@@ -10,8 +10,13 @@
 #ifdef HAS_PAR_UNSEQ
     #include <execution>
     #define par_unseq std::execution::par_unseq,
-#else
+#else /* HAS_PAR_UNSEQ */
     #define par_unseq
+#endif /* HAS_PAR_UNSEQ */
+
+#if __ANDROID__
+    #define SDL_MAIN_HANDLED
+    #include <SDL3/SDL_main.h>
 #endif
 
 #include <SDL3/SDL.h>
@@ -211,6 +216,10 @@ void Engine::removeTextInputCapturing(std::shared_ptr<Typeable> node) {
 void Engine::setupEngine() {
     if (m_isSetup) return LogWarn("Engine has already been set up!");
     m_isSetup = true;
+
+#if __ANDROID__
+    SDL_SetMainReady();
+#endif /* __ANDROID__ */
 
     m_frameDeltas.resize(m_sampleSize, m_framesPerSecond);
     m_tickDeltas.resize(m_sampleSize, m_ticksPerSecond);

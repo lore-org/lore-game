@@ -11,3 +11,4 @@ builddir/
 android/.gradle
 .android/
 .venv/
+*.log

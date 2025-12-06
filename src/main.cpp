@@ -1,8 +1,10 @@
 #include <memory>
 
 #if __ANDROID__
+    #define SDL_MAIN_HANDLED
     #include <SDL3/SDL_main.h>
 #endif /* __ANDROID__ */
+
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -147,7 +149,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #include <jni.h>
 
 extern "C" JNIEXPORT jint JNICALL 
-Java_com_furred_loader_NativeActivity_androidMain(JNIEnv* env, jobject ) {
+Java_com_furred_loader_NativeActivity_androidMain(JNIEnv* env, jobject object) {
     return main();
 }
 

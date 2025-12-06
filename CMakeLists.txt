@@ -11,8 +11,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ----- Options -----
 
-set(CMAKE_SYSTEM_NAME Android)
-
 set(CMAKE_ANDROID_ARCH_ABI arm64-v8a CACHE STRING "What architecture to compile the Android application for")
 
 set(CMAKE_ANDROID_API 33 CACHE STRING "Target Android API version. Default is Android 13.")
@@ -601,46 +599,29 @@ if (DEBUG)
     )
 endif()
 
-macro(check_set_compiler_flag FLAG)
-    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
-
-    check_cxx_compiler_flag("${FLAG}" "SUPPORTS_CXX_CMP_${SANITISED_FLAG}")
-    check_c_compiler_flag("${FLAG}" "SUPPORTS_C_CMP_${SANITISED_FLAG}")
-endmacro()
-
-macro(set_compile_flag_if_supported FLAG)
-    string(REGEX REPLACE "[^a-zA-Z0-9_\\.+-]" "_" SANITISED_FLAG "${FLAG}")
-
-    if (SUPPORTS_CXX_CMP_${SANITISED_FLAG} OR SUPPORTS_C_CMP_${SANITISED_FLAG})
-        target_compile_options("${SANITISED_PROJECT_NAME}" PUBLIC "${FLAG}")
-    endif()
-endmacro()
-
-
-macro(check_set_linker_flag FLAG)
-    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
-    
-    check_linker_flag(CXX "${FLAG}" "SUPPORTS_CXX_LNK_${SANITISED_FLAG}")
-    check_linker_flag(C "${FLAG}" "SUPPORTS_C_LNK_${SANITISED_FLAG}")
-endmacro()
-
-macro(set_linker_flag_if_supported FLAG)
-    string(REGEX REPLACE "[^a-zA-Z0-9_\\.+-]" "_" SANITISED_FLAG "${FLAG}")
-
-    if (SUPPORTS_CXX_LNK_${SANITISED_FLAG} OR SUPPORTS_C_LNK_${SANITISED_FLAG})
-        target_link_options("${SANITISED_PROJECT_NAME}" PUBLIC "${FLAG}")
-    endif()
-endmacro()
 
 foreach (FLAG IN LISTS COMPILER_FLAGS)
-    check_set_compiler_flag("${FLAG}")
-    set_compile_flag_if_supported("${FLAG}")
+    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
+
+    check_cxx_compiler_flag("${FLAG}" SUPPORTS_CMP_${SANITISED_FLAG})
+    if (NOT SUPPORTS_CMP_${SANITISED_FLAG})
+        check_c_compiler_flag("${FLAG}" SUPPORTS_CMP_${SANITISED_FLAG})
+    endif()
+
+    add_compile_options("$<$<BOOL:${SUPPORTS_CMP_${SANITISED_FLAG}}>:${FLAG}>")
 endforeach()
 
 foreach (FLAG IN LISTS LINKER_FLAGS)
-    check_set_linker_flag("${FLAG}")
-    set_linker_flag_if_supported("${FLAG}")
+    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
+    
+    check_linker_flag(CXX "${FLAG}" SUPPORTS_LNK_${SANITISED_FLAG})
+    if (NOT SUPPORTS_LNK_${SANITISED_FLAG})
+        check_linker_flag(C "${FLAG}" SUPPORTS_LNK_${SANITISED_FLAG})
+    endif()
+
+    add_link_options("$<$<BOOL:${SUPPORTS_LNK_${SANITISED_FLAG}}>:${FLAG}>")
 endforeach()
+
 
 check_cxx_source_compiles("
     #include <execution>
@@ -799,6 +780,10 @@ CPMAddPackage(
 )
 
 # Add libraries to project
+
+if (ANDROID)
+    target_include_directories("${SANITISED_PROJECT_NAME}" PUBLIC ${SDL3_SOURCE_DIR}/src/core/android)
+endif()
 
 set(LIBRARIES
     discord-rpc
