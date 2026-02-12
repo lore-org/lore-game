@@ -5,10 +5,12 @@
 #include <memory>
 #include <string>
 
-#include <SDL3/SDL_rect.h>
-
 #include <fmt/format.h>
 
+template <typename _Size>
+struct vec2;
+template <typename _Size>
+struct vec4;
 class Size;
 
 class Point : public std::enable_shared_from_this<Point> {
@@ -16,13 +18,13 @@ public:
     long double x;
     long double y;
 
-    Point();
+    Point() = default;
     Point(long double dim);
     Point(long double x, long double y);
     Point(const Size& size);
 
     // In Radians
-    static std::shared_ptr<Point> createFromAngle(long double angle);
+    static Point createFromAngle(long double angle);
     
     Point& operator+=(const Point& right);
     Point& operator-=(const Point& right);
@@ -34,7 +36,10 @@ public:
     bool operator==(const Point& right) const;
 
     operator std::string() const;
-    operator SDL_FPoint() const;
+    operator vec2<double>() const;
+    operator vec2<float>() const;
+    operator vec2<int>() const;
+    operator vec2<unsigned int>() const;
 
     void setPoint(long double x, long double y);
     void setPoint(Point point);
@@ -61,7 +66,7 @@ public:
     long double width;
     long double height;
 
-    Size();
+    Size() = default;
     Size(long double dim);
     Size(long double width, long double height);
     Size(const Point& point);
@@ -76,7 +81,10 @@ public:
     bool operator==(const Size& right) const;
 
     operator std::string() const;
-    operator SDL_FPoint() const;
+    operator vec2<double>() const;
+    operator vec2<float>() const;
+    operator vec2<int>() const;
+    operator vec2<unsigned int>() const;
 
     void setSize(long double width, long double height);
     bool equals(const Size& target) const;
@@ -89,15 +97,17 @@ public:
     Point origin;
     Size size;
 
-    Rect();
+    Rect() = default;
     Rect(long double x, long double y, long double width, long double height);
     Rect(const Point& origin, const Size& size);
 
     bool operator==(const Rect& right) const;
 
     operator std::string() const;
-    operator SDL_FRect() const;
-    operator SDL_Rect() const;
+    operator vec4<double>() const;
+    operator vec4<float>() const;
+    operator vec4<int>() const;
+    operator vec4<unsigned int>() const;
 
     void setRect(long double x, long double y, long double width, long double height);
     void setOrigin(const Point& point);

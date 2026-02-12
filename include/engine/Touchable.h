@@ -4,7 +4,7 @@
 #include <engine/Engine.h>
 #include <engine/utils.hpp>
 
-// sets up events for interacting with Mouse input. Use `Engine::getMouseData()` to get the current data involving the mouse instead.
+// sets up events for interacting with Mouse input. Use `Engine::sharedInstance()->getMouseData()` to get the current data involving the mouse instead.
 class Touchable : public Node {
 public:
     struct Events {
@@ -47,5 +47,5 @@ protected:
     bool m_isPressed;
     bool m_isFocused;
     
-    std::shared_ptr<Engine::MouseData> m_lastMouseData;
+    Engine::MouseData m_lastMouseData;
 };

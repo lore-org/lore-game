@@ -4,10 +4,6 @@
 #include <memory>
 #include <string>
 
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <SDL3_ttf/SDL_ttf.h>
-
 #include <discord-rpc.hpp>
 
 #include <fmt/base.h>

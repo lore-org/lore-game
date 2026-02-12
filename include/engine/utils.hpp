@@ -8,9 +8,14 @@
 #include <regex>
 #include <cctype>
 
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <SDL3_ttf/SDL_ttf.h>
+#if __ANDROID__
+    #include <glad/gles1.h>
+    #include <glad/gles2.h>
+#else
+    #include <glad/gl.h>
+#endif
+
+#include <openssl/sha.h>
 
 #include <fmt/base.h>
 #include <fmt/format.h>
@@ -23,6 +28,16 @@
 #include <engine/Geometry.h>
 #include <engine/Object.h>
 
+// TODO - make this a .h file with a corresponding .cpp file
+
+#if defined(__GNUC__) || defined(__clang__)
+    #define __always_inline __attribute__((always_inline))
+#elif defined(_MSC_VER)
+    #define __always_inline __forceinline
+#else
+    #define __always_inline
+#endif
+
 #define MakePoint(x, y) Point(static_cast<long double>(x), static_cast<long double>(y))
 #define MakeSize(width, height) Size(static_cast<long double>(width), static_cast<long double>(height))
 #define MakeRect(x, y, width, height) Rect(static_cast<long double>(x), static_cast<long double>(y), static_cast<long double>(width), static_cast<long double>(height))
@@ -31,18 +46,22 @@
 #define IsZero(f) std::fabs(static_cast<long double>(f)) < EPSILON
 
 #define GetLine() fmt::format("{}:{}", __FILE__, __LINE__).c_str()
-#define GetWithTag(tag, x) fmt::format("[{}]: '{}': {}", tag, GetLine(), x).c_str()
+#define GetWithTag(tag, x) fmt::format("[{}]: '{}': {}", tag, GetLine(), x)
 
 #define Log(x) SDL_Log(x, 0)
-#define LogCritical(x) SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, GetWithTag("CRITICAL", x), 0 )
-#define LogDebug(x)    SDL_LogDebug(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("DEBUG",    x), 0 )
-#define LogError(x)    SDL_LogError(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("ERROR",    x), 0 )
-#define LogInfo(x)     SDL_LogInfo(     SDL_LOG_CATEGORY_APPLICATION, GetWithTag("INFO",     x), 0 )
-#define LogTrace(x)    SDL_LogTrace(    SDL_LOG_CATEGORY_APPLICATION, GetWithTag("TRACE",    x), 0 )
-#define LogVerbose(x)  SDL_LogVerbose(  SDL_LOG_CATEGORY_APPLICATION, GetWithTag("VERBOSE",  x), 0 )
-#define LogWarn(x)     SDL_LogWarn(     SDL_LOG_CATEGORY_APPLICATION, GetWithTag("WARN",     x), 0 )
+#define LogCritical(x) fmt::println("{}", GetWithTag("CRITICAL", x))
+#define LogDebug(x)    fmt::println("{}", GetWithTag("DEBUG",    x))
+#define LogError(x)    fmt::println("{}", GetWithTag("ERROR",    x))
+#define LogInfo(x)     fmt::println("{}", GetWithTag("INFO",     x))
+#define LogTrace(x)    fmt::println("{}", GetWithTag("TRACE",    x))
+#define LogVerbose(x)  fmt::println("{}", GetWithTag("VERBOSE",  x))
+#define LogWarn(x)     fmt::println("{}", GetWithTag("WARN",     x))
 
-#define LogSDLError() LogError(SDL_GetError())
+#ifdef FT_CONFIG_OPTION_ERROR_STRINGS
+    #define LogFTError(e) LogDebug(fmt::format("FreeType Error: {} (0x{:x})", FT_Error_String(e), e));
+#else
+    #define LogFTError(e) LogDebug(fmt::format("FreeType Error: 0x{:x}", e));
+#endif
 
 #define __Quote__(...) #__VA_ARGS__
 #define CreateEventDecl(prefix, event) inline static const char* event = __Quote__(prefix ## __ ## event)
@@ -104,7 +123,7 @@ namespace utils {
         template<class TFirst, class TSecond>
         size_t operator()(const std::pair<TFirst, TSecond>& p) const noexcept {
             uintmax_t hash = std::hash<TFirst>{}(p.first);
-            hash <<= sizeof(uintmax_t) * 4;
+            hash <<= sizeof(hash) * 4;
             hash ^= std::hash<TSecond>{}(p.second);
             return std::hash<uintmax_t>{}(hash);
         }
@@ -132,4 +151,136 @@ namespace utils {
             (translatedX * sin + translatedY * cos) + center.y
         };
     }
+
+    inline const char* sha512(const char* input) {
+        unsigned char hash[SHA512_DIGEST_LENGTH];
+
+        SHA512(
+            reinterpret_cast<const unsigned char*>(input),
+            strlen(input),
+            hash
+        );
+
+        auto out = reinterpret_cast<char*>(calloc(SHA512_DIGEST_LENGTH + 1, sizeof(char)));
+        for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+            sprintf(out + (i * 2), "%02x", hash[i]);
+        }
+
+        return const_cast<const char*>(out);
+    }
+
+    inline std::string sha512(std::string& input) {
+        return sha512(input.c_str());
+    }
+    
+    struct GLStatus {
+        int success;
+        char message[2<<9];
+    };
+
+    inline GLStatus checkShaderCompile(GLuint shader) {
+        GLStatus status;
+
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &status.success);
+        glGetShaderInfoLog(shader, sizeof(status.message), NULL, status.message);
+
+        return status;
+    }
+
+    inline GLStatus checkProgramLink(GLuint program) {
+        GLStatus status;
+
+        glGetProgramiv(program, GL_LINK_STATUS, &status.success);
+        glGetProgramInfoLog(program, sizeof(status.message), NULL, status.message);
+
+        return status;
+    }
+
+    inline GLStatus linkAndUseProgram(GLuint program) {
+        glLinkProgram(program);
+
+        auto status = checkProgramLink(program);
+        if (!status.success) {
+            LogError(fmt::format("Error linking GL program: {}", status.message));
+            return status;
+        }
+        
+        glUseProgram(program);
+
+        return status;
+    }
 }
+
+template <typename _Size = double>
+struct vec2 {
+    union {
+        struct {
+            _Size x;
+            _Size y;
+        };
+        // Not valid in glsl
+        struct {
+            _Size w;
+            _Size h;
+        };
+        struct {
+            _Size r;
+            _Size g;
+        };
+        struct {
+            _Size s;
+            _Size t;
+        };
+    };
+};
+
+template <typename _Size = double>
+struct vec3 {
+    union {
+        struct {
+            _Size x;
+            _Size y;
+            _Size z;
+        };
+        // Not valid in glsl
+        struct {
+            _Size w;
+            _Size h;
+            _Size l;
+        };
+        struct {
+            _Size r;
+            _Size g;
+            _Size b;
+        };
+        struct {
+            _Size s;
+            _Size t;
+            _Size p;
+        };
+    };
+};
+
+template <typename _Size = double>
+struct vec4 {
+    union {
+        struct {
+            _Size x;
+            _Size y;
+            _Size z;
+            _Size w;
+        };
+        struct {
+            _Size r;
+            _Size g;
+            _Size b;
+            _Size a;
+        };
+        struct {
+            _Size s;
+            _Size t;
+            _Size p;
+            _Size q;
+        };
+    };
+};

@@ -1,9 +1,5 @@
 #include <engine/ColorNode.h>
 
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <SDL3_ttf/SDL_ttf.h>
-
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
@@ -23,18 +19,11 @@ std::shared_ptr<ColorNode> ColorNode::create() {
     return ret;
 }
 
-void ColorNode::setOpacity(uint8_t opacity) {
-    m_color.a = opacity;
-}
-
-void ColorNode::setColor(Color3 color) {
-    m_color.r = color.r;
-    m_color.g = color.g;
-    m_color.b = color.b;
-}
-
-void ColorNode::setColorA(Color4 color) {
-    m_color = color;
+void ColorNode::setColorA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    m_color.r = r;
+    m_color.g = g;
+    m_color.b = b;
+    m_color.a = a;
 }
 
 void ColorNode::setBlendMode(BlendMode mode) {

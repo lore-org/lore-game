@@ -2,10 +2,6 @@
 
 #include <cstdint>
 
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <SDL3_ttf/SDL_ttf.h>
-
 #include <discord-rpc.hpp>
 
 #include <fmt/base.h>
@@ -20,7 +16,7 @@
 #include <engine/Scheduler.h>
 #include <engine/Engine.h>
 
-Touchable::Touchable() : m_isHovered(false), m_isPressed(false), m_isFocused(false), m_lastMouseData(Engine::getMouseData()) {}
+Touchable::Touchable() : m_isHovered(false), m_isPressed(false), m_isFocused(false), m_lastMouseData(Engine::sharedInstance()->getMouseData()) {}
 
 bool Touchable::init() {
     if (!Node::init()) return false;
@@ -37,10 +33,10 @@ std::shared_ptr<Touchable> Touchable::create() {
 }
 
 void Touchable::update(const long double dt) {
-    #define IsHeld(button) (mouseData->button)
+    #define IsHeld(button) (mouseData.button)
 
-    #define IsClicked(button) (!m_lastMouseData->button && mouseData->button)
-    #define IsReleased(button) (m_lastMouseData->button && !mouseData->button)
+    #define IsClicked(button) (!m_lastMouseData.button && mouseData.button)
+    #define IsReleased(button) (m_lastMouseData.button && !mouseData.button)
 
     #define NodeIsClicked(button) (m_isHovered && wasPressed && IsClicked(button))
     #define NodeIsReleased(button) (wasPressed && IsReleased(button))
@@ -51,9 +47,9 @@ void Touchable::update(const long double dt) {
     auto wasPressed = m_isPressed;
     auto wasFocused = m_isFocused;
 
-    auto mouseData = Engine::getMouseData();
+    auto mouseData = Engine::sharedInstance()->getMouseData();
 
-    m_isHovered = this->containsPoint({ mouseData->x, mouseData->y });
+    m_isHovered = this->containsPoint({ mouseData.x, mouseData.y });
     m_isPressed = m_isHovered && WithAll(IsHeld);
     m_isFocused = !(WithAll(IsClicked) && !m_isHovered) && (wasFocused || (!wasPressed && m_isPressed));
 

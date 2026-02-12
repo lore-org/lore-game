@@ -1,10 +1,7 @@
+#include "glad/gl.h"
 #include <engine/Director.h>
 
 #include <thread>
-
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <SDL3_ttf/SDL_ttf.h>
 
 #include <discord-rpc.hpp>
 
@@ -25,7 +22,7 @@
 std::shared_ptr<Director> Director::m_instance;
 
 Director::Director() :
-    m_transitionStart(SDL_GetTicks()), m_transitionDuration(0),
+    m_transitionStart(Engine::getTimeNS()), m_transitionDuration(0),
     m_entering(false),
     m_clearColor({ 0, 0, 0, 255 }) {}
 
@@ -33,8 +30,8 @@ bool Director::init() {
     if (!Object::init()) return false;
 
     m_transitionFader = RectangleNode::create();
-    m_transitionFader->setColorA({ 0, 0, 0, 0 });
-    m_transitionFader->setAnchorPoint({ 0 });
+    m_transitionFader->setColorA(0, 0, 0, 0);
+    m_transitionFader->setAnchorPoint(0);
     return true;
 }
 
@@ -117,30 +114,23 @@ void Director::setClearOpacity(uint8_t clearOpacity) {
 
 void Director::draw(const long double dt) {
     auto engine = Engine::sharedInstance();
-    auto renderer = engine->getRenderer();
+    
 
-    if (!SDL_SetRenderDrawColor(
-        renderer,
-        m_clearColor.r,
-        m_clearColor.g,
-        m_clearColor.b,
-        m_clearColor.a
-    )) {
-        LogSDLError();
-        return;
-    }
-    if (!SDL_RenderClear(renderer)) {
-        LogSDLError();
-        return;
-    }
+    glClearColor(
+        m_clearColor.r / 255.,
+        m_clearColor.g / 255.,
+        m_clearColor.b / 255.,
+        m_clearColor.a / 255.
+    );
+    glClear(GL_COLOR_BUFFER_BIT);
     
     if (m_displayedScene) m_displayedScene->draw(dt);
     
     m_transitionFader->setContentSize(engine->getWindowSize());
 
     auto normalisedOpacity = m_entering ?
-        this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<long double>(SDL_GetTicks())) :
-        std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<long double>(SDL_GetTicks())));
+        this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<long double>(Engine::getTimeNS())) :
+        std::abs(1 - this->_lerpTime(m_transitionStart, m_transitionDuration, static_cast<long double>(Engine::getTimeNS())));
     m_transitionFader->setOpacity(static_cast<uint8_t>(normalisedOpacity * 255));
 
     m_transitionFader->draw(dt);
@@ -148,16 +138,16 @@ void Director::draw(const long double dt) {
 
 void Director::_transitionBetweenScenes(long double duration) {
     std::thread _transitionThread([this, duration]() {
-        m_transitionDuration = duration * 1000;
+        m_transitionDuration = duration * NanosecondsPerSecond;
 
         m_entering = true;
-        m_transitionStart = SDL_GetTicks();
+        m_transitionStart = Engine::getTimeNS();
 
-        SDL_DelayPrecise(static_cast<uint64_t>(m_transitionDuration * 1e6));
+        Engine::preciseNanosecondDelay(m_transitionDuration);
         this->_replaceSceneWithNext();
 
         m_entering = false;
-        m_transitionStart = SDL_GetTicks();
+        m_transitionStart = Engine::getTimeNS();
     });
 }
 

@@ -2,8 +2,6 @@
 
 #include <memory>
 
-#include <SDL3/SDL.h>
-
 #include <engine/ColorNode.h>
 #include <engine/RectangleNode.h>
 #include <engine/Touchable.h>
@@ -27,16 +25,16 @@ public:
         CreateEventDecl(typeable, focusout);
     };
 
-    enum class InputType : SDL_PropertiesID {
-        Text = SDL_TEXTINPUT_TYPE_TEXT,                                 /**< The input is text */
-        Name = SDL_TEXTINPUT_TYPE_TEXT_NAME,                            /**< The input is a person's name */
-        Email = SDL_TEXTINPUT_TYPE_TEXT_EMAIL,                          /**< The input is an e-mail address */
-        Username = SDL_TEXTINPUT_TYPE_TEXT_USERNAME,                    /**< The input is a username */
-        HiddenPassword = SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN,       /**< The input is a secure password that is hidden */
-        VisiblePassword = SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE,     /**< The input is a secure password that is visible */
-        Number = SDL_TEXTINPUT_TYPE_NUMBER,                             /**< The input is a number */
-        HiddenPIN = SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN,           /**< The input is a secure PIN that is hidden */
-        VisiblePIN = SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE         /**< The input is a secure PIN that is visible */
+    enum class InputType {
+        Text,               /**< The input is text */
+        Name,               /**< The input is a person's name */
+        Email,              /**< The input is an e-mail address */
+        Username,           /**< The input is a username */
+        HiddenPassword,     /**< The input is a secure password that is hidden */
+        VisiblePassword,    /**< The input is a secure password that is visible */
+        Number,             /**< The input is a number */
+        HiddenPIN,          /**< The input is a secure PIN that is hidden */
+        VisiblePIN          /**< The input is a secure PIN that is visible */
     };
 
     struct SeekBounds {
@@ -60,15 +58,36 @@ public:
     std::shared_ptr<RectangleNode> m_cursor;
     std::shared_ptr<RectangleNode> m_background;
 
+
+    // overrides for statusBitset
+
+    virtual void setScale(long double scale) override;
+    
+    virtual void setPosition(long double x, long double y) override;
+    virtual inline void setPosition(Point position) override { setPosition(position.x, position.y); }
+
+    virtual void setAnchorPoint(long double x, long double y) override;
+    virtual inline void setAnchorPoint(Point anchorPoint) override { setAnchorPoint(anchorPoint.x, anchorPoint.y); }
+
+    virtual void setContentSize(long double width, long double height) override;
+    virtual inline void setContentSize(Size contentSize) override { setContentSize(contentSize.width, contentSize.height); }
+
 protected:
     Typeable();
 
     InputType m_inputType;
     SeekBounds m_seekBounds;
 
-    int m_widthToCursor;
+    float m_widthToCursor;
 
 private:
+    enum : char {
+        UPDATE_TEXT =           1 << 0,
+        UPDATE_CURSOR =         1 << 1,
+        UPDATE_BACKGROUND =     1 << 2
+    };
+    char m_statusBitset = 0b111;
+
     void _focusIn(void* data);
     void _focusOut(void* data);
 
@@ -82,4 +101,6 @@ private:
     void _handleSeeking(int32_t start, int32_t length);
 
     void _measureString();
+
+    void _updateChildren();
 };

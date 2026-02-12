@@ -1,14 +1,5 @@
 #include <memory>
 
-#if __ANDROID__
-    #define SDL_MAIN_HANDLED
-    #include <SDL3/SDL_main.h>
-#endif /* __ANDROID__ */
-
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <SDL3_ttf/SDL_ttf.h>
-
 #include <discord-rpc.hpp>
 
 #include <fmt/base.h>
@@ -34,8 +25,6 @@ int main() {
 
     // ---- Config Setup ----
 
-    engine->showFPS(true);
-    engine->showTPS(true);
     engine->setTimeDisplaySampleSize(25);
     // engine->setFramesPerSecond(30);
 
@@ -47,12 +36,36 @@ int main() {
      * This function will initialise the Game Window along with the Discord RPC manager
      * if enabled.
      * 
-     * It must be called before any graphics are created, otherwise the buffers will not be initialised.
+     * It must be called before any graphics are created, otherwise the buffers will not
+     * be initialised.
      * 
-     * Only the PresenceManager and the Screen Size must be set before setup.
+     * Only the PresenceManager must be set before setup.
      * Running this more than once will print a warning, but will not crash the program.
      */
+
+    /**
+     * If you're familiar with programming concepts, especially with Java, you will
+     * recognise this as a singleton!
+     * 
+     * FurredEngine uses a singleton along with PresenceManager and some other managers.
+     * This is to prevent copies of data where there should only be one instance, and
+     * provides a centralised area to handle events, rendering, etc.
+     * 
+     * In addition, all nodes disallow external construction, and instead have their own
+     * ::sharedInstance() or ::create(). These use C++'s smart pointers, which assist
+     * in destroying memory allocated onto the heap when it is no longer being used.
+     */
     Engine::sharedInstance()->setupEngine();
+
+    /**
+     * Some config values have to be set AFTER the engine has been set up!
+     * This is because they rely on other Nodes that are created during setup, such as
+     * FPS and TPS.
+     * 
+     * If a config value isn't working, try setting it after Engine::setupEngine()!
+     */
+    engine->showFPS(true);
+    engine->showTPS(true);
 
     // ---- User-Defined Code ----
 
@@ -61,11 +74,10 @@ int main() {
     auto kitty = Sprite::createFromFile("resources/kitty.png");
     kitty->setContentSize(100, 100);
     kitty->setUpdate(std::make_shared<Update_Callback>([&kitty](auto dt) {
-        kitty->setPosition(Engine::sharedInstance()->getStaticWindowSize() / 2.L); // Make sure kitty is in the center of the screen
+        kitty->setPosition(Engine::sharedInstance()->getFrameBufferSize() / 2.L); // Make sure kitty is in the center of the screen
         kitty->setRotation(kitty->getRotation() + (45 * dt)); // Spin kitty 45deg / second
     }));
     kitty->scheduleSelf();
-
     scene->addChild(kitty);
 
     // auto furries = Sprite::createFromURL("https://static1.e621.net/data/a8/f2/a8f216299b6b4a83d6d8bf038300a0d0.jpg");
@@ -73,12 +85,13 @@ int main() {
     // furries->setZOrder(-1);
     // furries->setScale(0.2);
     // furries->setUpdate(std::make_shared<Update_Callback>([&furries](auto dt) {
-    //     auto x = cos(SDL_GetTicksNS() * SecondsPerNanosecond);
-    //     auto y = sin(SDL_GetTicksNS() * SecondsPerNanosecond);
+    //     auto x = cos(Engine::getTimeNS() * SecondsPerNanosecond);
+    //     auto y = sin(Engine::getTimeNS() * SecondsPerNanosecond);
     //     furries->setPosition((MakePoint(x, y) * 50) + 100);
     // }));
     // furries->scheduleSelf();
     // scene->addChild(furries);
+
 
     auto textInput = Typeable::createWithColors(
         { 30, 25, 40, 255 },
@@ -93,25 +106,24 @@ int main() {
         textInput->m_background->setOpacity(!textInput->isPressed() ? 255 : 200);
     }));
     textInput->scheduleSelf();
-    
     scene->addChild(textInput);
 
     auto cursor = RectangleNode::create();
     cursor->setContentSize(3);
     cursor->setUpdate(std::make_shared<Update_Callback>([&cursor](auto) {
-        auto mouseData = Engine::getMouseData();
+        auto mouseData = Engine::sharedInstance()->getMouseData();
 
-        cursor->setColor({ static_cast<unsigned char>(mouseData->lmb * 255), 255, static_cast<unsigned char>(mouseData->rmb * 255) });
-        cursor->setPosition({ mouseData->x, mouseData->y });
+        cursor->setColor({ static_cast<unsigned char>(mouseData.lmb * 255), 255, static_cast<unsigned char>(mouseData.rmb * 255) });
+        cursor->setPosition({ mouseData.x, mouseData.y });
 
-        // LogInfo(fmt::format("   x: {}   y: {}", mouseData->x, mouseData->y));
+        // LogInfo(fmt::format("   x: {}   y: {}", mouseData.x, mouseData.y));
     }));
     cursor->scheduleSelf();
 
     scene->addChild(cursor);
 
     Director::sharedDirector()->pushScene(scene);
-    Director::sharedDirector()->setClearColor({ 10, 5, 20 });
+    Director::sharedDirector()->setClearColor({ 10, 5, 15 });
 
     // ---------------------------
 
@@ -119,12 +131,17 @@ int main() {
      * This function creates the thread used by the Scheduler, and runs the main loop
      * each frame.
      * 
-     * If this is called before the engine is set up, the program will crash, as the
-     * window will not be initialised.
+     * If this is called before the Engine is set up, the program WILL crash, as no
+     * contexts, buffers, or instances will have been created.†
      * 
      * This will pause all execution on the main thread until the window is closed and
      * the background threads are finished. Any code after this should be designated to
      * data saving and cleanup.
+     * 
+     * 
+     * 
+     * †This is not entirely true. The function checks to see if it is already running,
+     * and then crashed. This provides a much more graceful crash with error information.
      */
     Engine::sharedInstance()->runEngine();
 
