@@ -66,7 +66,7 @@ if (len(files) == 0):
     print_with_tag("RED", "ERROR", f"No file found for 'icon'")
     sys.exit()
 if (len(files) > 1):
-    print_with_tag("RED", "ERROR", f"More than one file found for 'icon': {", ".join(files)}")
+    print_with_tag("RED", "ERROR", f"More than one file found for 'icon': {(", ".join(files))}")
     sys.exit()
 
 icon_file = files[0]

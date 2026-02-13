@@ -51,6 +51,9 @@
 #include <engine/TextNode.h>
 #include <engine/Geometry.h>
 
+// FIXME
+#include <stacktrace>
+
 // TODO - move some functions to their own classes to reduce clutter
 
 std::shared_ptr<Engine> Engine::m_instance;
@@ -425,6 +428,7 @@ void Engine::setupEngine() {
                 "{}: {} of {} severity, raised from {}: {}",
                 id, _type, _severity, _source, msg
             ));
+            fmt::println("{}", std::to_string(std::stacktrace::current()));
         }, NULL
     );
 

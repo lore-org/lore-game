@@ -147,6 +147,7 @@ if (NOT VIRTUAL_PYTHON)
     )
 endif()
 
+execute_process(COMMAND ${VIRTUAL_PYTHON} -m ensurepip --upgrade)
 execute_process(COMMAND ${VIRTUAL_PYTHON} -m pip install -r ${CMAKE_SOURCE_DIR}/python/requirements.txt)
 
 # Env detection
@@ -663,6 +664,7 @@ CPMAddPackage(
 # Install Glad module for Python
 
 find_package(Python COMPONENTS Interpreter REQUIRED)
+execute_process(COMMAND ${Python_EXECUTABLE} -m ensurepip --upgrade)
 execute_process(COMMAND ${Python_EXECUTABLE} -m pip install -r ${CMAKE_SOURCE_DIR}/python/glad_requirements.txt)
 
 # Set up glad
@@ -676,7 +678,7 @@ CPMAddPackage(
 include(${glad_SOURCE_DIR}/cmake/CMakeLists.txt)
 
 check_include_file("X11/X.h" HAS_X11)
-if (${HAS_X11})
+if (HAS_X11)
     set(GLAD_GLX "glx=1.4")
 else()
     set(GLAD_GLX "")
