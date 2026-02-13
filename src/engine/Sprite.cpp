@@ -237,11 +237,6 @@ void Sprite::_createTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    
-    glUniform2f(
-        glGetUniformLocation(m_glProgram, "spriteSize"),
-        m_texture->width, m_texture->height
-    );
 
     glUniform1i(
         glGetUniformLocation(m_glProgram, "colorChannels"),
@@ -312,13 +307,13 @@ void Sprite::_updateVertices() {
         1---2     5
     */
     BufferData data[6] {
-        { { x    , y     } },
-        { { x    , y - h } },
-        { { x + w, y - h } },
+        { { x    , y     }, { 0, 0 } },
+        { { x    , y - h }, { 0, 1 } },
+        { { x + w, y - h }, { 1, 1 } },
 
-        { { x + w, y     } },
-        { { x    , y     } },
-        { { x + w, y - h } }
+        { { x + w, y     }, { 1, 0 } },
+        { { x    , y     }, { 0, 0 } },
+        { { x + w, y - h }, { 1, 1 } }
     };
 
     glBufferSubData(

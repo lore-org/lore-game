@@ -1,7 +1,6 @@
 #version 150 core // GLSL 1.50 Core
 precision highp float;
 
-uniform vec2 spriteSize;
 uniform vec2 viewportSize;
 uniform vec2 rectOrigin;
 uniform float rotateDeg;
@@ -34,5 +33,5 @@ void main() {
         ((rotatedVertPos.y / viewportSize.y) * 2.0) - 1.0,
         0.0, 1.0
     );
-    fragTexCoord = texCoord / spriteSize;
+    fragTexCoord = texCoord;
 }
