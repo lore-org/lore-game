@@ -59,6 +59,7 @@ public:
     virtual void draw(const long double dt) override;
 
     static Texture* loadFromURL(std::string url);
+    static Texture* loadFromFile(std::string filename);
 
 
     // overrides for statusBitset

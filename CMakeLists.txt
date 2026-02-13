@@ -588,16 +588,16 @@ CPMAddPackage(
 
 CPMAddPackage(
     NAME fmt
-    VERSION 12.1.0
+    VERSION 11.2.0
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-    GIT_TAG 12.1.0
+    GIT_TAG 11.2.0
 )
 
 CPMAddPackage(
     NAME glaze
-    VERSION 6.1.0
+    VERSION 5.5.4
     GIT_REPOSITORY https://github.com/stephenberry/glaze.git
-    GIT_TAG v6.1.0
+    GIT_TAG v5.5.4
 )
 
 if (ANDROID)

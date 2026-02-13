@@ -75,7 +75,7 @@ bool Sprite::init(Texture* texture) {
     glGenBuffers(1, &m_glVertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, m_glVertexBuffer);
 
-    glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(BufferData[6]), NULL, GL_STATIC_DRAW);
 
 
     glGenVertexArrays(1, &m_glVertexArray);
@@ -101,6 +101,8 @@ bool Sprite::init(Texture* texture) {
     
     glUniform1i(glGetUniformLocation(m_glProgram, "spriteTex"), 0);
 
+    engine->requestFramebufferUpdates(m_glProgram);
+
     this->setTexture(texture);
     this->setContentSize(m_texture->width, m_texture->height);
 
@@ -117,14 +119,7 @@ std::shared_ptr<Sprite> Sprite::create() {
 std::shared_ptr<Sprite> Sprite::createFromFile(std::string filename) {
     auto ret = utils::protected_make_shared<Sprite>();
 
-    auto tex = new Texture();
-    tex->data = stbi_load(
-        filename.c_str(),
-        &tex->width, &tex->height,
-        reinterpret_cast<int*>(&tex->channels), 0
-    );
-
-    if (!ret->init(tex)) return nullptr;
+    if (!ret->init(Sprite::loadFromFile(filename))) return nullptr;
     return ret;
 }
 
@@ -211,6 +206,17 @@ Sprite::Texture* Sprite::loadFromURL(std::string url) {
     auto tex = new Texture();
     tex->data = stbi_load_from_memory(
         reinterpret_cast<unsigned char*>(response.text.data()), response.text.size(),
+        &tex->width, &tex->height,
+        reinterpret_cast<int*>(&tex->channels), 0
+    );
+
+    return tex;
+}
+
+Sprite::Texture* Sprite::loadFromFile(std::string filename) {
+    auto tex = new Texture();
+    tex->data = stbi_load(
+        filename.c_str(),
         &tex->width, &tex->height,
         reinterpret_cast<int*>(&tex->channels), 0
     );
