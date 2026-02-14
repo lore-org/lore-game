@@ -20,6 +20,8 @@ RectangleNode::RectangleNode() :
     m_glVertexArray(0), m_glVertexBuffer(0) {}
 
 RectangleNode::~RectangleNode() {
+    Engine::sharedInstance()->removeFramebufferUpdates(m_glProgram);
+    
     glDeleteBuffers(1, &m_glVertexBuffer);
     glDeleteVertexArrays(1, &m_glVertexArray);
     glDeleteProgram(m_glProgram);

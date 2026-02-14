@@ -29,6 +29,8 @@ TextNode::TextNode() :
     m_numChars(0) {}
 
 TextNode::~TextNode() {
+    Engine::sharedInstance()->removeFramebufferUpdates(m_glProgram);
+
     delete m_fontTextShaper;
     glDeleteTextures(1, &m_glTexture);
     glDeleteBuffers(1, &m_glVertexBuffer);

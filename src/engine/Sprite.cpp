@@ -40,6 +40,8 @@ Sprite::~Sprite() {
     stbi_image_free(m_texture->data);
     delete m_texture;
 
+    Engine::sharedInstance()->removeFramebufferUpdates(m_glProgram);
+
     glDeleteTextures(1, &m_glTexture);
     glDeleteBuffers(1, &m_glVertexBuffer);
     glDeleteVertexArrays(1, &m_glVertexArray);
