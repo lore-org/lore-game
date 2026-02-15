@@ -12,15 +12,11 @@ env:
 
   LINUX_PKGS: >
     llvm
-    cmake
-    ninja-build
     libmbedtls-dev
   WINDOWS_PKGS: >
     
   BREW_PKGS: >
     llvm
-    cmake
-    ninja
     mbedtls
 
 jobs:
