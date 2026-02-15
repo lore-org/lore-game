@@ -601,17 +601,19 @@ if (ANDROID)
 endif()
 
 set(OpenSSL_VERSION 3.6.0)
-CPMAddPackage(
-    NAME OpenSSL
-    VERSION ${OpenSSL_VERSION}
-    GIT_REPOSITORY https://github.com/viaduck/openssl-cmake.git
-    GIT_TAG 7e0c2c4
-    OPTIONS
-        "OPENSSL_BUILD_VERSION ${OpenSSL_VERSION}"
-        "${OpenSSL_CROSS}"
-        "${OpenSSL_CROSS_TARGET}"
-        "${OpenSSL_CROSS_ANDROID}"
-)
+if (WIN32 OR ANDROID)
+    CPMAddPackage(
+        NAME OpenSSL
+        VERSION ${OpenSSL_VERSION}
+        GIT_REPOSITORY https://github.com/viaduck/openssl-cmake.git
+        GIT_TAG 7e0c2c4
+        OPTIONS
+            "OPENSSL_BUILD_VERSION ${OpenSSL_VERSION}"
+            "${OpenSSL_CROSS}"
+            "${OpenSSL_CROSS_TARGET}"
+            "${OpenSSL_CROSS_ANDROID}"
+    )
+endif()
 
 CPMAddPackage(
     NAME cpr

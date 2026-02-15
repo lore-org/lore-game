@@ -9,82 +9,19 @@ on:
 
 env:
   NDK_VERSION: 29.0.13599879
+
   LINUX_PKGS: >
-    build-essential
-    git
-    make
-    pkg-config
+    llvm
     cmake
     ninja-build
-    gnome-desktop-testing
-    libasound2-dev
-    libpulse-dev
-    libaudio-dev
-    libjack-dev
-    libsndio-dev
-    libx11-dev
-    libxext-dev
-    libxrandr-dev
-    libxcursor-dev
-    libxfixes-dev
-    libxi-dev
-    libxss-dev
-    libxtst-dev
-    libxkbcommon-dev
-    libdrm-dev
-    libgbm-dev
-    libgl1-mesa-dev
-    libgles2-mesa-dev
-    libegl1-mesa-dev
-    libdbus-1-dev
-    libibus-1.0-dev
-    libudev-dev
-    libpipewire-0.3-dev
-    libwayland-dev
-    libdecor-0-dev
-    liburing-dev
+    libmbedtls-dev
   WINDOWS_PKGS: >
-    brotli
-    libidn2
-    nghttp2
-    nghttp3
-    ngtcp2
-    libpsl
-    libssh2
-    libunistring
-    openssl
-    zlib
-    libjpeg-turbo
-    libpng
-    libdeflate
-    jbig2dec
-    lerc
-    liblzma
-    zstd
-    libwebp
-    tiff
-    libusb
-    giflib
-    freeglut
-    hidapi
-    sdl3
-    sdl3-image
-    sdl3-ttf
+    
   BREW_PKGS: >
-    heimdal
-    libnghttp3
-    libpsl
-    zlib
     llvm
-    libtiff
-    sdl3
-    sdl3_image
-    sdl3_ttf
-    cpr
-    openssl
-    brotli
-    fmt
-    glaze
+    cmake
+    ninja
+    mbedtls
 
 jobs:
   build:
@@ -166,23 +103,23 @@ jobs:
           version: ${{ steps.hash.outputs.LINUX_PKGS }}
 
 
-      # - name: Setup Homebrew
-      #   if: matrix.config.id != 'windows'
-      #   id: homebrew
-      #   uses: Homebrew/actions/setup-homebrew@main
+      - name: Setup Homebrew
+        if: matrix.config.id != 'windows'
+        id: homebrew
+        uses: Homebrew/actions/setup-homebrew@main
 
-      # - name: Setup Homebrew Cache
-      #   if: matrix.config.id != 'windows'
-      #   id: brewcache
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ${{ steps.homebrew.outputs.gems-path }}
-      #     key: brewcache-${{ matrix.config.id }}-${{ steps.homebrew.outputs.gems-hash }}
-      #     restore-keys: brewcache-${{ matrix.config.id }}-
+      - name: Setup Homebrew Cache
+        if: matrix.config.id != 'windows'
+        id: brewcache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.homebrew.outputs.gems-path }}
+          key: brewcache-${{ matrix.config.id }}-${{ steps.homebrew.outputs.gems-hash }}
+          restore-keys: brewcache-${{ matrix.config.id }}-
 
-      # - name: Install Leftover Brew Packages
-      #   if: matrix.config.id != 'windows'
-      #   run: brew install ${{ env.BREW_PKGS }}
+      - name: Install Leftover Brew Packages
+        if: matrix.config.id != 'windows'
+        run: brew install ${{ env.BREW_PKGS }}
         
 
       - name: Setup sccache
