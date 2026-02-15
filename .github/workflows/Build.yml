@@ -159,6 +159,10 @@ jobs:
       - name: Install NASM
         uses: ilammy/setup-nasm@v1
 
+      - name: Set up Clang
+        id: clang
+        uses: egor-tensin/setup-clang@v2
+
       
       - name: Install JDK 21
         if: matrix.config.id == 'android'
@@ -191,6 +195,8 @@ jobs:
           -D CMAKE_BUILD_TYPE=RelWithDebInfo
           -D BUILD_SHARED_LIBS=${{ matrix.libs == 'shared' && 'ON' || 'OFF' }}
           ${{ matrix.config.id == 'android' && '-D CMAKE_SYSTEM_NAME=Android' || '' }}
+          -D CMAKE_C_COMPILER=${{ steps.clang.outputs.clang }}
+          -D CMAKE_CXX_COMPILER=${{ steps.clang.outputs.clangxx }}
           -B build
           -G Ninja
           --log-level DEBUG

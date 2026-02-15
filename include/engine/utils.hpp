@@ -166,7 +166,7 @@ namespace utils {
 
         auto out = reinterpret_cast<char*>(calloc(SHA512_DIGEST_LENGTH + 1, sizeof(char)));
         for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-            sprintf(out + (i * 2), "%02x", hash[i]);
+            snprintf(out + (i * 2), SHA512_DIGEST_LENGTH + 1, "%02x", hash[i]);
         }
 
         return const_cast<const char*>(out);

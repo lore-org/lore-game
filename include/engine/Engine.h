@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <thread>
 
 #if __ANDROID__
     #include <glad/gles1.h>
