@@ -13,8 +13,10 @@ env:
   LINUX_PKGS: >
     llvm
     libmbedtls-dev
-  WINDOWS_PKGS: >
-    
+    libwayland-dev
+    libxkbcommon-dev
+    xorg-dev
+  WINDOWS_PKGS:
   BREW_PKGS: >
     llvm
     mbedtls
