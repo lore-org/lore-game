@@ -1,5 +1,6 @@
 #pragma once
 
+#include "glm/ext/matrix_clip_space.hpp"
 #include <cmath>
 #include <numbers>
 #include <string>
@@ -14,6 +15,8 @@
 #else
     #include <glad/gl.h>
 #endif
+
+#include <glm/mat4x4.hpp>
 
 #include <openssl/sha.h>
 
@@ -208,6 +211,18 @@ namespace utils {
         glUseProgram(program);
 
         return status;
+    }
+
+    inline glm::mat4 createOrthoMat(long double framebufferWidth, long double framebufferHeight) {
+        return glm::ortho(
+            0.l, framebufferWidth,
+            0.l, framebufferHeight,
+            0.l, 1.l
+        );
+    }
+
+    inline glm::mat4 createOrthoMat(Size framebufferSize) {
+        return createOrthoMat(framebufferSize.width, framebufferSize.height);
     }
 }
 

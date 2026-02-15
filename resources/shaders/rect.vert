@@ -1,7 +1,7 @@
 #version 150 core
 precision highp float;
 
-uniform vec2 viewportSize;
+uniform mat4 orthoMat;
 uniform vec2 rectOrigin;
 uniform float rotateDeg;
 
@@ -24,10 +24,5 @@ vec2 rotatePointAroundOrigin(vec2 point, vec2 origin, float deg) {
 
 void main() {
     vec2 rotatedVertPos = rotatePointAroundOrigin(vertPos, rectOrigin, rotateDeg);
-
-    gl_Position = vec4(
-        ((rotatedVertPos.x / viewportSize.x) * 2.0) - 1.0,
-        ((rotatedVertPos.y / viewportSize.y) * 2.0) - 1.0,
-        0.0, 1.0
-    );
+    gl_Position = orthoMat * vec4(rotatedVertPos, 0.0, 1.0);
 }

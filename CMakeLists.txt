@@ -502,28 +502,26 @@ execute_process(COMMAND ${VIRTUAL_PYTHON} ${CMAKE_SOURCE_DIR}/python/icon_genera
 
 list(APPEND COMPILER_FLAGS
     "-Wno-c++98-compat"
-    "-fexperimental-library"
     "-Wno-error"
-    "-fPIC"
+    "-Wno-unused-command-line-argument"
     "-Wno-missing-template-arg-list-after-template-kw"
+
+    "-Wpedantic"
+
+    "-fPIC"
+    "-fexperimental-library"
 )
 
 if (DEBUG)
     list(APPEND COMPILER_FLAGS
         "-gcodeview"
         "-gcolumn-info"
-        "-fno-omit-frame-pointer"
-    )
-endif()
 
-list(APPEND LINKER_FLAGS
-
-)
-
-if (DEBUG)
-    list(APPEND LINKER_FLAGS
         "-fuse-ld=lld"
+        "-fno-omit-frame-pointer"
+        
         "-Wl,--pdb="
+        "-MTd"
     )
 endif()
 
@@ -536,19 +534,12 @@ foreach (FLAG IN LISTS COMPILER_FLAGS)
     if (SUPPORTS_CMP_${SANITISED_FLAG})
         check_c_compiler_flag("${FLAG}" SUPPORTS_CMP_${SANITISED_FLAG})
     endif()
-
-    add_compile_options("$<$<BOOL:${SUPPORTS_CMP_${SANITISED_FLAG}}>:${FLAG}>")
-endforeach()
-
-foreach (FLAG IN LISTS LINKER_FLAGS)
-    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
-    
-    # check if flag works with C and C++
     check_linker_flag(CXX "${FLAG}" SUPPORTS_LNK_${SANITISED_FLAG})
     if (SUPPORTS_LNK_${SANITISED_FLAG})
         check_linker_flag(C "${FLAG}" SUPPORTS_LNK_${SANITISED_FLAG})
     endif()
 
+    add_compile_options("$<$<BOOL:${SUPPORTS_CMP_${SANITISED_FLAG}}>:${FLAG}>")
     add_link_options("$<$<BOOL:${SUPPORTS_LNK_${SANITISED_FLAG}}>:${FLAG}>")
 endforeach()
 
