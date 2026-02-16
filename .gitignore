@@ -1,6 +1,6 @@
 .cache
 .vscode/settings.json
-build/
+build*/
 src/engine/config.hpp
 include/engine/config.hpp
 .xmake/

@@ -11,6 +11,7 @@ env:
   NDK_VERSION: 29.0.13599879
 
   LINUX_PKGS: >
+    libcurl4-openssl-dev
     llvm
     libmbedtls-dev
     libwayland-dev
@@ -18,6 +19,7 @@ env:
     xorg-dev
   WINDOWS_PKGS:
   BREW_PKGS: >
+    openssl
     llvm
     mbedtls
 
