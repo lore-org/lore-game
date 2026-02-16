@@ -533,18 +533,19 @@ endif()
 foreach (FLAG IN LISTS COMPILER_FLAGS)
     string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
 
-    # check if flag works with C and C++
-    check_cxx_compiler_flag("${FLAG}" SUPPORTS_CMP_${SANITISED_FLAG})
-    if (SUPPORTS_CMP_${SANITISED_FLAG})
-        check_c_compiler_flag("${FLAG}" SUPPORTS_CMP_${SANITISED_FLAG})
-    endif()
-    check_linker_flag(CXX "${FLAG}" SUPPORTS_LNK_${SANITISED_FLAG})
-    if (SUPPORTS_LNK_${SANITISED_FLAG})
-        check_linker_flag(C "${FLAG}" SUPPORTS_LNK_${SANITISED_FLAG})
-    endif()
 
-    add_compile_options("$<$<BOOL:${SUPPORTS_CMP_${SANITISED_FLAG}}>:${FLAG}>")
-    add_link_options("$<$<BOOL:${SUPPORTS_LNK_${SANITISED_FLAG}}>:${FLAG}>")
+    check_cxx_compiler_flag("${FLAG}" CXX_SUPPORTS_CMP_${SANITISED_FLAG})
+    check_linker_flag(CXX "${FLAG}" CXX_SUPPORTS_LNK_${SANITISED_FLAG})
+    check_c_compiler_flag("${FLAG}" C_SUPPORTS_CMP_${SANITISED_FLAG})
+    check_linker_flag(C "${FLAG}" C_SUPPORTS_LNK_${SANITISED_FLAG})
+
+    
+    if (CXX_SUPPORTS_CMP_${SANITISED_FLAG} AND C_SUPPORTS_CMP_${SANITISED_FLAG})
+        add_compile_options(${FLAG})
+    endif()
+    if (CXX_SUPPORTS_LNK_${SANITISED_FLAG} AND C_SUPPORTS_LNK_${SANITISED_FLAG})
+        add_link_options(${FLAG})
+    endif()
 endforeach()
 
 
