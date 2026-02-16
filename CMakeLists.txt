@@ -570,8 +570,10 @@ check_cxx_source_compiles("
 " HAS_PAR_UNSEQ)
 
 target_compile_definitions("${SANITISED_PROJECT_NAME}" PUBLIC
-    $<$<BOOL:${HAS_PAR_UNSEQ}>:HAS_PAR>
+    $<$<BOOL:${HAS_PAR}>:HAS_PAR>
     $<$<BOOL:${HAS_PAR_UNSEQ}>:HAS_PAR_UNSEQ>
+
+    __cpp_concepts=202002L # Advertise concepts capabilities (otherwise std::expected does not work)
 )
 
 # Configure submodules
