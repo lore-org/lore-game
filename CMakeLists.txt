@@ -511,6 +511,7 @@ list(APPEND COMPILER_FLAGS
     "-fPIC"
     "-fexperimental-library"
 
+    "-std=c++23"
     "-stdlib=libc++"
     "-static-libstdc++"
 )
