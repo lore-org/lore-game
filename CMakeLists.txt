@@ -662,9 +662,8 @@ CPMAddPackage(
 
 # Install Glad module for Python
 
-find_package(Python COMPONENTS Interpreter REQUIRED)
-execute_process(COMMAND ${Python_EXECUTABLE} -m ensurepip --upgrade)
-execute_process(COMMAND ${Python_EXECUTABLE} -m pip install -r ${CMAKE_SOURCE_DIR}/python/glad_requirements.txt)
+execute_process(COMMAND ${PYTHON} -m ensurepip --upgrade)
+execute_process(COMMAND ${PYTHON} -m pip install -r ${CMAKE_SOURCE_DIR}/python/glad_requirements.txt)
 
 # Set up glad
 
