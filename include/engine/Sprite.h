@@ -26,7 +26,6 @@
 #include <memory>
 
 #include <engine/ColorNode.h>
-#include <winsock2.h>
 
 class Sprite : public ColorNode {
 public:
