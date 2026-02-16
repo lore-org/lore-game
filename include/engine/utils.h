@@ -84,14 +84,23 @@ namespace utils {
     std::string toUpperCase(std::string str);
 
     template<typename T, typename U, typename F>
-    std::vector<T> mapVector(std::vector<U> vec, F replace);
+    std::vector<T> mapVector(std::vector<U> vec, F replace) {
+        std::vector<T> newVec;
+        std::ranges::transform(vec, newVec.begin(), replace);
+        return newVec;
+    };
 
     // Automatically convert from `this` to a shared_ptr of the designated type
     template <class T>
-    std::shared_ptr<T> cast_shared(Object* shared);
+    std::shared_ptr<T> cast_shared(Object* shared) {
+        return std::dynamic_pointer_cast<T>(shared->shared_from_this());
+    };
 
     template <typename Object>
-    std::shared_ptr<Object> protected_make_shared();
+    std::shared_ptr<Object> protected_make_shared() {
+        struct helper : public Object {};
+        return std::make_shared<helper>();
+    };
 
     std::vector<std::string> splitString(std::string string, std::regex delimiter = std::regex {"" });
 
