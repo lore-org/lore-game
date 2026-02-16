@@ -511,9 +511,9 @@ list(APPEND COMPILER_FLAGS
     "-fPIC"
     "-fexperimental-library"
 
-    "-std=c++23"
-    "-stdlib=libc++"
-    "-static-libstdc++"
+    # "-std=c++23"
+    # "-stdlib=libc++"
+    # "-static-libstdc++"
 )
 
 if (DEBUG)
@@ -539,7 +539,7 @@ foreach (FLAG IN LISTS COMPILER_FLAGS)
     check_c_compiler_flag("${FLAG}" C_SUPPORTS_CMP_${SANITISED_FLAG})
     check_linker_flag(C "${FLAG}" C_SUPPORTS_LNK_${SANITISED_FLAG})
 
-    
+
     if (CXX_SUPPORTS_CMP_${SANITISED_FLAG} AND C_SUPPORTS_CMP_${SANITISED_FLAG})
         add_compile_options(${FLAG})
     endif()
