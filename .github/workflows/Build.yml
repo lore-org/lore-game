@@ -38,9 +38,9 @@ jobs:
           os: ubuntu-24.04
           id: linux
 
-        - name: MacOS
-          os: macos-15
-          id: macos
+        # - name: MacOS
+        #   os: macos-15
+        #   id: macos
 
         # - name: Android
         #   os: ubuntu-24.04
