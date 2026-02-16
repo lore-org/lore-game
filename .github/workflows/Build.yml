@@ -102,12 +102,12 @@ jobs:
 
 
       - name: Setup Homebrew
-        if: matrix.config.id != 'windows'
+        if: matrix.config.id == 'macos'
         id: homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
       - name: Setup Homebrew Cache
-        if: matrix.config.id != 'windows'
+        if: matrix.config.id == 'macos'
         id: brewcache
         uses: actions/cache@v4
         with:
@@ -116,7 +116,7 @@ jobs:
           restore-keys: brewcache-${{ matrix.config.id }}-
 
       - name: Install Leftover Brew Packages
-        if: matrix.config.id != 'windows'
+        if: matrix.config.id == 'macos'
         run: brew install ${{ env.BREW_PKGS }}
         
 
