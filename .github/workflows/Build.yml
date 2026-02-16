@@ -11,7 +11,7 @@ env:
   NDK_VERSION: 29.0.13599879
 
   LINUX_PKGS: >
-    libcurl4-openssl-dev
+    libssl-dev
     llvm
     libmbedtls-dev
     libwayland-dev
