@@ -510,6 +510,9 @@ list(APPEND COMPILER_FLAGS
 
     "-fPIC"
     "-fexperimental-library"
+
+    "-stdlib=libc++"
+    "-static-libstdc++"
 )
 
 if (DEBUG)
