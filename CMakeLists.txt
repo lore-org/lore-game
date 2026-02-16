@@ -496,9 +496,6 @@ file(REMOVE_RECURSE
 file(READ config.json CONFIG_FILE)
 configure_file(include/engine/config.hpp.in include/engine/config.hpp)
 
-# TODO - remove config.hpp as it is really unnecessary
-# TODO - add reflection for shaders folder (convert to header files that can be read in-code)
-
 execute_process(COMMAND ${VIRTUAL_PYTHON} ${CMAKE_SOURCE_DIR}/python/icon_generator.py --crop-type longest --build-dir ${CMAKE_BINARY_DIR} --resources-dir ${CMAKE_SOURCE_DIR}/resources)
 
 # Linker/Compiler checking

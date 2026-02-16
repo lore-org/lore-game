@@ -31,8 +31,6 @@
 #include <engine/Geometry.h>
 #include <engine/Object.h>
 
-// TODO - make this a .h file with a corresponding .cpp file
-
 #if defined(__GNUC__) || defined(__clang__)
     #define __always_inline __attribute__((always_inline))
 #elif defined(_MSC_VER)

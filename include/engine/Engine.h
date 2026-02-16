@@ -150,8 +150,6 @@ public:
     // Gets the current DPI of any valid monitor.
     Size getMonitorDPI(GLFWmonitor* monitor);
 
-    // TODO - add getting and setting default font (Noto Sans.ttf)
-
     // Mapped to <file, point>
     using FontAtlasDict = std::pair<std::string, float>;
 
@@ -242,7 +240,6 @@ protected:
     uint64_t m_sampleSize;
     long double m_deltaAverageMult;
 
-    // TODO - make these static-size arrays
     std::vector<long double> m_frameDeltas;
     std::vector<long double> m_tickDeltas;
 

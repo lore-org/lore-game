@@ -47,9 +47,8 @@ public:
 protected:
     RectangleNode();
 
-    // TODO - impl filled and unfilled rectangles
+    // unused
     bool m_filled;
-
 
     struct BufferData {
         vec2<int> vertPos;

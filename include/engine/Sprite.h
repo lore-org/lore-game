@@ -98,7 +98,6 @@ protected:
     GLuint m_glTexture;
 
 private:
-    // TODO - apply this philosophy to other classes
     using ColorNode::init;
 
 

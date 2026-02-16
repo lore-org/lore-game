@@ -157,7 +157,6 @@ void RectangleNode::_updateVertices() {
     int w = rect.getWidth();
     int h = rect.getHeight();
 
-    // TODO - fix error on glGetUniformLocation
     glUniform2f(
         glGetUniformLocation(m_glProgram, "rectOrigin"),
         x + (w * this->getAnchorX()),

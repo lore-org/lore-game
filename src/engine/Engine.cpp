@@ -28,7 +28,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// TODO: remove Trex, add custom font caching system
 #include <Trex/Atlas.hpp>
 
 #include <simdutf.h>
@@ -351,7 +350,6 @@ void Engine::setupEngine() {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
 #endif /* __ANDROID__ */
 
-    // TODO - allow setting of MSAA
     glfwWindowHint(GLFW_SAMPLES, static_cast<int>(MSAALevel::x4));
 
     // Debugging context
@@ -410,7 +408,6 @@ void Engine::setupEngine() {
     auto clientID = config->at("DISCORD_CLIENT_ID");
     if (!clientID) clientID = "0";
 
-    // TODO - flesh this out more
     if (presenceManager->isEnabled()) {
         presenceManager->setActive(false);
         discord::RPCManager::get()
