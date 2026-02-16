@@ -6,6 +6,7 @@
 #include <thread>
 #include <utility>
 #include <cstdint>
+#include <condition_variable>
 
 #ifdef HAS_PAR_UNSEQ
     #include <execution>
