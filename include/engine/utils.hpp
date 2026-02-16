@@ -120,15 +120,15 @@ namespace utils {
         return std::ranges::equal(first, second, [](char a, char b) { return tolower(a) == tolower(b); });
     }
 
-    struct hash_pair final {
-        template<class TFirst, class TSecond>
-        size_t operator()(const std::pair<TFirst, TSecond>& p) const noexcept {
-            uintmax_t hash = std::hash<TFirst>{}(p.first);
-            hash <<= sizeof(hash) * 4;
-            hash ^= std::hash<TSecond>{}(p.second);
-            return std::hash<uintmax_t>{}(hash);
-        }
-    };
+    // struct hash_pair final {
+    //     template<class TFirst, class TSecond>
+    //     size_t operator()(const std::pair<TFirst, TSecond>& p) const noexcept {
+    //         uintmax_t hash = std::hash<TFirst>{}(p.first);
+    //         hash <<= sizeof(hash) * 4;
+    //         hash ^= std::hash<TSecond>{}(p.second);
+    //         return std::hash<uintmax_t>{}(hash);
+    //     }
+    // };
     
     inline long double dot(Point &p1, Point &p2) { return (p1.x * p2.x) + (p1.y * p2.y); };
     inline long double dot(Point &p1, Size &p2) { return (p1.x * p2.width) + (p1.y * p2.height); };
