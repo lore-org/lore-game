@@ -76,23 +76,23 @@ jobs:
           echo "BREW_PKGS=$(echo -n "$BREW_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
 
           
-      # - name: Install vcpkg
+      # - name: '[Windows] - Install vcpkg'
       #   if: matrix.config.id == 'windows'
       #   uses: lukka/run-vcpkg@v11
       #   with:
       #     vcpkgGitCommitId: ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0
       #     doNotCache: false
 
-      # - name: Install Leftover Windows Packages
+      # - name: '[Windows] - Install Leftover Windows Packages'
       #   if: matrix.config.id == 'windows'
       #   run: vcpkg install ${{ env.WINDOWS_PKGS }}
 
 
-      - name: Update Linux Packages
+      - name: '[Linux/Android] - Update Linux Packages'
         if: matrix.config.id == 'linux' || matrix.config.id == 'android'
         run: sudo apt-get update -y
 
-      - name: Install and Cache Linux Packages
+      - name: '[Linux/Android] - Install and Cache Linux Packages'
         if: matrix.config.id == 'linux' || matrix.config.id == 'android'
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
@@ -101,12 +101,12 @@ jobs:
           version: ${{ steps.hash.outputs.LINUX_PKGS }}
 
 
-      - name: Setup Homebrew
+      - name: '[MacOS] - Setup Homebrew'
         if: matrix.config.id == 'macos'
         id: homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Setup Homebrew Cache
+      - name: '[MacOS] - Setup Homebrew Cache'
         if: matrix.config.id == 'macos'
         id: brewcache
         uses: actions/cache@v4
@@ -115,7 +115,7 @@ jobs:
           key: brewcache-${{ matrix.config.id }}-${{ steps.homebrew.outputs.gems-hash }}
           restore-keys: brewcache-${{ matrix.config.id }}-
 
-      - name: Install Leftover Brew Packages
+      - name: '[MacOS] - Install Leftover Brew Packages'
         if: matrix.config.id == 'macos'
         run: brew install ${{ env.BREW_PKGS }}
         
@@ -159,20 +159,20 @@ jobs:
       - name: Install NASM
         uses: ilammy/setup-nasm@v1
 
-      - name: Set up Clang
+      - name: '[Windows/Linux/Android] - Setup Clang'
         if: matrix.config.id != 'macos'
         id: clang
         uses: egor-tensin/setup-clang@v2
 
       
-      - name: Install JDK 21
+      - name: '[Android] - Install JDK 21'
         if: matrix.config.id == 'android'
         uses: actions/setup-java@v3
         with:
           java-version: '21'
           distribution: 'temurin'
       
-      - name: Setup Android SDK
+      - name: '[Android] - Setup Android SDK'
         if: matrix.config.id == 'android'
         id: android-sdk
         uses: android-actions/setup-android@v3
