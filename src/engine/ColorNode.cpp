@@ -8,7 +8,7 @@
 #include <engine/config.hpp>
 #include <engine/Engine.h>
 #include <engine/Geometry.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 
 ColorNode::ColorNode() : m_color({ 255, 255, 255, 255 }), m_blendMode(BlendMode::Blend) {}
 

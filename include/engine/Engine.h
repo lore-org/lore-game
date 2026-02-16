@@ -22,7 +22,7 @@
 #include <Trex/Atlas.hpp>
 
 #include <engine/Geometry.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 
 class TextNode;
 class Typeable;
@@ -224,7 +224,7 @@ protected:
 
     GLFWwindow* m_glWindow;
 
-    std::unordered_map<FontAtlasDict, Trex::Atlas*> m_fontAtlasMap;
+    std::unordered_map<FontAtlasDict, Trex::Atlas*, utils::hash_pair> m_fontAtlasMap;
 
     std::vector<Shader> m_loadedShaders;
     std::vector<std::shared_ptr<Typeable>> m_textInputCaptures;

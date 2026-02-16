@@ -43,7 +43,7 @@
 
 #include <engine/config.hpp>
 #include <engine/Engine.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 #include <engine/PresenceManager.h>
 #include <engine/Scheduler.h>
 #include <engine/Director.h>

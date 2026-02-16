@@ -10,7 +10,7 @@
 #include <engine/config.hpp>
 #include <engine/Engine.h>
 #include <engine/Geometry.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 
 std::shared_ptr<Scheduler> Scheduler::m_instance;
 

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <engine/Object.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 #include <engine/Geometry.h>
 
 class Node : public Object {

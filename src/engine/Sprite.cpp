@@ -25,7 +25,7 @@
 #include <fmt/printf.h>
 
 #include <engine/config.hpp>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 #include <engine/Geometry.h>
 #include <engine/ColorNode.h>
 #include <engine/Engine.h>

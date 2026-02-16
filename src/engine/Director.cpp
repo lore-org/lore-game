@@ -13,7 +13,7 @@
 #include <engine/config.hpp>
 #include <engine/Engine.h>
 #include <engine/Geometry.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 #include <engine/Object.h>
 #include <engine/Scene.h>
 #include <engine/Engine.h>

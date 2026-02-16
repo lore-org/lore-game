@@ -2,7 +2,7 @@
 
 #include <engine/Node.h>
 #include <engine/Engine.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 
 // sets up events for interacting with Mouse input. Use `Engine::sharedInstance()->getMouseData()` to get the current data involving the mouse instead.
 class Touchable : public Node {

@@ -18,7 +18,7 @@
 #include <Trex/Atlas.hpp>
 #include <Trex/TextShaper.hpp>
 
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 #include <engine/Engine.h>
 #include <engine/Typeable.h>
 
