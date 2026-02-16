@@ -73,9 +73,9 @@ jobs:
       - name: Hash Package Lists
         id: hash
         run: |
-          echo "LINUX_PKGS=$(echo -n "$LINUX_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
-          echo "WINDOWS_PKGS=$(echo -n "$WINDOWS_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
-          echo "BREW_PKGS=$(echo -n "$BREW_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
+          echo "LINUX_PKGS=$(echo -n "$LINUX_PKGS" | openssl dgst -sha256 | awk '{print $NF}')" >> $GITHUB_OUTPUT
+          echo "WINDOWS_PKGS=$(echo -n "$WINDOWS_PKGS" | openssl dgst -sha256 | awk '{print $NF}')" >> $GITHUB_OUTPUT
+          echo "BREW_PKGS=$(echo -n "$BREW_PKGS" | openssl dgst -sha256 | awk '{print $NF}')" >> $GITHUB_OUTPUT
 
           
       # - name: '[Windows] - Install vcpkg'
