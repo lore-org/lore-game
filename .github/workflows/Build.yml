@@ -196,8 +196,6 @@ jobs:
           -D CMAKE_BUILD_TYPE=RelWithDebInfo
           -D BUILD_SHARED_LIBS=${{ case(matrix.libs == 'shared', 'ON', 'OFF') }}
           ${{ case( matrix.config.id == 'android', '-D CMAKE_SYSTEM_NAME=Android', '' ) }}
-          -D "CMAKE_C_COMPILER=$CC"
-          -D "CMAKE_CXX_COMPILER=$CXX"
           -B build
           -G Ninja
           --log-level DEBUG
