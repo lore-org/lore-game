@@ -122,7 +122,13 @@ jobs:
       - name: '[MacOS] - Install Leftover Brew Packages'
         if: matrix.config.id == 'macos'
         run: brew install ${{ env.BREW_PKGS }}
-        
+
+
+      - name: Update Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+          cache: 'pip'
 
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -142,12 +148,6 @@ jobs:
           restore-keys: |
             buildcache-${{ matrix.config.id }}-${{ matrix.libs }}-
             buildcache-${{ matrix.config.id }}-
-
-      - name: Update Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13.7'
-          cache: 'pip'
       
       - name: Install Meson
         run: python -m pip install meson
