@@ -32,17 +32,17 @@ jobs:
       matrix:
         libs: [shared, static]
         config:
-        # - name: Windows
-        #   os: windows-2025
-        #   id: windows
+        - name: Windows
+          os: windows-2025
+          id: windows
 
         - name: Linux
           os: ubuntu-24.04
           id: linux
 
-        # - name: MacOS
-        #   os: macos-15
-        #   id: macos
+        - name: MacOS
+          os: macos-15
+          id: macos
 
         # - name: Android
         #   os: ubuntu-24.04
