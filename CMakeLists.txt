@@ -511,7 +511,7 @@ list(APPEND COMPILER_FLAGS
     "-fPIC"
     "-fexperimental-library"
 
-    # "-std=c++23"
+    "-std=c++23" # prevent use of gnu++23
     # "-stdlib=libc++"
     # "-static-libstdc++"
 )
