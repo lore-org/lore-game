@@ -129,6 +129,7 @@ jobs:
         uses: mozilla-actions/sccache-action@v0.0.9
         with:
           disable_annotations: true
+          version: 'v0.13.0'
         env:
           SCCACHE_GHA_ENABLED: 'true'
 
@@ -150,18 +151,20 @@ jobs:
       - name: Update cmake
         uses: jwlawson/actions-setup-cmake@v2
         with:
-          cmake-version: 'latest'
+          cmake-version: '4.2.3'
 
       - name: Install Ninja
-        uses: ashutoshvarma/setup-ninja@master
+        uses: ashutoshvarma/setup-ninja@v1.1
+        with:
+          version: '1.13.2'
 
       - name: Install NASM
         uses: ilammy/setup-nasm@v1
 
-      - name: 'Setup Clang'
+      - name: 'Setup LLVM and Clang'
         uses: KyleMayes/install-llvm-action@v2
         with:
-          version: 21
+          version: '21.1.8'
           env: true
 
       
