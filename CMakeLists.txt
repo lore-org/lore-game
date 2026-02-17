@@ -672,14 +672,17 @@ else()
 endif()
 
 glad_add_library(
-    generated_glad
-    STATIC
+    glad_gl_3.2
     API
         "${GLAD_GL}"
         "${GLAD_GLES1}"
         "${GLAD_GLES2}"
         "${GLAD_GLX}"
 )
+
+if (HAS_X11)
+    target_compile_options(glad_gl_3.2 PUBLIC -lX11)
+endif()
 
 # Set up stb
 
