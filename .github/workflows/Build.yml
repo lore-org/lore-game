@@ -124,9 +124,6 @@ jobs:
         with:
           python-version: '3.14.3'
           cache: 'pip'
-      
-      - name: '[DEBUG]'
-        run: echo "${{ steps.python.outputs.python-path }}"
 
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -168,27 +165,27 @@ jobs:
           env: true
 
       
-      - name: '[Android] - Install JDK 21'
-        if: matrix.config.id == 'android'
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
-          distribution: 'temurin'
+      # - name: '[Android] - Install JDK 21'
+      #   if: matrix.config.id == 'android'
+      #   uses: actions/setup-java@v3
+      #   with:
+      #     java-version: '21'
+      #     distribution: 'temurin'
       
-      - name: '[Android] - Setup Android SDK'
-        if: matrix.config.id == 'android'
-        id: android-sdk
-        uses: android-actions/setup-android@v3
-        with:
-          packages: 'build-tools;35.0.0 cmdline-tools;latest ndk;${{ env.NDK_VERSION }} platforms;android-33'
+      # - name: '[Android] - Setup Android SDK'
+      #   if: matrix.config.id == 'android'
+      #   id: android-sdk
+      #   uses: android-actions/setup-android@v3
+      #   with:
+      #     packages: 'build-tools;35.0.0 cmdline-tools;latest ndk;${{ env.NDK_VERSION }} platforms;android-33'
       
-      - name: Update ENVs for Android SDK
-        if: matrix.config.id == 'android'
-        run: |
-          echo "ANDROID_NDK_HOME=${{ env.ANDROID_NDK_HOME }}" >> "$GITHUB_ENV"
-          echo "ANDROID_NDK=${{ env.ANDROID_NDK_HOME }}" >> "$GITHUB_ENV"
-        env: 
-          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME || '/usr/local/lib/android/sdk' }}/ndk/${{ env.NDK_VERSION }}
+      # - name: '[Android] - Update ENVs for Android SDK'
+      #   if: matrix.config.id == 'android'
+      #   run: |
+      #     echo "ANDROID_NDK_HOME=${{ env.ANDROID_NDK_HOME }}" >> "$GITHUB_ENV"
+      #     echo "ANDROID_NDK=${{ env.ANDROID_NDK_HOME }}" >> "$GITHUB_ENV"
+      #   env: 
+      #     ANDROID_NDK_HOME: ${{ env.ANDROID_HOME || '/usr/local/lib/android/sdk' }}/ndk/${{ env.NDK_VERSION }}
 
   
       - name: Setup
