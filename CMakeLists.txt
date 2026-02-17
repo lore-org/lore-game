@@ -672,7 +672,7 @@ else()
 endif()
 
 glad_add_library(
-    glad_gl_3.2
+    glad_gl_3_2
     API
         "${GLAD_GL}"
         "${GLAD_GLES1}"
@@ -681,7 +681,7 @@ glad_add_library(
 )
 
 if (HAS_X11)
-    target_compile_options(glad_gl_3.2 PUBLIC -lX11)
+    target_compile_options(glad_gl_3_2 PUBLIC -lX11)
 endif()
 
 # Set up stb
@@ -706,7 +706,7 @@ target_link_libraries("${SANITISED_PROJECT_NAME}"
     cpr
     glfw
     simdutf
-    generated_glad
+    glad_gl_3_2
     glm
     trex
 )
