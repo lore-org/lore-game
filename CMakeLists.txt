@@ -503,9 +503,6 @@ if (DEBUG)
 
         "-fuse-ld=lld"
         "-fno-omit-frame-pointer"
-
-        "-Wl,--pdb="
-        "-MTd"
     )
 endif()
 
