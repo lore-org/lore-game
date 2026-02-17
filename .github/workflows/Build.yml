@@ -166,7 +166,7 @@ jobs:
         uses: KyleMayes/install-llvm-action@v2
         with:
           version: '21.1.8'
-          env: true
+          env: ${{ case(matrix.config.id == 'macos', false, true) }}
 
       
       # - name: '[Android] - Install JDK 21'
