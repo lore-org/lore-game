@@ -17,7 +17,7 @@ set(CMAKE_ANDROID_ARCH_ABI arm64-v8a CACHE STRING "What architecture to compile 
 set(CMAKE_ANDROID_API 33 CACHE STRING "Target Android API version. Default is Android 13.")
 set(CMAKE_ANDROID_API_MIN 24 CACHE STRING "Minimum Android API version. Default is Android 7.0.")
 
-set(BUILD_SHARED_LIBS ON CACHE STRING "Build .dlls, .so, and .dylibs.")
+set(BUILD_SHARED_LIBS OFF CACHE STRING "Build .dlls, .so, and .dylibs.")
 
 project(
     "Lore Game"

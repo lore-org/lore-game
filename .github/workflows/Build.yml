@@ -30,7 +30,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        libs: [shared, static]
+        # libs: [shared, static]
+        libs: [static]
         config:
         - name: Windows
           os: windows-2025
