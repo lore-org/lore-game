@@ -693,6 +693,7 @@ endif()
 
 glad_add_library(
     generated_glad
+    STATIC
     API
         "${GLAD_GL}"
         "${GLAD_GLES1}"
