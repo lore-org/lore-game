@@ -126,29 +126,9 @@ include("${_cpm_file}")
 # Setup Python virtual env
 
 find_program(PYTHON python3 py python REQUIRED)
-set(PYTHON_VENV_DIR ${CMAKE_BINARY_DIR}/pyvenv)
 
-find_program(
-    VIRTUAL_PYTHON python3 py python
-    NO_DEFAULT_PATH
-    PATHS ${PYTHON_VENV_DIR}/bin ${PYTHON_VENV_DIR}/Scripts
-)
-if (NOT VIRTUAL_PYTHON)
-    message(STATUS "Creating ${PYTHON_VENV_DIR}")
-    execute_process(
-        COMMAND ${PYTHON} -m venv ${PYTHON_VENV_DIR}
-    )
-
-    find_program(
-        VIRTUAL_PYTHON python3 py python
-        REQUIRED
-        NO_DEFAULT_PATH
-        PATHS ${PYTHON_VENV_DIR}/bin ${PYTHON_VENV_DIR}/Scripts
-    )
-endif()
-
-execute_process(COMMAND ${VIRTUAL_PYTHON} -m ensurepip --upgrade)
-execute_process(COMMAND ${VIRTUAL_PYTHON} -m pip install -r ${CMAKE_SOURCE_DIR}/python/requirements.txt)
+execute_process(COMMAND ${PYTHON} -m ensurepip --upgrade)
+execute_process(COMMAND ${PYTHON} -m pip install -r ${CMAKE_SOURCE_DIR}/python/requirements.txt)
 
 # Env detection
 
@@ -496,7 +476,7 @@ file(REMOVE_RECURSE
 file(READ config.json CONFIG_FILE)
 configure_file(include/engine/config.hpp.in include/engine/config.hpp)
 
-execute_process(COMMAND ${VIRTUAL_PYTHON} ${CMAKE_SOURCE_DIR}/python/icon_generator.py --crop-type longest --build-dir ${CMAKE_BINARY_DIR} --resources-dir ${CMAKE_SOURCE_DIR}/resources)
+execute_process(COMMAND ${PYTHON} ${CMAKE_SOURCE_DIR}/python/icon_generator.py --crop-type longest --build-dir ${CMAKE_BINARY_DIR} --resources-dir ${CMAKE_SOURCE_DIR}/resources)
 
 # Linker/Compiler checking
 
