@@ -60,12 +60,6 @@ jobs:
     runs-on: ${{ matrix.config.os }}
 
     steps:
-      - name: Ensure Git Symlink Support
-        continue-on-error: true
-        run: |
-          git config --global --unset-all core.symlinks
-          git config --global --add core.symlinks true
-
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v2
         with:
