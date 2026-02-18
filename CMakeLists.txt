@@ -293,16 +293,19 @@ foreach (FLAG IN LISTS COMPILER_FLAGS)
 
 
     check_cxx_compiler_flag("${FLAG}" CXX_SUPPORTS_CMP_${SANITISED_FLAG})
-    check_linker_flag(CXX "${FLAG}" CXX_SUPPORTS_LNK_${SANITISED_FLAG})
-    check_c_compiler_flag("${FLAG}" C_SUPPORTS_CMP_${SANITISED_FLAG})
-    check_linker_flag(C "${FLAG}" C_SUPPORTS_LNK_${SANITISED_FLAG})
-
-
-    if (CXX_SUPPORTS_CMP_${SANITISED_FLAG} AND C_SUPPORTS_CMP_${SANITISED_FLAG})
-        add_compile_options(${FLAG})
+    if (CXX_SUPPORTS_CMP_${SANITISED_FLAG})
+        check_c_compiler_flag("${FLAG}" C_SUPPORTS_CMP_${SANITISED_FLAG})
+        if (C_SUPPORTS_CMP_${SANITISED_FLAG})
+            add_compile_options(${FLAG})
+        endif()
     endif()
-    if (CXX_SUPPORTS_LNK_${SANITISED_FLAG} AND C_SUPPORTS_LNK_${SANITISED_FLAG})
-        add_link_options(${FLAG})
+
+    check_linker_flag(CXX "${FLAG}" CXX_SUPPORTS_LNK_${SANITISED_FLAG})
+    if (CXX_SUPPORTS_LNK_${SANITISED_FLAG})
+    check_linker_flag(C "${FLAG}" C_SUPPORTS_LNK_${SANITISED_FLAG})
+        if (C_SUPPORTS_LNK_${SANITISED_FLAG})
+            add_link_options(${FLAG})
+    endif()
     endif()
 endforeach()
 
