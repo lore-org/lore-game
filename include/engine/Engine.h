@@ -1,14 +1,28 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <thread>
 
-#include <SDL3_ttf/SDL_ttf.h>
-#include <SDL3/SDL.h>
+#if __ANDROID__
+    #include <glad/gles1.h>
+    #include <glad/gles2.h>
+#else
+    #include <glad/gl.h>
+#endif
+
+#include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+
+#include <Trex/Atlas.hpp>
+
+#include <Trex/Atlas.hpp>
 
 #include <engine/Geometry.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 
 class TextNode;
 class Typeable;
@@ -25,28 +39,28 @@ public:
     // Sets the target TPS -- default is 240
     void setTicksPerSecond(long double tps);
     // Sets TPS to 240
-    void resetTicksPerSecond();
+    inline void resetTicksPerSecond() { this->setTicksPerSecond(240); };
 
     // Gets the target SPT
     inline long double getSecondsPerTick() { return m_secondsPerTick; }
     // Sets the target SPF -- default is 1 / 240
-    void setSecondsPerTick(long double spt);
+    inline void setSecondsPerTick(long double spt) { this->setTicksPerSecond(1.f / spt); };
     // Sets SPT to 1 / 240
-    void resetSecondsPerTick();
+    inline void resetSecondsPerTick() { this->resetTicksPerSecond(); };
 
     // Gets the target FPS
     inline long double getFramesPerSecond() { return m_framesPerSecond; }
-    // Sets the target FPS -- 0 uses the monitor's target hz, otherwise known as vsync -- default is 0
+    // Sets the target FPS -- 0 uses the monitor's target hz -- default is 60
     void setFramesPerSecond(long double fps);
-    // Sets FPS to 0
-    void resetFramesPerSecond();
+    // Sets FPS to 60
+    inline void resetFramesPerSecond() { this->setFramesPerSecond(60); };
 
     // Gets the target SPF
     inline long double getSecondsPerFrame() { return m_secondsPerFrame; }
-    // Sets the target SPF -- 0 uses the monitor's target hz, otherwise known as vsync -- default is 0
-    void setSecondsPerFrame(long double spf);
-    // Sets SPF to 0
-    void resetSecondsPerFrame();
+    // Sets the target SPF -- 0 uses the monitor's target hz -- default is 1 / 60
+    inline void setSecondsPerFrame(long double spf) { this->setFramesPerSecond(1.f / spf); };
+    // Sets SPF to 1 / 60
+    inline void resetSecondsPerFrame() { this->resetFramesPerSecond(); };
 
     // Default is false
     void showFPS(bool show);
@@ -54,48 +68,125 @@ public:
     void showTPS(bool show);
 
     // How many decimal points should follow the FPS/TPS display -- default is 0
-    void setTimeDisplayPrecision(uint64_t precision);
+    inline void setTimeDisplayPrecision(uint64_t precision) { m_displayPrecision = precision; };
     // How many samples should the FPS/TPS display average -- default is 10
     void setTimeDisplaySampleSize(uint64_t size);
 
+    // Uses spinlock with <= 100 nanosecond busy wait
+    __always_inline
+    static inline void preciseNanosecondDelay(uint64_t startTime, uint64_t endTime, uint64_t maximumDuration) {
+        auto spentDuration = endTime - startTime;
+        if (spentDuration < maximumDuration) {
+            preciseNanosecondDelay(maximumDuration - spentDuration);
+        }
+    }
+
+    // Uses spinlock with <= 100 nanosecond busy wait
+    __always_inline
+    static inline void preciseNanosecondDelay(uint64_t spentDuration, uint64_t maximumDuration) {
+        if (spentDuration < maximumDuration) {
+            preciseNanosecondDelay(maximumDuration - spentDuration);
+        }
+    }
+
+    // Uses spinlock with <= 100 nanosecond busy wait
+    __always_inline
+    static inline void preciseNanosecondDelay(uint64_t duration) {
+        auto startTime = Engine::getTimeNS();
+
+        if (std::chrono::nanoseconds(duration) > std::chrono::nanoseconds(100)) {
+            std::this_thread::sleep_for(
+                std::chrono::nanoseconds(duration) -
+                std::chrono::nanoseconds(100)
+            );
+        }
+
+        // busy waiting, should only take <= 100 nanoseconds of cpu time
+        while (Engine::getTimeNS() - startTime <= duration) {}
+    }
+
     void setWindowSize(Size size);
-    // Gets the stored window size that is updated after each frame
-    //
-    // Does not require to be run in the main thread, as it is pulling a value from memory.
-    inline Size getStaticWindowSize() { return m_windowSize; }
+    inline void setWindowWidth(long double width) { setWindowSize({ width, getWindowHeight() }); };
+    inline void setWindowHeight(long double height) { setWindowSize({ getWindowWidth(), height }); };
+
+    inline Size getWindowSize() { return m_windowSize; };
+    inline long double getWindowWidth() { return m_windowSize.width; };
+    inline long double getWindowHeight() { return m_windowSize.height; };
+    
+    inline Size getFrameBufferSize() { return m_framebufferSize; };
+    inline long double getFrameBufferWidth() { return m_framebufferSize.width; };
+    inline long double getFrameBufferHeight() { return m_framebufferSize.height; };
 
     struct MouseData {
-        bool lmb;
-        bool mmb;
-        bool rmb;
-        bool side1;
-        bool side2;
-        float x;
-        float y;
+        bool lmb = false;
+        bool mmb = false;
+        bool rmb = false;
+        bool side1 = false;
+        bool side2 = false;
+        double x = 0;
+        double y = 0;
     };
 
-    inline SDL_Window* getWindow() { return m_sdlWindow; }
-    inline SDL_Renderer* getRenderer() { return m_sdlRenderer; }
-    inline const SDL_DisplayMode* getDisplayMode() { return m_sdlDisplayMode; }
-    inline TTF_TextEngine* getTextEngine() { return m_sdlTextEngine; }
+    enum class MSAALevel : int {
+        Off = 0,
+        x2 = 2,
+        x4 = 4,
+        x8 = 8,
+        x16 = 16
+    };
 
-    // Gets the system time in nanoseconds. For a more performant method that doesn't rely on system time, use SDL_GetTicks
-    static SDL_Time getTime();
-    // It is recommended to use Engine::getStaticWindowSize instead, as it is more performant and is considered fairly accurate
-    //
-    // Be sure to run this in the main thread
-    Size getWindowSize();
-    // Be sure to run this in the main thread
-    static std::shared_ptr<MouseData> getMouseData();
+    inline GLFWwindow* getWindow() { return m_glWindow; }
 
-    TTF_Font* createFont(std::string file, float point = 100);
-    TTF_Font* getOrCreateFont(std::string file, float point = 100);
+    // Gets the time in seconds since initialisation.
+    inline static double getTime() { return glfwGetTime(); };
+    // Gets the time in nanoseconds since initialisation.
+    inline static uint64_t getTimeNS() { return glfwGetTimerValue() * m_instance->m_nanosecondTimerFrequency; };
+    // Gets the current state of the mouse since the last event polling.
+    inline MouseData getMouseData() { return m_mouseState; };
+    // Gets the current monitor that the program is located on.
+    GLFWmonitor* getCurrentMonitor();
+    // Gets the current video mode of the monitor that the program is located on.
+    inline const GLFWvidmode* getCurrentVideoMode() { return glfwGetVideoMode(this->getCurrentMonitor()); };
+    // Gets the current DPI of any valid monitor.
+    Size getMonitorDPI(GLFWmonitor* monitor);
+
+    // Mapped to <file, point>
+    using FontAtlasDict = std::pair<std::string, float>;
+
+    Trex::Atlas* getFontAtlas(std::string file, float point = 100);
+    FontAtlasDict getFontAtlas(Trex::Atlas* fontAtlas);
+    Trex::Atlas* createFont(std::string file, float point = 100);
+    Trex::Atlas* getOrCreateFontAtlas(std::string file, float point = 100);
+
+    enum class ShaderType : GLenum {
+        Unknown = 0,
+        Compute = GL_COMPUTE_SHADER,
+        Vertex = GL_VERTEX_SHADER,
+        TesselationControl = GL_TESS_CONTROL_SHADER,
+        TesselationEvaluation = GL_TESS_EVALUATION_SHADER,
+        Geometry = GL_GEOMETRY_SHADER,
+        Fragment = GL_FRAGMENT_SHADER
+    };
+
+    typedef GLuint ShaderID;
+
+    struct Shader {
+        ShaderID shaderID;
+        ShaderType shaderType;
+        const char* tag;
+    };
+    
+    Shader loadShaderFromFile(ShaderType type, std::string file, const char* tag = NULL);
+    Shader loadShaderFromSource(ShaderType type, std::string source, const char* tag = NULL);
 
     void requestTextInputCapturing(std::shared_ptr<Typeable> node);
     void removeTextInputCapturing(std::shared_ptr<Typeable> node);
 
-    void setupEngine();
+    // sets gl vec2 uniform `viewportSize` every time the viewport size is updated
+    void requestFramebufferUpdates(GLuint glProgram);
+    void removeFramebufferUpdates(GLuint glProgram);
 
+    void setupEngine();
     void runEngine();
 
 protected:
@@ -113,32 +204,31 @@ protected:
     long double m_framesPerNanosecond;
     long double m_nanosecondsPerFrame;
 
-    bool m_usingVsync;
-
     // ------------------------
 
     // ---- Engine Status ----
-
-    bool m_isStopped;
 
     bool m_isSetup;
     bool m_isStarted;
 
     Size m_windowSize;
+    Size m_framebufferSize;
+
+    MouseData m_mouseState;
+
+    long double m_nanosecondTimerFrequency;
 
     // -----------------------
 
-    // ---- SDL data ----
+    // ---- Engine data ----
 
-    SDL_Window* m_sdlWindow;
-    SDL_Renderer* m_sdlRenderer;
-    SDL_DisplayID m_sdlDisplay;
-    const SDL_DisplayMode* m_sdlDisplayMode;
-    TTF_TextEngine* m_sdlTextEngine;
+    GLFWwindow* m_glWindow;
 
-    std::unordered_map<std::pair<std::string, float>, TTF_Font*, utils::hash_pair> m_fontMap;
+    std::unordered_map<FontAtlasDict, Trex::Atlas*, utils::hash_pair> m_fontAtlasMap;
 
+    std::vector<Shader> m_loadedShaders;
     std::vector<std::shared_ptr<Typeable>> m_textInputCaptures;
+    std::vector<GLuint> m_framebufferUpdates;
 
     // ------------------
 
@@ -163,6 +253,10 @@ protected:
 private:
     static std::shared_ptr<Engine> m_instance;
 
-    void _updateDisplayData();
-    void _updateFrameData();
+    static void _glfwWindowSizeCallback(GLFWwindow*, int width, int height);
+    static void _glfwFramebufferSizeCallback(GLFWwindow*, int width, int height);
+    static void _glfwCharCallback(GLFWwindow*, unsigned int codepoint);
+    static void _glfwKeyCallback(GLFWwindow*, int key, int scancode, int action, int mods);
+    static void _glfwCursorPosCallback(GLFWwindow*, double x, double y);
+    static void _glfwMouseButtonCallback(GLFWwindow*, int button, int action, int mods);
 };

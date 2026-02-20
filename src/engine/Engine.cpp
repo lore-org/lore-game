@@ -6,6 +6,7 @@
 #include <thread>
 #include <utility>
 #include <cstdint>
+#include <condition_variable>
 
 #ifdef HAS_PAR_UNSEQ
     #include <execution>
@@ -15,13 +16,23 @@
 #endif /* HAS_PAR_UNSEQ */
 
 #if __ANDROID__
-    #define SDL_MAIN_HANDLED
-    #include <SDL3/SDL_main.h>
+    #include <glad/gles1.h>
+    #include <glad/gles2.h>
+#else
+    #include <glad/gl.h>
 #endif
 
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <SDL3_ttf/SDL_ttf.h>
+#include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include <Trex/Atlas.hpp>
+
+#include <simdutf.h>
+
+#include <openssl/sha.h>
 
 #include <discord-rpc.hpp>
 
@@ -32,25 +43,28 @@
 
 #include <engine/config.hpp>
 #include <engine/Engine.h>
-#include <engine/Geometry.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 #include <engine/PresenceManager.h>
 #include <engine/Scheduler.h>
 #include <engine/Director.h>
 #include <engine/Typeable.h>
 #include <engine/TextNode.h>
+#include <engine/Geometry.h>
+
+// TODO - move some functions to their own classes to reduce clutter
 
 std::shared_ptr<Engine> Engine::m_instance;
 
 Engine::Engine() :
     m_ticksPerSecond(240.f), m_secondsPerTick(1.f / m_ticksPerSecond),
-    m_ticksPerNanosecond(m_ticksPerSecond / NanosecondsPerSecond), m_nanosecondsPerTick(1.f / m_ticksPerNanosecond),
+    m_ticksPerNanosecond(m_ticksPerSecond / NanosecondsPerSecond),
+    m_nanosecondsPerTick(1.f / m_ticksPerNanosecond),
     m_framesPerSecond(60.f), m_secondsPerFrame(1.f / m_framesPerSecond),
-    m_framesPerNanosecond(m_framesPerSecond / NanosecondsPerSecond), m_nanosecondsPerFrame(1.f / m_framesPerNanosecond),
-    m_usingVsync(true),
-    m_isStopped(false),
+    m_framesPerNanosecond(m_framesPerSecond / NanosecondsPerSecond),
+    m_nanosecondsPerFrame(1.f / m_framesPerNanosecond),
     m_isSetup(false), m_isStarted(false),
     m_windowSize(720, 480),
+    m_nanosecondTimerFrequency(0),
     m_sampleSize(10), m_deltaAverageMult(1.f / m_sampleSize), 
     m_frameAvg(0), m_tickAvg(0),
     m_displayPrecision(0) {}
@@ -67,39 +81,17 @@ void Engine::setTicksPerSecond(long double tps) {
     m_nanosecondsPerTick = 1.f / m_ticksPerNanosecond;
 }
 
-void Engine::resetTicksPerSecond() {
-    this->setTicksPerSecond(240);
-}
-
-void Engine::setSecondsPerTick(long double spt) {
-    this->setTicksPerSecond(1.f / spt);
-}
-
-void Engine::resetSecondsPerTick() {
-    this->resetTicksPerSecond();
-}
-
 void Engine::setFramesPerSecond(long double fps) {
-    if (fps == 0) return void(m_usingVsync = true);
-    else m_usingVsync = false;
+    if (fps == 0) {
+        auto videoMode = this->getCurrentVideoMode();
+        fps = videoMode->refreshRate;
+    }
 
     m_framesPerSecond = fps;
     m_secondsPerFrame = 1.f / m_framesPerSecond;
     m_framesPerNanosecond = fps / NanosecondsPerSecond;
     m_nanosecondsPerFrame = 1.f / m_framesPerNanosecond;
 };
-
-void Engine::resetFramesPerSecond() {
-    this->setFramesPerSecond(0);
-}
-
-void Engine::setSecondsPerFrame(long double spf) {
-    this->setFramesPerSecond(1.f / spf);
-}
-
-void Engine::resetSecondsPerFrame() {
-    this->resetFramesPerSecond();
-}
 
 void Engine::showFPS(bool show) {
     if (m_fpsText) m_fpsText->setVisible(show);
@@ -120,10 +112,6 @@ void Engine::showTPS(bool show) {
     m_tickAvg = m_ticksPerSecond;
 }
 
-void Engine::setTimeDisplayPrecision(uint64_t precision) {
-    m_displayPrecision = precision;
-}
-
 void Engine::setTimeDisplaySampleSize(uint64_t size) {
     if (size < 1) throw std::length_error("Sample size must be greater than 0!");
     m_sampleSize = size;
@@ -139,60 +127,147 @@ void Engine::setTimeDisplaySampleSize(uint64_t size) {
 }
 
 void Engine::setWindowSize(Size size) {
+    glfwSetWindowSize(m_glWindow, static_cast<int>(size.width), static_cast<int>(size.height));
     m_windowSize = size;
-    if (!SDL_SetWindowSize(m_sdlWindow, static_cast<int>(size.width), static_cast<int>(size.height))) LogSDLError();
 }
 
-SDL_Time Engine::getTime() {
-    SDL_Time value = {};
+GLFWmonitor* Engine::getCurrentMonitor() {
+    Point windowPos;
+    glfwGetWindowPos(
+        m_glWindow,
+        reinterpret_cast<int*>(&windowPos.x),
+        reinterpret_cast<int*>(&windowPos.x)
+    );
 
-    if (!SDL_GetCurrentTime(&value)) LogSDLError();
-    return value;
-}
+    Point windowCenter {
+        windowPos.x + this->getWindowWidth() / 2,
+        windowPos.y + this->getWindowHeight() / 2
+    };
 
-Size Engine::getWindowSize() {
-    std::pair<int, int> size(0, 0);
-    if (!SDL_GetWindowSize(m_sdlWindow, &size.first, &size.second)) LogSDLError();
+    int monitorCount;
+    GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
 
-    return MakeSize(size.first, size.second);
-}
+    GLFWmonitor* currentMonitor = nullptr;
 
-std::shared_ptr<Engine::MouseData> Engine::getMouseData() {
-    MouseData mouseData = {};
+    for (int i = 0; i < monitorCount; i++) {
+        GLFWmonitor* monitor = *(monitors + i);
 
-    auto mouseState = SDL_GetMouseState(&mouseData.x, &mouseData.y);
+        auto videoMode = glfwGetVideoMode(monitor);
 
-    #define ParseButtonMask(x) (mouseState & x) > 0
+        int monitorX, monitorY;
+        glfwGetMonitorPos(monitor, &monitorX, &monitorY);
 
-    mouseData.lmb = ParseButtonMask(SDL_BUTTON_LMASK);
-    mouseData.mmb = ParseButtonMask(SDL_BUTTON_MMASK);
-    mouseData.rmb = ParseButtonMask(SDL_BUTTON_RMASK);
-    mouseData.side1 = ParseButtonMask(SDL_BUTTON_X1MASK);
-    mouseData.side2 = ParseButtonMask(SDL_BUTTON_X2MASK);
-    
-    return std::make_shared<MouseData>(mouseData);
-}
+        Rect monitorRect {
+            static_cast<long double>(monitorX),
+            static_cast<long double>(monitorY),
+            static_cast<long double>(videoMode->width),
+            static_cast<long double>(videoMode->height)
+        };
 
-TTF_Font* Engine::createFont(std::string file, float point) {
-    auto font = TTF_OpenFont(file.c_str(), point);
-    if (!font) {
-        LogSDLError();
-        return nullptr;
+        if (monitorRect.containsPoint(windowCenter)) {
+            currentMonitor = monitor;
+            break;
+        }
     }
 
-    std::pair<std::string, float> key(file, point);
-    if (!m_fontMap.contains(key)) {
-        m_fontMap.insert({ key, font });
-    }
-
-    return font;
+    return currentMonitor;
 }
 
-TTF_Font* Engine::getOrCreateFont(std::string file, float point) {
-    std::pair<std::string, float> key(file, point);
-    if (m_fontMap.contains(key)) return m_fontMap.at(key);
+Size Engine::getMonitorDPI(GLFWmonitor* monitor) {
+    int monitorWidthMM, monitorHeightMM;
+    glfwGetMonitorPhysicalSize(
+        monitor,
+        &monitorWidthMM, &monitorHeightMM
+    );
 
+    auto videoMode = glfwGetVideoMode(monitor);
+
+    float monitorWidthIn = monitorWidthMM / 25.4f;
+    float monitorHeightIn = monitorHeightMM / 25.4f;
+
+    float horizontalDPI = videoMode->width / monitorWidthIn;
+    float verticalDPI = videoMode->height / monitorHeightIn;
+
+    return MakeSize(horizontalDPI, verticalDPI);
+}
+
+Trex::Atlas* Engine::getFontAtlas(std::string file, float point) {
+    FontAtlasDict key(file, point);
+    if (m_fontAtlasMap.contains(key)) return m_fontAtlasMap.at(key);
+
+    return nullptr;
+}
+
+Engine::FontAtlasDict Engine::getFontAtlas(Trex::Atlas* fontAtlas) {
+    for (auto& storedFontAtlas : m_fontAtlasMap) {
+        if (storedFontAtlas.second == fontAtlas) return storedFontAtlas.first;
+    }
+
+    return { "", 0 };
+}
+
+Trex::Atlas* Engine::createFont(std::string file, float point) {
+    auto fontAtlas = new Trex::Atlas(
+        file, point
+    );
+
+    FontAtlasDict key(file, point);
+    if (!m_fontAtlasMap.contains(key)) {
+        m_fontAtlasMap.insert({ key, fontAtlas });
+    }
+
+    return fontAtlas;
+}
+
+Trex::Atlas* Engine::getOrCreateFontAtlas(std::string file, float point) {
+    if (auto fontAtlas = this->getFontAtlas(file, point)) return fontAtlas;
     return this->createFont(file, point);
+}
+
+Engine::Shader Engine::loadShaderFromFile(ShaderType type, std::string file, const char* tag) {
+    for (auto& shader : m_loadedShaders) {
+        if (shader.tag == tag) return shader;
+    }
+
+    std::ifstream shaderFile(file, std::ios::binary | std::ios::ate);
+    if (!shaderFile) {
+        LogError(fmt::format("Could not open shader file '{}.'", file));
+        return { 0, ShaderType::Unknown };
+    }
+
+    size_t size = shaderFile.tellg();
+    shaderFile.seekg(0, std::ios::beg);
+
+    std::string shaderSource(size, '\0');
+    shaderFile.read(&shaderSource[0], size);
+
+    shaderFile.close();
+
+    return this->loadShaderFromSource(type, shaderSource);
+}
+
+Engine::Shader Engine::loadShaderFromSource(ShaderType type, std::string source, const char* tag) {
+    if (tag == NULL) tag = utils::sha512(source.c_str());
+    
+    for (auto& shader : m_loadedShaders) {
+        if (shader.tag == tag) return shader;
+    }
+
+    auto shaderSource = source.c_str();
+    auto shader = glCreateShader(static_cast<GLenum>(type));
+    glShaderSource(shader, sizeof(*tag), &shaderSource, NULL);
+    glCompileShader(shader);
+
+    auto status = utils::checkShaderCompile(shader);
+    if (!status.success) {
+        LogError(status.message);
+        return { 0, ShaderType::Unknown };
+    }
+
+    Shader ret { shader, type, tag };
+    m_loadedShaders.push_back(ret);
+
+    return ret;
 }
 
 void Engine::requestTextInputCapturing(std::shared_ptr<Typeable> node) {
@@ -213,50 +288,126 @@ void Engine::removeTextInputCapturing(std::shared_ptr<Typeable> node) {
     }
 }
 
-void Engine::setupEngine() {
-    if (m_isSetup) return LogWarn("Engine has already been set up!");
-    m_isSetup = true;
+void Engine::requestFramebufferUpdates(GLuint glProgram) {
+    glUseProgram(glProgram);
+    glUniformMatrix4fv(
+        glGetUniformLocation(glProgram, "orthoMat"),
+        1, GL_FALSE,
+        glm::value_ptr(utils::createOrthoMat(this->getFrameBufferSize()))
+    );
 
-#if __ANDROID__
-    SDL_SetMainReady();
-#endif /* __ANDROID__ */
+    for (auto& program : m_framebufferUpdates) {
+        if (program == glProgram) return;
+    }
+
+    m_framebufferUpdates.push_back(glProgram);
+}
+
+void Engine::removeFramebufferUpdates(GLuint glProgram) {
+    for (size_t i = 0; i < m_framebufferUpdates.size(); i++) {
+        auto& program = m_framebufferUpdates.at(i);
+
+        if (program == glProgram) {
+            m_framebufferUpdates.erase(m_framebufferUpdates.begin() + i);
+            break;
+        }
+    }
+}
+
+void Engine::setupEngine() {
+    if (m_isSetup) return LogWarn("Engine has already been set up.");
 
     m_frameDeltas.resize(m_sampleSize, m_framesPerSecond);
     m_tickDeltas.resize(m_sampleSize, m_ticksPerSecond);
 
-    if (!SDL_SetAppMetadata(__APP_NAME__, __APP_VERSION__, __APP_NAMESPACE__)) LogSDLError();
-    if (!SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO)) LogSDLError();
-    if (!TTF_Init()) LogSDLError();
-    if (!SDL_CreateWindowAndRenderer(
-        SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING),
+    glfwInit();
+
+    // Set after init of glfw
+    m_nanosecondTimerFrequency = NanosecondsPerSecond / glfwGetTimerFrequency();
+
+    // OpenGL 3.2 works with android and supports modern features.
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+
+    // TODO - test supporting 4.1 while keeping android support
+// #if __ANDROID__
+//     // OpenGL 3.2 works with android and supports modern features.
+//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+// #else
+//     // OpenGL 4.1 is minimum version MacOS Metal supports .
+//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+// #endif
+
+    // Good practice, and required for MacOS.
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+
+#if __ANDROID__
+    // Android requires OpenGL ES.
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+#endif /* __ANDROID__ */
+
+    glfwWindowHint(GLFW_SAMPLES, static_cast<int>(MSAALevel::x4));
+
+    // Debugging context
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+
+    m_glWindow = glfwCreateWindow(
         static_cast<int>(m_windowSize.width), static_cast<int>(m_windowSize.height),
-        SDL_WINDOW_RESIZABLE | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS,
-        &m_sdlWindow, &m_sdlRenderer
-    )) LogSDLError();
+        __APP_NAME__,
+        nullptr, nullptr
+    );
+    if (!m_glWindow) return LogError("Could not create GLFW Window.");
 
-    this->_updateDisplayData();
+    glfwMakeContextCurrent(m_glWindow);
+    if (gladLoadGL(glfwGetProcAddress) == 0) return LogError("Could not initialise OpenGL with GLAD.");
+    glfwSwapInterval(1);
 
-    m_sdlTextEngine = TTF_CreateRendererTextEngine(m_sdlRenderer);
-    if (!m_sdlTextEngine) LogSDLError();
+    glfwSetWindowSizeCallback(m_glWindow, &_glfwWindowSizeCallback);
+    glfwSetFramebufferSizeCallback(m_glWindow, &_glfwFramebufferSizeCallback);
+    glfwSetCharCallback(m_glWindow, &_glfwCharCallback);
+    glfwSetKeyCallback(m_glWindow, &_glfwKeyCallback);
+    glfwSetCursorPosCallback(m_glWindow, &_glfwCursorPosCallback);
+    glfwSetMouseButtonCallback(m_glWindow, &_glfwMouseButtonCallback);
 
-    m_fpsText = TextNode::createWithData(
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    // debug
+    // glDisable(GL_BLEND);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    int winWidth, winHeight;
+    glfwGetWindowSize(m_glWindow, &winWidth, &winHeight);
+    this->_glfwWindowSizeCallback(m_glWindow, winWidth, winHeight);
+
+    int fbufWidth, fbufHeight;
+    glfwGetFramebufferSize(m_glWindow, &fbufWidth, &fbufHeight);
+    this->_glfwFramebufferSizeCallback(m_glWindow, fbufWidth, fbufHeight);
+
+
+    m_fpsText = TextNode::create(
         nullptr, 20,
         { 5, 5 }
     );
     m_fpsText->setAnchorPoint(0);
 
-    m_tpsText = TextNode::createWithData(
+    m_tpsText = TextNode::create(
         nullptr, 20,
-        { 5, m_fpsText->isVisible() ? 30. : 5. }
+        { 5, m_fpsText->isVisible() ? 30 : 5. }
     );
     m_tpsText->setAnchorPoint(0);
+
 
     auto presenceManager = utils::PresenceManager::sharedManager();
 
     auto clientID = config->at("DISCORD_CLIENT_ID");
     if (!clientID) clientID = "0";
 
-    // TODO - flesh this out more
     if (presenceManager->isEnabled()) {
         presenceManager->setActive(false);
         discord::RPCManager::get()
@@ -266,23 +417,24 @@ void Engine::setupEngine() {
                 LogInfo("Discord Presence initialised.");
             })
             .onErrored([](auto, auto) {
-                LogError("Failed to initialise Discord presence.");
+                LogError("Discord Presence quit unexpectedly.");
             })
             .initialize();
     }
+
+    m_isSetup = true;
 }
 
 void Engine::runEngine() {
     if (!m_isSetup) throw std::runtime_error("Engine not setup before trying to run!");
-    if (m_isStarted) return LogWarn("Engine is already running!");
-    m_isStarted = true;
+    if (m_isStarted) return LogWarn("Engine is already running.");
 
     std::thread updateThread([this]() {
         auto scheduler = Scheduler::sharedScheduler();
 
-        uint64_t lastTickTime = SDL_GetTicksNS();
-        while (!m_isStopped) {
-            uint64_t startTime = SDL_GetTicksNS();
+        auto lastTickTime = Engine::getTimeNS();
+        while (!glfwWindowShouldClose(m_glWindow)) {
+            auto startTime = Engine::getTimeNS();
 
             const long double dt = (startTime - lastTickTime) * SecondsPerNanosecond;
             if (m_tpsText->isVisible()) {
@@ -294,19 +446,17 @@ void Engine::runEngine() {
 
             lastTickTime = startTime;
 
-            uint64_t endTime = SDL_GetTicksNS();
-
-            if (endTime - startTime < m_nanosecondsPerTick)
-                SDL_DelayPrecise((startTime + m_nanosecondsPerTick) - endTime);
+            auto endTime = Engine::getTimeNS();
+            Engine::preciseNanosecondDelay(startTime, endTime, m_nanosecondsPerTick);
         }
     });
 
     // Specifically for engine-related processes that may take up computational time
     std::thread backgroundThread([this]() {
-        uint64_t lastUpdateTime = SDL_GetTicksNS();
+        uint64_t lastUpdateTime = Engine::getTimeNS();
 
-        while (!m_isStopped) {
-            uint64_t startTime = SDL_GetTicksNS();
+        while (!glfwWindowShouldClose(m_glWindow)) {
+            uint64_t startTime = Engine::getTimeNS();
 
             if (
                 lastUpdateTime + NanosecondsPerSecond < startTime &&
@@ -328,117 +478,26 @@ void Engine::runEngine() {
                     ) * m_deltaAverageMult;
             }
             
-            uint64_t endTime = SDL_GetTicksNS();
-
-            if (endTime - startTime < m_nanosecondsPerTick)
-                SDL_DelayPrecise((startTime + m_nanosecondsPerTick) - endTime);
+            uint64_t endTime = Engine::getTimeNS();
+            Engine::preciseNanosecondDelay(startTime, endTime, m_nanosecondsPerTick);
         }
     });
 
     auto director = Director::sharedDirector();
     auto format = fmt::format("%.{}f", m_displayPrecision);
-    SDL_Event event = {};
 
-    uint64_t lastFrameTime = SDL_GetTicksNS();
-    while (!m_isStopped) {
-        uint64_t startTime = SDL_GetTicksNS();
+    glfwShowWindow(m_glWindow);
+    
+    m_isStarted = true;
 
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_EVENT_WINDOW_RESIZED:
-                case SDL_EVENT_WINDOW_MOVED:
-                    this->_updateDisplayData();
-                    break;
-                case SDL_EVENT_QUIT:
-                case SDL_EVENT_TERMINATING:
-                    m_isStopped = true;
-                    break;
-                case SDL_EVENT_TEXT_INPUT: {
-                    auto textInputEvent = *reinterpret_cast<SDL_TextInputEvent*>(&event);
-                    std::string text(textInputEvent.text);
+    std::mutex mtx;
+    std::condition_variable cv;
 
-                    LogInfo(text);
+    auto lastFrameTime = Engine::getTimeNS();
+    while (!glfwWindowShouldClose(m_glWindow)) {
+        auto startTime = Engine::getTimeNS();
 
-                    for (auto& node : m_textInputCaptures) {
-                        if (!node->isFocused()) return;
-
-                        node->_handleText(text);
-                    }
-                    
-                    break;
-                }
-                case SDL_EVENT_KEY_DOWN: {
-                    auto keyDownEvent = *reinterpret_cast<SDL_KeyboardEvent*>(&event);
-
-                    // TODO - impl mod keys (ctrl, shift, etc.)
-
-                    switch (keyDownEvent.key) {
-                        case SDLK_BACKSPACE:
-                            LogInfo("SDLK_BACKSPACE");
-
-                            for (auto& node : m_textInputCaptures) {
-                                if (!node->isFocused()) continue;
-
-                                node->_handleDelete(Typeable::DeleteType::Backwards);
-                            }
-                            break;
-                        case SDLK_DELETE:
-                            LogInfo("SDLK_DELETE");
-
-                            for (auto& node : m_textInputCaptures) {
-                                if (!node->isFocused()) continue;
-
-                                node->_handleDelete(Typeable::DeleteType::Forwards);
-                            }
-                            break;
-                        case SDLK_LEFT:
-                            LogInfo("SDLK_LEFT");
-
-                            for (auto& node : m_textInputCaptures) {
-                                if (!node->isFocused()) continue;
-
-                                auto& seekBounds = node->m_seekBounds;
-                                if (seekBounds.start <= 0) continue;
-
-                                node->_handleSeeking(seekBounds.start - 1, 0);
-                            }
-                            break;
-                        case SDLK_RIGHT:
-                            LogInfo("SDLK_RIGHT");
-
-                            for (auto& node : m_textInputCaptures) {
-                                if (!node->isFocused()) continue;
-                                auto inputText = node->m_displayText->getDisplayedText();
-
-                                auto& seekBounds = node->m_seekBounds;
-                                if (seekBounds.start >= inputText.size()) continue;
-
-                                node->_handleSeeking(seekBounds.start + 1, 0);
-                            }
-                            break;
-                        case SDLK_END:
-                            LogInfo("SDLK_END");
-
-                            for (auto& node : m_textInputCaptures) {
-                                if (!node->isFocused()) continue;
-                                auto inputText = node->m_displayText->getDisplayedText();
-
-                                node->_handleSeeking(inputText.size(), 0);
-                            }
-                            break;
-                        case SDLK_HOME:
-                            LogInfo("SDLK_HOME");
-
-                            for (auto& node : m_textInputCaptures) {
-                                if (!node->isFocused()) continue;
-
-                                node->_handleSeeking(0, 0);
-                            }
-                            break;
-                    }
-                }
-            }
-        }
+        glfwPollEvents();
 
         const long double dt = (startTime - lastFrameTime) * SecondsPerNanosecond;
         if (m_fpsText->isVisible()) {
@@ -452,50 +511,136 @@ void Engine::runEngine() {
         director->draw(dt);
         m_fpsText->draw(dt);
         m_tpsText->draw(dt);
-
-        if (!SDL_RenderPresent(m_sdlRenderer)) LogSDLError();
         
         lastFrameTime = startTime;
 
-        uint64_t endTime = SDL_GetTicksNS();
+        // auto endTime = Engine::getTimeNS();
 
-        if (endTime - startTime < m_nanosecondsPerFrame)
-            SDL_DelayPrecise((startTime + m_nanosecondsPerFrame) - endTime);
+        glfwSwapBuffers(m_glWindow);
     }
 
-    m_isStopped = true;
     updateThread.join();
     backgroundThread.join();
 
-    SDL_DestroyWindow(m_sdlWindow);
-    SDL_DestroyRenderer(m_sdlRenderer);
-    TTF_DestroyRendererTextEngine(m_sdlTextEngine);
     std::ranges::for_each(
-        m_fontMap,
-        [](std::pair<std::pair<std::string, long double>, TTF_Font*> font) {
-            TTF_CloseFont(font.second);
+        m_fontAtlasMap,
+        [](decltype(m_fontAtlasMap)::value_type fontAtlas) {
+            delete fontAtlas.second;
         }
     );
 
-    SDL_Quit();
-    TTF_Quit();
+    glfwDestroyWindow(m_glWindow);
+    glfwTerminate();
 }
 
-void Engine::_updateDisplayData() {
-    if (!m_sdlRenderer) return;
-    
-    m_sdlDisplay = SDL_GetDisplayForWindow(m_sdlWindow);
-    if (!m_sdlDisplay) LogSDLError();
-    m_sdlDisplayMode = SDL_GetCurrentDisplayMode(m_sdlDisplay);
-    if (!m_sdlDisplayMode) LogSDLError();
-
-    m_windowSize = this->getWindowSize();
-
-    this->_updateFrameData();
+void Engine::_glfwWindowSizeCallback(GLFWwindow*, int width, int height) {
+    m_instance->m_windowSize = MakeSize(width, height);
+    // LogDebug(fmt::format("m_windowSize: {}", m_instance->m_windowSize));
 }
 
-void Engine::_updateFrameData() {
-    if (!m_usingVsync) return;
+void Engine::_glfwFramebufferSizeCallback(GLFWwindow*, int width, int height) {
+    m_instance->m_framebufferSize = MakeSize(width, height);
+    // LogDebug(fmt::format("m_framebufferSize: {}", m_instance->m_framebufferSize));
 
-    this->setFramesPerSecond(m_sdlDisplayMode->refresh_rate);
+    glViewport(0, 0, width, height);
+
+    for (auto& program : m_instance->m_framebufferUpdates) {
+        glUseProgram(program);
+        glUniformMatrix4fv(
+            glGetUniformLocation(program, "orthoMat"),
+            1, GL_FALSE,
+            glm::value_ptr(utils::createOrthoMat(width, height))
+        );
+    }
+}
+
+void Engine::_glfwCharCallback(GLFWwindow*, unsigned int codepoint) {
+    std::u32string text { static_cast<char32_t>(codepoint) };
+    std::string result(simdutf::utf8_length_from_utf32(text), '\0');
+
+    if (!simdutf::convert_utf32_to_utf8(
+        text.data(), result.size(),
+        result.data()
+    )) return;
+
+    for (auto& node : Engine::sharedInstance()->m_textInputCaptures) {
+        if (!node->isFocused()) continue;
+
+        node->_handleText(result);
+    }
+}
+
+void Engine::_glfwKeyCallback(GLFWwindow*, int key, int scancode, int action, int mods) {
+    if (action != GLFW_PRESS && action != GLFW_REPEAT) return;
+
+    // TODO - impl modifier keys
+    // TODO - impl copy and paste w/ glfwGetClipboardString
+
+    switch(key) {
+        case GLFW_KEY_BACKSPACE:
+            for (auto& node : m_instance->m_textInputCaptures) {
+                if (!node->isFocused()) continue;
+
+                node->_handleDelete(Typeable::DeleteType::Backwards);
+            }
+            break;
+        case GLFW_KEY_DELETE:
+            for (auto& node : m_instance->m_textInputCaptures) {
+                if (!node->isFocused()) continue;
+
+                node->_handleDelete(Typeable::DeleteType::Forwards);
+            }
+            break;
+        case GLFW_KEY_LEFT:
+            for (auto& node : m_instance->m_textInputCaptures) {
+                if (!node->isFocused()) continue;
+
+                auto& seekBounds = node->m_seekBounds;
+                if (seekBounds.start <= 0) continue;
+
+                node->_handleSeeking(seekBounds.start - 1, 0);
+            }
+            break;
+        case GLFW_KEY_RIGHT:
+            for (auto& node : m_instance->m_textInputCaptures) {
+                if (!node->isFocused()) continue;
+                auto inputText = node->m_displayText->getDisplayedText();
+
+                auto& seekBounds = node->m_seekBounds;
+                if (seekBounds.start >= inputText.size()) continue;
+
+                node->_handleSeeking(seekBounds.start + 1, 0);
+            }
+            break;
+        case GLFW_KEY_END:
+            for (auto& node : m_instance->m_textInputCaptures) {
+                if (!node->isFocused()) continue;
+                auto inputText = node->m_displayText->getDisplayedText();
+
+                node->_handleSeeking(inputText.size(), 0);
+            }
+            break;
+        case GLFW_KEY_HOME:
+            for (auto& node : m_instance->m_textInputCaptures) {
+                if (!node->isFocused()) continue;
+
+                node->_handleSeeking(0, 0);
+            }
+            break;
+    }
+}
+
+void Engine::_glfwCursorPosCallback(GLFWwindow*, double x, double y) {
+    m_instance->m_mouseState.x = x;
+    m_instance->m_mouseState.y = y;
+}
+
+void Engine::_glfwMouseButtonCallback(GLFWwindow*, int button, int action, int mods) {
+    #define CheckButtonAndAssign(mouseButton, button) if (button) m_instance->m_mouseState.mouseButton = action == GLFW_PRESS;
+
+    CheckButtonAndAssign(lmb, GLFW_MOUSE_BUTTON_LEFT);
+    CheckButtonAndAssign(mmb, GLFW_MOUSE_BUTTON_MIDDLE);
+    CheckButtonAndAssign(rmb, GLFW_MOUSE_BUTTON_RIGHT);
+    CheckButtonAndAssign(side1, GLFW_MOUSE_BUTTON_4); // Commonly the Forward button
+    CheckButtonAndAssign(side2, GLFW_MOUSE_BUTTON_5); // Commonly the Backward button
 }

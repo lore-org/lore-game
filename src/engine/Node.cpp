@@ -5,10 +5,6 @@
 #include <vector>
 #include <cmath>
 
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <SDL3_ttf/SDL_ttf.h>
-
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
@@ -19,7 +15,7 @@
 #include <engine/config.hpp>
 #include <engine/Engine.h>
 #include <engine/Geometry.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 #include <engine/Object.h>
 #include <engine/Scheduler.h>
 
@@ -49,25 +45,9 @@ void Node::setScale(long double scale) {
     m_scale = scale;
 }
 
-void Node::setPosition(Point position) {
-    m_position = position;
-}
-
 void Node::setPosition(long double x, long double y) {
     m_position.x = x;
     m_position.y = y;
-}
-
-void Node::setPositionX(long double x) {
-    m_position.x = x;
-}
-
-void Node::setPositionY(long double y) {
-    m_position.y = y;
-}
-
-void Node::setAnchorPoint(Point anchorPoint) {
-    m_anchorPoint = anchorPoint;
 }
 
 void Node::setAnchorPoint(long double x, long double y) {
@@ -75,29 +55,8 @@ void Node::setAnchorPoint(long double x, long double y) {
     m_anchorPoint.y = y;
 }
 
-void Node::setAnchorX(long double x) {
-    m_anchorPoint.x = x;
-}
-
-void Node::setAnchorY(long double y) {
-    m_anchorPoint.y = y;
-}
-
-// TODO - implement NULL for filling render target with contentSize
-
-void Node::setContentSize(Size contentSize) {
-    m_contentSize = contentSize;
-}
-
 void Node::setContentSize(long double width, long double height) {
-    m_contentSize = MakePoint(width, height);
-}
-
-void Node::setContentWidth(long double width) {
     m_contentSize.width = width;
-}
-
-void Node::setContentHeight(long double height) {
     m_contentSize.height = height;
 }
 

@@ -1,17 +1,15 @@
+#include <cmath>
 #include <engine/Typeable.h>
 
 #include <memory>
 #include <cstdint>
-
-#include <SDL3/SDL.h>
-#include <SDL3_ttf/SDL_ttf.h>
 
 #include <engine/ColorNode.h>
 #include <engine/RectangleNode.h>
 #include <engine/TextNode.h>
 #include <engine/Touchable.h>
 
-typedef ColorNode::Color4 Color4;
+using Color4 = ColorNode::Color4;
 
 Typeable::Typeable() :
     m_inputType(InputType::Text), m_seekBounds({ 0, 0 }),
@@ -24,19 +22,22 @@ bool Typeable::init(Color4 displayTextColor, Color4 placeholderTextColor, Color4
 
     // ---- Display Text ----
 
-    m_displayText = TextNode::createWithData(
-        "resources/Noto Sans.ttf",
-        rect.getHeight() - 8,
-        { rect.getMinX() + 2, rect.getMinY() + 2 }
+    m_displayText = TextNode::create(
+        nullptr,
+        20,
+        {
+            rect.getMinX() + 2,
+            rect.getMinY() + (rect.getHeight() / 2.)
+        }
     );
-    m_displayText->setAnchorPoint(0);
+    m_displayText->setAnchorPoint(0, 0.5);
     m_displayText->setColorA(displayTextColor);
 
     // ---- Placeholder Text ----
 
-    m_placeholderText = TextNode::createWithData(
-        "resources/Noto Sans.ttf",
-        m_displayText->getFontSize(),
+    m_placeholderText = TextNode::create(
+        nullptr,
+        m_displayText->getFontPoint(),
         m_displayText->getPosition()
     );
     m_placeholderText->setAnchorPoint(m_displayText->getAnchorPoint());
@@ -112,49 +113,36 @@ void Typeable::update(const long double dt) {
 }
 
 void Typeable::draw(const long double dt) {
-    if (!this->isVisible()) {
-        Touchable::draw(dt);
-        return;
-    }
 
-    auto rect = this->getRect();
     auto& inputText = m_displayText->m_displayedText;
-
-    // ---- Display Text ----
-
-    m_displayText->setPosition(
-        rect.getMinX() + 2,
-        rect.getMinY() + 2
-    );
-    m_displayText->setFontSize(rect.getHeight() - 8);
-    
-    // ---- Placeholder Text ----
-
-    m_placeholderText->setPosition(m_displayText->getPosition());
-    m_placeholderText->setFontSize(m_displayText->getFontSize());
-    
-    // ---- Cursor ----
-
-    m_cursor->setPosition(
-        rect.getMinX() + 2 + m_widthToCursor,
-        rect.getMinY() + 3
-    );
-    m_cursor->setContentHeight(rect.getHeight() - 6);
-    
-    // ---- Background ----
-
-    m_background->setPosition(rect.origin);
-    m_background->setContentSize(rect.size);
-    
-    // --------------------
 
     // Placeholder Swapping
     m_placeholderText->setVisible(inputText.empty());
 
     // Cursor Blinking
-    m_cursor->setVisible(m_isFocused && (SDL_GetTicks() % 700) > 350);
+    m_cursor->setVisible(m_isFocused && std::fmod(Engine::getTime(), .7) > .35);
 
     Touchable::draw(dt);
+}
+
+void Typeable::setScale(long double scale) {
+    Touchable::setScale(scale);
+    this->_updateChildren();
+}
+
+void Typeable::setPosition(long double x, long double y) {
+    Touchable::setPosition(x, y);
+    this->_updateChildren();
+}
+
+void Typeable::setAnchorPoint(long double x, long double y) {
+    Touchable::setAnchorPoint(x, y);
+    this->_updateChildren();
+}
+
+void Typeable::setContentSize(long double width, long double height) {
+    Touchable::setContentSize(width, height);
+    this->_updateChildren();
 }
 
 void Typeable::_focusIn(void* data) {
@@ -165,14 +153,6 @@ void Typeable::_focusIn(void* data) {
     engine->requestTextInputCapturing(utils::cast_shared<Typeable>(this));
 
     m_seekBounds.start = inputText.size();
-
-    SDL_Rect rect = this->getRect();
-    SDL_SetTextInputArea(window, &rect, 0);
-
-    if (SDL_TextInputActive(window)) return;
-    if (!SDL_StartTextInputWithProperties(
-        window, static_cast<SDL_PropertiesID>(m_inputType)
-    )) LogSDLError();
 }
 
 void Typeable::_focusOut(void* data) {
@@ -180,11 +160,6 @@ void Typeable::_focusOut(void* data) {
 
     auto window = engine->getWindow();
     engine->removeTextInputCapturing(utils::cast_shared<Typeable>(this));
-
-    SDL_SetTextInputArea(window, nullptr, 0);
-
-    if (!SDL_TextInputActive(window)) return;
-    if (!SDL_StopTextInput(window)) LogSDLError();
 }
 
 void Typeable::_handleText(std::string text) {
@@ -197,8 +172,7 @@ void Typeable::_handleText(std::string text) {
 
     this->_callEventListener(Events::changed, &text);
     
-    m_displayText->_updateTextString();
-    this->_measureString();
+    m_displayText->m_statusBitset |= TextNode::UPDATE_VERTICES;
 
     LogInfo(fmt::format("start: {}; size: {}", m_seekBounds.start, inputText.size()));
 }
@@ -222,8 +196,7 @@ void Typeable::_handleDelete(DeleteType type) {
         inputText.erase(m_seekBounds.start, m_seekBounds.length);
     }
 
-    m_displayText->_updateTextString();
-    this->_measureString();
+    m_displayText->m_statusBitset |= TextNode::UPDATE_VERTICES;
 
     LogInfo(fmt::format("start: {}; size: {}", m_seekBounds.start, inputText.size()));
 }
@@ -242,15 +215,46 @@ void Typeable::_handleSeeking(int32_t start, int32_t length) {
 
 void Typeable::_measureString() {
     auto& inputText = m_displayText->m_displayedText;
+    auto& textShaper = m_displayText->m_fontTextShaper;
 
-    int measuredWidth;
-    size_t _measuredLength;
-
-    TTF_MeasureString(
-        m_displayText->m_font, inputText.substr(0, m_seekBounds.start).c_str(),
-        0, 0,
-        &measuredWidth, &_measuredLength
+    auto shapedGlyphs = textShaper->ShapeUtf8(
+        inputText.substr(0, m_seekBounds.start)
     );
 
-    m_widthToCursor = measuredWidth;
+    m_widthToCursor = Trex::TextShaper::Measure(shapedGlyphs).width;
+    if (!shapedGlyphs.empty()) {
+        auto lastShapedGlyph = (shapedGlyphs.end() - 1);
+        auto& lastGlyph = lastShapedGlyph->info;
+        m_widthToCursor += lastShapedGlyph->xAdvance - lastGlyph.width;
+    }
+
+    m_cursor->setPositionX(this->getRect().getMinX() + 2 + m_widthToCursor);
+}
+
+void Typeable::_updateChildren() {
+    auto rect = this->getRect();
+
+    // ---- Display Text ----
+
+    m_displayText->setPosition(
+        rect.getMinX() + 2,
+        rect.getMinY() + (rect.getHeight() / 2.)
+    );
+    
+    // ---- Placeholder Text ----
+
+    m_placeholderText->setPosition(m_displayText->getPosition());
+    
+    // ---- Cursor ----
+
+    m_cursor->setPosition(
+        rect.getMinX() + 2 + m_widthToCursor,
+        rect.getMinY() + 3
+    );
+    m_cursor->setContentHeight(rect.getHeight() - 6);
+    
+    // ---- Background ----
+
+    m_background->setPosition(rect.origin);
+    m_background->setContentSize(rect.size);
 }

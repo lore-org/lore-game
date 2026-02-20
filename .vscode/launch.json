@@ -12,7 +12,10 @@
             "cwd": "${workspaceFolder}/build/bin",
             "preLaunchTask": "Build",
             // "internalConsoleOptions": "openOnSessionStart",
-            "program": "${workspaceFolder}/build/bin/Lore Game.exe"
+            "program": "${workspaceFolder}/build/bin/Lore Game.exe",
+            "initCommands": [
+                // "breakpoint set --func-regex \"gl.*\""
+            ]
         }
     ]
 }

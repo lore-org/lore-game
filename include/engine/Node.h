@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <engine/Object.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 #include <engine/Geometry.h>
 
 class Node : public Object {
@@ -17,37 +17,47 @@ public:
     void setZOrder(int64_t zOrder);
     inline int64_t getZOrder() { return m_zOrder; }
 
-    void setScale(long double scale);
+    virtual void setScale(long double scale);
     inline long double getScale() { return m_scale; }
 
-    void setPosition(Point position);
-    void setPosition(long double x, long double y);
+
+    virtual void setPosition(long double x, long double y);
+
+    virtual inline void setPosition(Point position) { setPosition(position.x, position.y); }
+    inline void setPositionX(long double x) { setPosition(x, getPositionY()); }
+    inline void setPositionY(long double y) { setPosition(getPositionX(), y); }
+
     inline Point getPosition() const { return m_position; }
-    void setPositionX(long double x);
     inline long double getPositionX() const { return m_position.x; }
-    void setPositionY(long double y);
     inline long double getPositionY() const { return m_position.y; }
 
-    void setAnchorPoint(Point anchorPoint);
-    void setAnchorPoint(long double x, long double y);
+
+    virtual void setAnchorPoint(long double x, long double y);
+
+    virtual inline void setAnchorPoint(Point anchorPoint) { setAnchorPoint(anchorPoint.x, anchorPoint.y); }
+    inline void setAnchorX(long double x) { setAnchorPoint(x, getAnchorY()); }
+    inline void setAnchorY(long double y) { setAnchorPoint(getAnchorX(), y); }
+
     inline Point getAnchorPoint() const { return m_anchorPoint; }
-    void setAnchorX(long double x);
     inline long double getAnchorX() const { return m_anchorPoint.x; }
-    void setAnchorY(long double y);
     inline long double getAnchorY() const { return m_anchorPoint.y; }
 
-    void setContentSize(Size contentSize);
-    void setContentSize(long double width, long double height);
+
+    virtual void setContentSize(long double width, long double height);
+
+    virtual inline void setContentSize(Size contentSize) { setContentSize(contentSize.width, contentSize.height); }
+    inline void setContentWidth(long double width) { setContentSize(width, getContentHeight()); }
+    inline void setContentHeight(long double height) { setContentSize(getContentWidth(), height); }
+
     inline Size getContentSize() const { return m_contentSize; }
-    void setContentWidth(long double width);
     inline long double getContentWidth() const { return m_contentSize.width; }
-    void setContentHeight(long double height);
     inline long double getContentHeight() const { return m_contentSize.height; }
+
 
     void setVisible(bool visible);
     inline bool isVisible() const { return m_visible; }
 
-    void setRotation(long double rotation);
+    virtual void setRotation(long double rotation);
     inline long double getRotation() const { return m_rotation; }
 
     bool containsPoint(Point point);

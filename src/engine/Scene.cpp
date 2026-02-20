@@ -1,9 +1,5 @@
 #include <engine/Scene.h>
 
-#include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <SDL3_ttf/SDL_ttf.h>
-
 #include <discord-rpc.hpp>
 
 #include <fmt/base.h>
@@ -14,7 +10,7 @@
 #include <engine/config.hpp>
 #include <engine/Engine.h>
 #include <engine/Geometry.h>
-#include <engine/utils.hpp>
+#include <engine/utils.h>
 
 bool Scene::init() {
     if (!Node::init()) return false;

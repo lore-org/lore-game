@@ -9,89 +9,29 @@ on:
 
 env:
   NDK_VERSION: 29.0.13599879
+
   LINUX_PKGS: >
-    build-essential
-    git
-    make
-    pkg-config
-    cmake
-    ninja-build
-    gnome-desktop-testing
-    libasound2-dev
-    libpulse-dev
-    libaudio-dev
-    libjack-dev
-    libsndio-dev
-    libx11-dev
-    libxext-dev
-    libxrandr-dev
-    libxcursor-dev
-    libxfixes-dev
-    libxi-dev
-    libxss-dev
-    libxtst-dev
-    libxkbcommon-dev
-    libdrm-dev
-    libgbm-dev
-    libgl1-mesa-dev
-    libgles2-mesa-dev
-    libegl1-mesa-dev
-    libdbus-1-dev
-    libibus-1.0-dev
-    libudev-dev
-    libpipewire-0.3-dev
-    libwayland-dev
-    libdecor-0-dev
-    liburing-dev
-  WINDOWS_PKGS: >
-    brotli
-    libidn2
-    nghttp2
-    nghttp3
-    ngtcp2
-    libpsl
-    libssh2
-    libunistring
-    openssl
-    zlib
-    libjpeg-turbo
-    libpng
-    libdeflate
-    jbig2dec
-    lerc
-    liblzma
-    zstd
-    libwebp
-    tiff
-    libusb
-    giflib
-    freeglut
-    hidapi
-    sdl3
-    sdl3-image
-    sdl3-ttf
-  BREW_PKGS: >
-    heimdal
-    libnghttp3
-    libpsl
-    zlib
+    libssl-dev
     llvm
-    libtiff
-    sdl3
-    sdl3_image
-    sdl3_ttf
-    cpr
+    libmbedtls-dev
+    
+    libc++-dev
+    libwayland-dev
+    libxkbcommon-dev
+    xorg-dev
+  WINDOWS_PKGS:
+  BREW_PKGS: >
     openssl
-    brotli
-    fmt
-    glaze
+    llvm
+    mbedtls
 
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        libs: [shared, static]
+        # libs: [shared, static]
+        libs: [static]
         config:
         - name: Windows
           os: windows-2025
@@ -121,12 +61,6 @@ jobs:
     runs-on: ${{ matrix.config.os }}
 
     steps:
-      - name: Ensure Git Symlink Support
-        continue-on-error: true
-        run: |
-          git config --global --unset-all core.symlinks
-          git config --global --add core.symlinks true
-
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v2
         with:
@@ -136,28 +70,28 @@ jobs:
       - name: Hash Package Lists
         id: hash
         run: |
-          echo "LINUX_PKGS=$(echo -n "$LINUX_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
-          echo "WINDOWS_PKGS=$(echo -n "$WINDOWS_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
-          echo "BREW_PKGS=$(echo -n "$BREW_PKGS" | shasum -a 256 | awk '{print $1}')" >> $GITHUB_OUTPUT
+          echo "LINUX_PKGS=$(echo -n "$LINUX_PKGS" | openssl dgst -sha256 | awk '{print $NF}')" >> $GITHUB_OUTPUT
+          echo "WINDOWS_PKGS=$(echo -n "$WINDOWS_PKGS" | openssl dgst -sha256 | awk '{print $NF}')" >> $GITHUB_OUTPUT
+          echo "BREW_PKGS=$(echo -n "$BREW_PKGS" | openssl dgst -sha256 | awk '{print $NF}')" >> $GITHUB_OUTPUT
 
           
-      # - name: Install vcpkg
+      # - name: '[Windows] - Install vcpkg'
       #   if: matrix.config.id == 'windows'
       #   uses: lukka/run-vcpkg@v11
       #   with:
       #     vcpkgGitCommitId: ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0
       #     doNotCache: false
 
-      # - name: Install Leftover Windows Packages
+      # - name: '[Windows] - Install Leftover Windows Packages'
       #   if: matrix.config.id == 'windows'
       #   run: vcpkg install ${{ env.WINDOWS_PKGS }}
 
 
-      - name: Update Linux Packages
+      - name: '[Linux/Android] - Update Linux Packages'
         if: matrix.config.id == 'linux' || matrix.config.id == 'android'
         run: sudo apt-get update -y
 
-      - name: Install and Cache Linux Packages
+      - name: '[Linux/Android] - Install and Cache Linux Packages'
         if: matrix.config.id == 'linux' || matrix.config.id == 'android'
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
@@ -166,29 +100,37 @@ jobs:
           version: ${{ steps.hash.outputs.LINUX_PKGS }}
 
 
-      # - name: Setup Homebrew
-      #   if: matrix.config.id != 'windows'
-      #   id: homebrew
-      #   uses: Homebrew/actions/setup-homebrew@main
+      - name: '[MacOS] - Setup Homebrew'
+        if: matrix.config.id == 'macos'
+        id: homebrew
+        uses: Homebrew/actions/setup-homebrew@main
 
-      # - name: Setup Homebrew Cache
-      #   if: matrix.config.id != 'windows'
-      #   id: brewcache
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ${{ steps.homebrew.outputs.gems-path }}
-      #     key: brewcache-${{ matrix.config.id }}-${{ steps.homebrew.outputs.gems-hash }}
-      #     restore-keys: brewcache-${{ matrix.config.id }}-
+      - name: '[MacOS] - Setup Homebrew Cache'
+        if: matrix.config.id == 'macos'
+        id: brewcache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.homebrew.outputs.gems-path }}
+          key: brewcache-${{ matrix.config.id }}-${{ steps.homebrew.outputs.gems-hash }}
+          restore-keys: brewcache-${{ matrix.config.id }}-
 
-      # - name: Install Leftover Brew Packages
-      #   if: matrix.config.id != 'windows'
-      #   run: brew install ${{ env.BREW_PKGS }}
-        
+      - name: '[MacOS] - Install Leftover Brew Packages'
+        if: matrix.config.id == 'macos'
+        run: brew install ${{ env.BREW_PKGS }}
+
+
+      - name: Update Python
+        id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14.3'
+          cache: 'pip'
 
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
         with:
           disable_annotations: true
+          version: 'v0.13.0'
         env:
           SCCACHE_GHA_ENABLED: 'true'
 
@@ -203,12 +145,6 @@ jobs:
           restore-keys: |
             buildcache-${{ matrix.config.id }}-${{ matrix.libs }}-
             buildcache-${{ matrix.config.id }}-
-
-      - name: Update Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13.7'
-          cache: 'pip'
       
       - name: Install Meson
         run: python -m pip install meson
@@ -216,36 +152,45 @@ jobs:
       - name: Update cmake
         uses: jwlawson/actions-setup-cmake@v2
         with:
-          cmake-version: 'latest'
+          cmake-version: '4.2.3'
 
       - name: Install Ninja
-        uses: ashutoshvarma/setup-ninja@master
+        uses: ashutoshvarma/setup-ninja@v1.1
+        with:
+          version: '1.13.2'
 
       - name: Install NASM
         uses: ilammy/setup-nasm@v1
 
-      
-      - name: Install JDK 21
-        if: matrix.config.id == 'android'
-        uses: actions/setup-java@v3
+      - name: '[Windows/Linux/Android] - Setup LLVM and Clang'
+        if: matrix.config.id != 'macos'
+        uses: KyleMayes/install-llvm-action@v2
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          version: '21.1.8'
+          env: true
+
       
-      - name: Setup Android SDK
-        if: matrix.config.id == 'android'
-        id: android-sdk
-        uses: android-actions/setup-android@v3
-        with:
-          packages: 'build-tools;35.0.0 cmdline-tools;latest ndk;${{ env.NDK_VERSION }} platforms;android-33'
+      # - name: '[Android] - Install JDK 21'
+      #   if: matrix.config.id == 'android'
+      #   uses: actions/setup-java@v3
+      #   with:
+      #     java-version: '21'
+      #     distribution: 'temurin'
       
-      - name: Update ENVs for Android SDK
-        if: matrix.config.id == 'android'
-        run: |
-          echo "ANDROID_NDK_HOME=${{ env.ANDROID_NDK_HOME }}" >> "$GITHUB_ENV"
-          echo "ANDROID_NDK=${{ env.ANDROID_NDK_HOME }}" >> "$GITHUB_ENV"
-        env: 
-          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME || '/usr/local/lib/android/sdk' }}/ndk/${{ env.NDK_VERSION }}
+      # - name: '[Android] - Setup Android SDK'
+      #   if: matrix.config.id == 'android'
+      #   id: android-sdk
+      #   uses: android-actions/setup-android@v3
+      #   with:
+      #     packages: 'build-tools;35.0.0 cmdline-tools;latest ndk;${{ env.NDK_VERSION }} platforms;android-33'
+      
+      # - name: '[Android] - Update ENVs for Android SDK'
+      #   if: matrix.config.id == 'android'
+      #   run: |
+      #     echo "ANDROID_NDK_HOME=${{ env.ANDROID_NDK_HOME }}" >> "$GITHUB_ENV"
+      #     echo "ANDROID_NDK=${{ env.ANDROID_NDK_HOME }}" >> "$GITHUB_ENV"
+      #   env: 
+      #     ANDROID_NDK_HOME: ${{ env.ANDROID_HOME || '/usr/local/lib/android/sdk' }}/ndk/${{ env.NDK_VERSION }}
 
   
       - name: Setup
@@ -254,8 +199,8 @@ jobs:
         run: >
           cmake
           -D CMAKE_BUILD_TYPE=RelWithDebInfo
-          -D BUILD_SHARED_LIBS=${{ matrix.libs == 'shared' && 'ON' || 'OFF' }}
-          ${{ matrix.config.id == 'android' && '-D CMAKE_SYSTEM_NAME=Android' || '' }}
+          -D BUILD_SHARED_LIBS=${{ case(matrix.libs == 'shared', 'ON', 'OFF') }}
+          ${{ case( matrix.config.id == 'android', '-D CMAKE_SYSTEM_NAME=Android', '' ) }}
           -B build
           -G Ninja
           --log-level DEBUG

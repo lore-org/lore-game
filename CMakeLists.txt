@@ -2,6 +2,7 @@ include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
 include(CheckLinkerFlag)
 include(CheckCXXSourceCompiles)
+include(CheckIncludeFile)
 
 cmake_minimum_required(VERSION 3.24)
 
@@ -16,36 +17,18 @@ set(CMAKE_ANDROID_ARCH_ABI arm64-v8a CACHE STRING "What architecture to compile 
 set(CMAKE_ANDROID_API 33 CACHE STRING "Target Android API version. Default is Android 13.")
 set(CMAKE_ANDROID_API_MIN 24 CACHE STRING "Minimum Android API version. Default is Android 7.0.")
 
-set(BUILD_SHARED_LIBS ON CACHE STRING "Build .dlls, .so, and .dylibs.")
+set(BUILD_SHARED_LIBS OFF CACHE STRING "Build .dlls, .so, and .dylibs.")
 
-project("Lore Game" LANGUAGES C CXX VERSION 0.0.1)
+project(
+    "Lore Game"
+    LANGUAGES C CXX
+    VERSION 0.0.1
+)
 
 set(APP_NAMESPACE "com.furred.${PROJECT_NAME}" CACHE STRING "The namespace given to the application.")
 set(APP_NAME "${PROJECT_NAME}" CACHE STRING "The name given to the application.")
 
 set(ANDROID_SPLASH_BACKGROUND_COLOR "#FFFFFF" CACHE STRING "The background colour for the Android splash screen.")
-
-option(IMAGE_DEFAULTS "Support loading JPEG, PNG, and WEBP images" ON)
-option(IMAGE_EXTRAS "Support loading AVIF, JPEG, PNG, SVG, and WEBP images" OFF)
-option(IMAGE_ALL "Support loading all images supported by SDL3_image" OFF)
-
-# for more options, set the values below:
-# IMAGE_AVIF
-# IMAGE_BMP
-# IMAGE_GIF
-# IMAGE_JPG
-# IMAGE_LBM
-# IMAGE_PCX
-# IMAGE_PNG
-# IMAGE_PNM
-# IMAGE_QOI
-# IMAGE_SVG
-# IMAGE_TGA
-# IMAGE_TIF
-# IMAGE_WEBP
-# IMAGE_XCF
-# IMAGE_XPM
-# IMAGE_XV
 
 set(CPM_VERSION 0.42.0 CACHE STRING "Version of CPM to download")
 set(CPM_HASH eed8973c5595c72d9ba785a5472e9750 CACHE STRING "Hash of the specific version of CPM")
@@ -109,59 +92,6 @@ function(set_if_empty VARIABLE VALUE)
     endif()
 endfunction()
 
-if (IMAGE_DEFAULTS)
-    set_if_empty(IMAGE_JPG  ON)
-    set_if_empty(IMAGE_PNG  ON)
-    set_if_empty(IMAGE_WEBP ON)
-endif()
-
-if (IMAGE_EXTRAS)
-    set_if_empty(IMAGE_AVIF ON)
-    set_if_empty(IMAGE_JPG  ON)
-    set_if_empty(IMAGE_JXL  ON)
-    set_if_empty(IMAGE_PNG  ON)
-    set_if_empty(IMAGE_SVG  ON)
-    set_if_empty(IMAGE_WEBP ON)
-endif()
-
-if (IMAGE_ALL)
-    set_if_empty(IMAGE_AVIF ON)
-    set_if_empty(IMAGE_BMP  ON)
-    set_if_empty(IMAGE_GIF  ON)
-    set_if_empty(IMAGE_JPG  ON)
-    set_if_empty(IMAGE_JXL  ON)
-    set_if_empty(IMAGE_LBM  ON)
-    set_if_empty(IMAGE_PCX  ON)
-    set_if_empty(IMAGE_PNG  ON)
-    set_if_empty(IMAGE_PNM  ON)
-    set_if_empty(IMAGE_QOI  ON)
-    set_if_empty(IMAGE_SVG  ON)
-    set_if_empty(IMAGE_TGA  ON)
-    set_if_empty(IMAGE_TIF  ON)
-    set_if_empty(IMAGE_WEBP ON)
-    set_if_empty(IMAGE_XCF  ON)
-    set_if_empty(IMAGE_XPM  ON)
-    set_if_empty(IMAGE_XV   ON)
-endif()
-
-set_if_empty(IMAGE_AVIF OFF)
-set_if_empty(IMAGE_BMP  OFF)
-set_if_empty(IMAGE_GIF  OFF)
-set_if_empty(IMAGE_JPG  OFF)
-set_if_empty(IMAGE_JXL  OFF)
-set_if_empty(IMAGE_LBM  OFF)
-set_if_empty(IMAGE_PCX  OFF)
-set_if_empty(IMAGE_PNG  OFF)
-set_if_empty(IMAGE_PNM  OFF)
-set_if_empty(IMAGE_QOI  OFF)
-set_if_empty(IMAGE_SVG  OFF)
-set_if_empty(IMAGE_TGA  OFF)
-set_if_empty(IMAGE_TIF  OFF)
-set_if_empty(IMAGE_WEBP OFF)
-set_if_empty(IMAGE_XCF  OFF)
-set_if_empty(IMAGE_XPM  OFF)
-set_if_empty(IMAGE_XV   OFF)
-
 set(LIBCXX_ENABLE_SHARED OFF)
 set(LIBCXX_ENABLE_STATIC ON)
 
@@ -196,28 +126,9 @@ include("${_cpm_file}")
 # Setup Python virtual env
 
 find_program(PYTHON python3 py python REQUIRED)
-set(PYTHON_VENV_DIR ${CMAKE_BINARY_DIR}/pyvenv)
 
-find_program(
-    VIRTUAL_PYTHON python3 py python
-    NO_DEFAULT_PATH
-    PATHS ${PYTHON_VENV_DIR}/bin ${PYTHON_VENV_DIR}/Scripts
-)
-if (NOT VIRTUAL_PYTHON)
-    message(STATUS "Creating ${PYTHON_VENV_DIR}")
-    execute_process(
-        COMMAND ${PYTHON} -m venv ${PYTHON_VENV_DIR}
-    )
-
-    find_program(
-        VIRTUAL_PYTHON python3 py python
-        REQUIRED
-        NO_DEFAULT_PATH
-        PATHS ${PYTHON_VENV_DIR}/bin ${PYTHON_VENV_DIR}/Scripts
-    )
-endif()
-
-execute_process(COMMAND ${VIRTUAL_PYTHON} -m pip install -r ${CMAKE_SOURCE_DIR}/python/requirements.txt)
+execute_process(COMMAND ${PYTHON} -m ensurepip --upgrade)
+execute_process(COMMAND ${PYTHON} -m pip install -r ${CMAKE_SOURCE_DIR}/python/requirements.txt)
 
 # Env detection
 
@@ -284,225 +195,6 @@ if (NOT EXISTS ${ANDROID_DEBUG_KEYSTORE})
     )
 endif()
 
-# Getting pre-installed libraries
-
-function(normalise_arch ARCH RESULT_VAR)
-    string(TOLOWER "${ARCH}" ARCH)
-    string(REGEX REPLACE "[^a-zA-Z0-9]" "_" ARCH "${ARCH}")
-
-    set(x64_ARCH_LIST x64
-        x86_64
-        amd64
-        hurd-amd64
-        kfreebsd-amd64
-    )
-    set(x32_ARCH_LIST x32
-        x86
-    )
-    set(arm_ARCH_LIST arm
-        armel
-        armhf
-    )
-    set(arm64_ARCH_LIST arm64
-        aarch64
-    )
-
-    set(ARCH_LISTS
-        x64_ARCH_LIST
-        x32_ARCH_LIST
-        arm_ARCH_LIST
-        arm64_ARCH_LIST
-    )
-    foreach(ARCH_LIST IN LISTS ARCH_LISTS)
-        if (ARCH IN_LIST "${ARCH_LIST}")
-            list(GET "${ARCH_LIST}" 0 NORMALISED_ARCH)
-            set(ARCH "${NORMALISED_ARCH}")
-        endif()
-    endforeach()
-
-    set("${RESULT_VAR}" ${ARCH} PARENT_SCOPE)
-endfunction()
-
-normalise_arch("${CMAKE_SYSTEM_PROCESSOR}" NORMALISED_CMAKE_SYSTEM_PROCESSOR)
-
-# TODO - add windows support
-function(get_lib_arch LIB RESULT_VAR)
-    find_program(FILE file)
-
-    if (FILE)
-        set(REAL_LIB "${LIB}")
-        file(REAL_PATH "${LIB}" REAL_LIB)
-
-        execute_process(
-            COMMAND ${FILE} "${REAL_LIB}"
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-            OUTPUT_VARIABLE OUTPUT
-        )
-        
-        string(REGEX MATCH ", ([^,]+)," _ "${OUTPUT}") # pull arch from string
-        string(STRIP "${CMAKE_MATCH_1}" FULL_ARCH)
-
-        string(REGEX MATCH "[^ ]+$" OUTPUT "${FULL_ARCH}") # get isolated arch at end of string
-        string(TOLOWER "${OUTPUT}" OUTPUT)
-
-        normalise_arch("${OUTPUT}" NORMALISED_OUTPUT)
-
-        set("${RESULT_VAR}" "${NORMALISED_OUTPUT}" PARENT_SCOPE)
-    endif()
-endfunction()
-
-# function(add_libs_from_path PATH_GLOB)
-#     # do NOT configure_depends, this will take 10 million years
-
-#     file(TO_CMAKE_PATH "${PATH_GLOB}" TEMP_PATH)
-#     file(GLOB TEMP_SOURCES "${TEMP_PATH}")
-#     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${TEMP_SOURCES}" PARENT_SCOPE)
-
-#     foreach (SOURCE IN LISTS TEMP_SOURCES)
-#         if (EXISTS "${SOURCE}/lib")
-#             list(APPEND CMAKE_LIBRARY_PATH ${SOURCE}/lib)
-#         endif()
-#         if (EXISTS "${SOURCE}/include")
-#             list(APPEND CMAKE_INCLUDE_PATH ${SOURCE}/include)
-#         endif()
-#     endforeach()
-# endfunction()
-
-# # Brew libraries
-# find_program(BREW brew)
-# if (BREW)
-#     execute_process(
-#         COMMAND ${BREW} --prefix
-#         OUTPUT_VARIABLE BREW_PREFIX
-#     )
-#     string(STRIP ${BREW_PREFIX} BREW_PREFIX)
-
-#     add_libs_from_path(${BREW_PREFIX})
-# endif()
-
-# # Android libraries
-# if (DEFINED ANDROID_NDK)
-#     add_libs_from_path(${ANDROID_NDK}/toolchains/llvm/prebuilt/*)
-#     add_libs_from_path(${ANDROID_NDK}/toolchains/llvm/prebuilt/*/sysroot/usr)
-# endif()
-
-# # vcpkg libraries
-# if (DEFINED ENV{VCPKG_ROOT})
-#     add_libs_from_path($ENV{VCPKG_ROOT}/packages/*)
-# endif()
-
-# # linux libraries
-# if (EXISTS /usr/lib)
-#     add_libs_from_path(/usr)
-# endif()
-
-# Setup Android-specific dependencies
-
-if (ANDROID)
-    CPMAddPackage(
-        NAME android_openssl
-        GIT_REPOSITORY https://github.com/KDAB/android_openssl.git
-        GIT_TAG 0025bbe48f69792f95e02c9289df0fae68c954d6
-        DOWNLOAD_ONLY YES
-    )
-
-    # openssl
-
-    set(OPENSSL_ROOT_PATH ${android_openssl_SOURCE_DIR})
-    
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug") # Specifically debug
-        string(APPEND OPENSSL_ROOT_PATH "/no-asm")
-    endif()
-
-    set(OPENSSL_LIB_DIR ${OPENSSL_ROOT_PATH}/ssl_3/${CMAKE_ANDROID_ARCH_ABI})
-    set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT_PATH}/ssl_3/include)
-
-    list(APPEND CMAKE_PREFIX_PATH ${OPENSSL_LIB_DIR})
-
-    # if (BUILD_SHARED_LIBS)
-    #     set(WANTED_LIBRARY_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}")
-    # else()
-    #     set(WANTED_LIBRARY_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    # endif()
-    set(WANTED_LIBRARY_SUFFIX "${CMAKE_STATIC_LIBRARY_SUFFIX}")
-
-    if (DEFINED crypto_LIBRARY)
-        set(crypto ${crypto_LIBRARY})
-    else()
-        set(crypto ${OPENSSL_LIB_DIR}/libcrypto${WANTED_LIBRARY_SUFFIX})
-    endif()
-
-    if (DEFINED ssl_LIBRARY)
-        set(ssl ${ssl_LIBRARY})
-    else()
-        set(ssl ${OPENSSL_LIB_DIR}/libssl${WANTED_LIBRARY_SUFFIX})
-    endif()
-
-    # Eliminate symbolic links
-    file(REAL_PATH ${crypto} crypto)
-    file(REAL_PATH ${ssl} ssl)
-    file(REAL_PATH ${OPENSSL_INCLUDE_DIR} OPENSSL_INCLUDE_DIR)
-
-    if (NOT EXISTS ${crypto})
-        message(FATAL_ERROR "Could not find OpenSSL::Crypto (looking for ${crypto})")
-    endif()
-    message(STATUS "Found OpenSSL::Crypto: ${crypto}")
-
-    if (NOT EXISTS ${ssl})
-        message(FATAL_ERROR "Could not find OpenSSL::SSL (looking for ${ssl})")
-    endif()
-    message(STATUS "Found OpenSSL::SSL: ${ssl}")
-
-    function(add_imported_library target type)
-        if (NOT TARGET ${target})
-            add_library(${target} ${type} IMPORTED)
-        endif()
-    endfunction()
-
-    function(add_or_edit_library_alias alias target)
-        if (TARGET ${alias})
-            set_target_properties(${alias} PROPERTIES
-                ALIASED_TARGET ${target}
-            )
-        else()
-            add_library(${alias} ALIAS ${target})
-        endif()
-    endfunction()
-
-
-    # if (BUILD_SHARED_LIBS)
-    #     add_imported_library(libcrypto SHARED)
-    #     add_imported_library(libssl SHARED)
-    # else()
-    #     add_imported_library(libcrypto STATIC)
-    #     add_imported_library(libssl STATIC)
-    # endif()
-    add_imported_library(libcrypto STATIC)
-    add_imported_library(libssl STATIC)
-
-    set_target_properties(libcrypto PROPERTIES
-        IMPORTED_LOCATION ${crypto}
-    )
-    set_target_properties(libssl PROPERTIES
-        IMPORTED_LOCATION ${ssl}
-    )
-
-    add_or_edit_library_alias(OpenSSL::Crypto libcrypto)
-    add_or_edit_library_alias(OpenSSL::SSL libssl)
-
-    target_include_directories(libcrypto INTERFACE ${OPENSSL_INCLUDE_DIR})
-    target_include_directories(libssl INTERFACE ${OPENSSL_INCLUDE_DIR})
-
-    # https://github.com/libcpr/cpr/issues/333#issuecomment-2425104338
-    set(OPENSSL_SSL_LIBRARY ${ssl} CACHE INTERNAL "")
-    set(OPENSSL_CRYPTO_LIBRARY ${crypto} CACHE INTERNAL "")
-    set(OPENSSL_INCLUDE_DIR ${OPENSSL_INCLUDE_DIR} CACHE INTERNAL "")
-
-    message(DEBUG "OPENSSL_SSL_LIBRARY:    ${OPENSSL_SSL_LIBRARY}")
-    message(DEBUG "OPENSSL_CRYPTO_LIBRARY: ${OPENSSL_CRYPTO_LIBRARY}")
-    message(DEBUG "OPENSSL_INCLUDE_DIR:    ${OPENSSL_INCLUDE_DIR}")
-endif()
-
 # Init project
 
 if (ANDROID)
@@ -511,6 +203,8 @@ else()
     add_executable("${SANITISED_PROJECT_NAME}")
     set_target_properties("${SANITISED_PROJECT_NAME}" PROPERTIES OUTPUT_NAME "${APP_NAME}")
 endif()
+
+set_target_properties("${SANITISED_PROJECT_NAME}" PROPERTIES CXX_STANDARD 23)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 target_sources("${SANITISED_PROJECT_NAME}" PUBLIC ${SOURCES})
@@ -563,39 +257,33 @@ file(REMOVE_RECURSE
 file(READ config.json CONFIG_FILE)
 configure_file(include/engine/config.hpp.in include/engine/config.hpp)
 
-execute_process(COMMAND ${VIRTUAL_PYTHON} ${CMAKE_SOURCE_DIR}/python/icon_generator.py --crop-type longest --build-dir ${CMAKE_BINARY_DIR} --resources-dir ${CMAKE_SOURCE_DIR}/resources)
+execute_process(COMMAND ${PYTHON} ${CMAKE_SOURCE_DIR}/python/icon_generator.py --crop-type longest --build-dir ${CMAKE_BINARY_DIR} --resources-dir ${CMAKE_SOURCE_DIR}/resources)
 
 # Linker/Compiler checking
 
 list(APPEND COMPILER_FLAGS
-    # "-Wa,-mbig-obj"
-    # "/bigobj"
     "-Wno-c++98-compat"
-    "-fexperimental-library"
     "-Wno-error"
+    "-Wno-unused-command-line-argument"
+    "-Wno-missing-template-arg-list-after-template-kw"
+
+    "-Wpedantic"
+
     "-fPIC"
+    "-fexperimental-library"
+
+    "-std=c++23" # prevent use of gnu++23
+    # "-stdlib=libc++"
+    # "-static-libstdc++"
 )
 
 if (DEBUG)
     list(APPEND COMPILER_FLAGS
         "-gcodeview"
         "-gcolumn-info"
-        # "-g"
-        "-fsanitize=address"
-        "-fno-omit-frame-pointer"
-    )
-endif()
 
-list(APPEND LINKER_FLAGS
-
-)
-
-if (DEBUG)
-    list(APPEND LINKER_FLAGS
         "-fuse-ld=lld"
-        # "-g"
-        # "-fsanitize=address"
-        "-Wl,--pdb="
+        "-fno-omit-frame-pointer"
     )
 endif()
 
@@ -603,23 +291,22 @@ endif()
 foreach (FLAG IN LISTS COMPILER_FLAGS)
     string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
 
-    check_cxx_compiler_flag("${FLAG}" SUPPORTS_CMP_${SANITISED_FLAG})
-    if (NOT SUPPORTS_CMP_${SANITISED_FLAG})
-        check_c_compiler_flag("${FLAG}" SUPPORTS_CMP_${SANITISED_FLAG})
+
+    check_cxx_compiler_flag("${FLAG}" CXX_SUPPORTS_CMP_${SANITISED_FLAG})
+    if (CXX_SUPPORTS_CMP_${SANITISED_FLAG})
+        check_c_compiler_flag("${FLAG}" C_SUPPORTS_CMP_${SANITISED_FLAG})
+        if (C_SUPPORTS_CMP_${SANITISED_FLAG})
+            add_compile_options(${FLAG})
+        endif()
     endif()
 
-    add_compile_options("$<$<BOOL:${SUPPORTS_CMP_${SANITISED_FLAG}}>:${FLAG}>")
-endforeach()
-
-foreach (FLAG IN LISTS LINKER_FLAGS)
-    string(REGEX REPLACE "[^a-zA-Z0-9_-]" "_" SANITISED_FLAG "${FLAG}")
-    
-    check_linker_flag(CXX "${FLAG}" SUPPORTS_LNK_${SANITISED_FLAG})
-    if (NOT SUPPORTS_LNK_${SANITISED_FLAG})
-        check_linker_flag(C "${FLAG}" SUPPORTS_LNK_${SANITISED_FLAG})
+    check_linker_flag(CXX "${FLAG}" CXX_SUPPORTS_LNK_${SANITISED_FLAG})
+    if (CXX_SUPPORTS_LNK_${SANITISED_FLAG})
+        check_linker_flag(C "${FLAG}" C_SUPPORTS_LNK_${SANITISED_FLAG})
+        if (C_SUPPORTS_LNK_${SANITISED_FLAG})
+            add_link_options(${FLAG})
+        endif()
     endif()
-
-    add_link_options("$<$<BOOL:${SUPPORTS_LNK_${SANITISED_FLAG}}>:${FLAG}>")
 endforeach()
 
 
@@ -644,69 +331,35 @@ check_cxx_source_compiles("
 " HAS_PAR_UNSEQ)
 
 target_compile_definitions("${SANITISED_PROJECT_NAME}" PUBLIC
-    $<$<BOOL:${HAS_PAR_UNSEQ}>:HAS_PAR>
+    $<$<BOOL:${HAS_PAR}>:HAS_PAR>
     $<$<BOOL:${HAS_PAR_UNSEQ}>:HAS_PAR_UNSEQ>
 )
 
 # Configure submodules
 
-message(STATUS "IMAGE_AVIF: ${IMAGE_AVIF}")
-message(STATUS "IMAGE_BMP:  ${IMAGE_BMP}")
-message(STATUS "IMAGE_GIF:  ${IMAGE_GIF}")
-message(STATUS "IMAGE_JPG:  ${IMAGE_JPG}")
-message(STATUS "IMAGE_JXL:  ${IMAGE_JXL}")
-message(STATUS "IMAGE_LBM:  ${IMAGE_LBM}")
-message(STATUS "IMAGE_PCX:  ${IMAGE_PCX}")
-message(STATUS "IMAGE_PNG:  ${IMAGE_PNG}")
-message(STATUS "IMAGE_PNM:  ${IMAGE_PNM}")
-message(STATUS "IMAGE_QOI:  ${IMAGE_QOI}")
-message(STATUS "IMAGE_SVG:  ${IMAGE_SVG}")
-message(STATUS "IMAGE_TGA:  ${IMAGE_TGA}")
-message(STATUS "IMAGE_TIF:  ${IMAGE_TIF}")
-message(STATUS "IMAGE_WEBP: ${IMAGE_WEBP}")
-message(STATUS "IMAGE_XCF:  ${IMAGE_XCF}")
-message(STATUS "IMAGE_XPM:  ${IMAGE_XPM}")
-message(STATUS "IMAGE_XV:   ${IMAGE_XV}")
+find_package(Git REQUIRED)
+# message("Git_VERSION (old): ${Git_VERSION}")
 
-function(set_found LIB FOUND_VAR)
-    set(FOUND FALSE)
-    foreach(LIBRARY "${LIB}" "lib${LIB}" "${LIB}::${LIB}")
-        find_package("${LIBRARY}" QUIET)
-        if ("${LIBRARY}_FOUND" OR TARGET "${LIBRARY}")
-            set(FOUND TRUE)
-            break()
-        endif()
-    endforeach()
+# execute_process(
+#     COMMAND ${GIT_EXECUTABLE} --version
+#     OUTPUT_VARIABLE CMD_GIT_VERSION
+#     ERROR_QUIET
+#     OUTPUT_STRIP_TRAILING_WHITESPACE
+# )
 
-    if (FOUND)
-        message("Found library: ${LIB}")
-    else()
-        message("Could not find library: ${LIB}")
-    endif()
-    
-    set("${FOUND_VAR}" "${FOUND}" PARENT_SCOPE)
-endfunction()
+# string(REGEX MATCH "[0-9]+.[0-9]+.[0-9]+" MATCHED_GIT_VERSION "${CMD_GIT_VERSION}")
+# set(Git_VERSION "${MATCHED_GIT_VERSION}")
 
-function(add_alias_if_valid ALIAS TARGET)
-    message(VERBOSE "Setting \"${ALIAS}\" as alias for \"${TARGET}\"")
-    
-    if (TARGET "${ALIAS}")
-        message(VERBOSE "    \"${ALIAS}\" is already a target")
-    elseif(NOT TARGET "${ALIAS}")
-        message(VERBOSE "    \"${TARGET}\" is not already a target")
-    else()
-        message(VERBOSE "    \"${ALIAS}\" set as alias for \"${TARGET}\"")
-        add_library("${ALIAS}" ALIAS "${TARGET}")
-    endif()
+# message("CMD_GIT_VERSION:       ${CMD_GIT_VERSION}")
+message("Git_VERSION:           ${Git_VERSION}")
 
-    # TODO - add setting variables
-endfunction()
+# unset(MATCHED_GIT_VERSION)
+# unset(CMD_GIT_VERSION)
 
 CPMAddPackage(
     NAME discord-rpc
-    VERSION 1.0.0
     GIT_REPOSITORY https://github.com/EclipseMenu/discord-presence.git
-    GIT_TAG 346214d78ace3c4e4e09759f412c3717bbc6e25c
+    GIT_TAG 59a3ba7
 )
 
 CPMAddPackage(
@@ -723,94 +376,140 @@ CPMAddPackage(
     GIT_TAG v5.5.4
 )
 
+if (ANDROID)
+    set(OpenSSL_CROSS "CROSS ON")
+    set(OpenSSL_CROSS_TARGET "CROSS_TARGET mingw")
+    set(OpenSSL_CROSS_ANDROID "CROSS_ANDROID ON")
+endif()
+
+if (APPLE)
+    set(OpenSSL_BUILD_OPENSSL "BUILD_OPENSSL ON")
+endif()
+
+set(OpenSSL_VERSION 3.6.0)
+CPMAddPackage(
+    NAME OpenSSL
+    VERSION ${OpenSSL_VERSION}
+    GIT_REPOSITORY https://github.com/viaduck/openssl-cmake.git
+    GIT_TAG 7e0c2c4
+    OPTIONS
+        "OPENSSL_BUILD_VERSION ${OpenSSL_VERSION}"
+        "${OpenSSL_CROSS}"
+        "${OpenSSL_CROSS_TARGET}"
+        "${OpenSSL_CROSS_ANDROID}"
+        "${OpenSSL_BUILD_OPENSSL}"
+)
+
 CPMAddPackage(
     NAME cpr
-    VERSION 1.12.0
+    VERSION 1.14.1
     GIT_REPOSITORY https://github.com/libcpr/cpr.git
-    GIT_TAG 1.12.0
+    GIT_TAG 1.14.1
     OPTIONS
         "CPR_USE_SYSTEM_LIB_PSL ON"
         "CURL_USE_LIBPSL OFF"
 )
 
 CPMAddPackage(
-    NAME SDL3
-    VERSION 3.2.20
-    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-    GIT_TAG release-3.2.20
+    NAME GLFW
+    VERSION 3.4
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG 3.4
     OPTIONS
-        "SDL_CCACHE ON"
-        "SDL_CLOCK_GETTIME ON"
+        "GLFW_BUILD_DOCS OFF"
 )
 
 CPMAddPackage(
-    NAME SDL3_image
-    VERSION 3.2.4
-    GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
-    GIT_TAG release-3.2.4
+    NAME simdutf
+    VERSION 7.7.0
+    GIT_REPOSITORY https://github.com/simdutf/simdutf.git
+    GIT_TAG v7.7.0
+)
+
+CPMAddPackage(
+    NAME glm
+    VERSION 1.0.2
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 1.0.2
+)
+
+CPMAddPackage(
+    NAME Trex
+    VERSION 0.2
+    GIT_REPOSITORY https://github.com/KyrietS/trex.git
+    GIT_TAG v0.2
     OPTIONS
-        "SDLIMAGE_VENDORED ON"
-        "SDLIMAGE_AVIF ${IMAGE_AVIF}"
-        "SDLIMAGE_BMP ${IMAGE_BMP}"
-        "SDLIMAGE_GIF ${IMAGE_GIF}"
-        "SDLIMAGE_JPG ${IMAGE_JPG}"
-        "SDLIMAGE_JXL ${IMAGE_JXL}"
-        "SDLIMAGE_LBM ${IMAGE_LBM}"
-        "SDLIMAGE_PCX ${IMAGE_PCX}"
-        "SDLIMAGE_PNG ${IMAGE_PNG}"
-        "SDLIMAGE_PNM ${IMAGE_PNM}"
-        "SDLIMAGE_QOI ${IMAGE_QOI}"
-        "SDLIMAGE_SVG ${IMAGE_SVG}"
-        "SDLIMAGE_TGA ${IMAGE_TGA}"
-        "SDLIMAGE_TIF ${IMAGE_TIF}"
-        "SDLIMAGE_WEBP ${IMAGE_WEBP}"
-        "SDLIMAGE_XCF ${IMAGE_XCF}"
-        "SDLIMAGE_XPM ${IMAGE_XPM}"
-        "SDLIMAGE_XV ${IMAGE_XV}"
         "CMAKE_POLICY_VERSION_MINIMUM 3.5"
 )
 
+# Install Glad module for Python
+
+execute_process(COMMAND ${PYTHON} -m ensurepip --upgrade)
+execute_process(COMMAND ${PYTHON} -m pip install -r ${CMAKE_SOURCE_DIR}/python/glad_requirements.txt)
+
+# Set up glad
+
 CPMAddPackage(
-    NAME SDL3_ttf
-    VERSION 3.2.2
-    GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
-    GIT_TAG release-3.2.2
-    OPTIONS
-        "SDLTTF_VENDORED ON"
+    NAME glad
+    VERSION 2.0.8
+    GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+    GIT_TAG v2.0.8
 )
+include(${glad_SOURCE_DIR}/cmake/CMakeLists.txt)
+
+check_include_file("X11/X.h" HAS_X11)
+if (HAS_X11)
+    set(GLAD_GLX "glx=1.4")
+else()
+    set(GLAD_GLX "")
+endif()
+
+if (ANDROID)
+    set(GLAD_GLES1 "gles1:common=1.0")
+    set(GLAD_GLES2 "gles2=3.2")
+else()
+    set(GLAD_GL "gl:core=3.2")
+endif()
+
+glad_add_library(
+    glad_gl_3_2
+    API
+        "${GLAD_GL}"
+        "${GLAD_GLES1}"
+        "${GLAD_GLES2}"
+        "${GLAD_GLX}"
+)
+
+if (HAS_X11)
+    target_compile_options(glad_gl_3_2 PUBLIC -lX11)
+endif()
+
+# Set up stb
+
+CPMAddPackage(
+    NAME stb
+    GIT_REPOSITORY https://github.com/nothings/stb
+    GIT_TAG f1c79c0
+    DOWNLOAD_ONLY
+)
+
+target_include_directories("${SANITISED_PROJECT_NAME}" PUBLIC ${stb_SOURCE_DIR})
 
 # Add libraries to project
 
-if (ANDROID)
-    target_include_directories("${SANITISED_PROJECT_NAME}" PUBLIC ${SDL3_SOURCE_DIR}/src/core/android)
-endif()
-
-set(LIBRARIES
+target_link_libraries("${SANITISED_PROJECT_NAME}"
     discord-rpc
-
     fmt
-
     glaze::glaze
-
-    cpr::cpr
-
-    SDL3::SDL3
-    SDL3_ttf::SDL3_ttf
-    SDL3_image::SDL3_image
+    ssl
+    crypto
+    cpr
+    glfw
+    simdutf
+    glad_gl_3_2
+    glm
+    trex
 )
-
-macro(append_if_valid TARGET)
-    if (TARGET "${TARGET}")
-        list(APPEND LIBRARIES "${TARGET}")
-    endif()
-endmacro()
-
-if (ANDROID)
-    append_if_valid(OpenSSL::Crypto)
-    append_if_valid(OpenSSL::SSL)
-endif()
-
-target_link_libraries("${SANITISED_PROJECT_NAME}" ${LIBRARIES})
 
 # Copy resources and binaries after build
 
