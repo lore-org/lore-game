@@ -351,8 +351,10 @@ string(REGEX MATCH "[0-9]+.[0-9]+.[0-9]+" MATCHED_GIT_VERSION "${CMD_GIT_VERSION
 set(Git_VERSION "${MATCHED_GIT_VERSION}")
 
 message("CMD_GIT_VERSION:       ${CMD_GIT_VERSION}")
-message("MATCHED_GIT_VERSION:   ${MATCHED_GIT_VERSION}")
 message("Git_VERSION:           ${Git_VERSION}")
+
+unset(MATCHED_GIT_VERSION)
+unset(CMD_GIT_VERSION)
 
 CPMAddPackage(
     NAME discord-rpc
