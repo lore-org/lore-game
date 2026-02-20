@@ -338,23 +338,23 @@ target_compile_definitions("${SANITISED_PROJECT_NAME}" PUBLIC
 # Configure submodules
 
 find_package(Git REQUIRED)
-message("Git_VERSION (old): ${Git_VERSION}")
+# message("Git_VERSION (old): ${Git_VERSION}")
 
-execute_process(
-    COMMAND ${GIT_EXECUTABLE} --version
-    OUTPUT_VARIABLE CMD_GIT_VERSION
-    ERROR_QUIET
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+# execute_process(
+#     COMMAND ${GIT_EXECUTABLE} --version
+#     OUTPUT_VARIABLE CMD_GIT_VERSION
+#     ERROR_QUIET
+#     OUTPUT_STRIP_TRAILING_WHITESPACE
+# )
 
-string(REGEX MATCH "[0-9]+.[0-9]+.[0-9]+" MATCHED_GIT_VERSION "${CMD_GIT_VERSION}")
-set(Git_VERSION "${MATCHED_GIT_VERSION}")
+# string(REGEX MATCH "[0-9]+.[0-9]+.[0-9]+" MATCHED_GIT_VERSION "${CMD_GIT_VERSION}")
+# set(Git_VERSION "${MATCHED_GIT_VERSION}")
 
-message("CMD_GIT_VERSION:       ${CMD_GIT_VERSION}")
+# message("CMD_GIT_VERSION:       ${CMD_GIT_VERSION}")
 message("Git_VERSION:           ${Git_VERSION}")
 
-unset(MATCHED_GIT_VERSION)
-unset(CMD_GIT_VERSION)
+# unset(MATCHED_GIT_VERSION)
+# unset(CMD_GIT_VERSION)
 
 CPMAddPackage(
     NAME discord-rpc
