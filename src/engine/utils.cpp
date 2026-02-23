@@ -123,3 +123,9 @@ glm::mat4 utils::createOrthoMat(long double framebufferWidth, long double frameb
 glm::mat4 utils::createOrthoMat(Size framebufferSize) {
     return createOrthoMat(framebufferSize.width, framebufferSize.height);
 }
+
+httplib::Result utils::getURL(std::string url) {
+    auto _url = ada::parse(url);
+    httplib::Client _client(_url->get_origin());
+    return _client.Get(static_cast<std::string>(_url->get_pathname()));
+}

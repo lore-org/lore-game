@@ -201,10 +201,7 @@ void Sprite::draw(const long double dt) {
 }
 
 Sprite::Texture* Sprite::loadFromURL(std::string url) {
-    auto parsedUrl = ada::parse(url);
-    httplib::Client client(fmt::format("{}//{}", parsedUrl->get_protocol(), parsedUrl->get_host()));
-
-    auto response = client.Get(static_cast<std::string>(parsedUrl->get_pathname()));
+    auto response = utils::getURL(url);
     if (response->status != 200) {
         LogError(fmt::format("Image returned status code '{}'", response->status));
         return nullptr;

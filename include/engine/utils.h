@@ -2,6 +2,7 @@
 
 #include "glm/ext/matrix_clip_space.hpp"
 #include <cmath>
+#include <httplib.h>
 #include <numbers>
 #include <string>
 #include <algorithm>
@@ -26,6 +27,10 @@
 #include <fmt/printf.h>
 
 #include <discord-rpc.hpp>
+
+#include <ada.h>
+
+#include <httplib.h>
 
 #include <engine/config.hpp>
 #include <engine/Geometry.h>
@@ -130,6 +135,8 @@ namespace utils {
 
     glm::mat4 createOrthoMat(long double framebufferWidth, long double framebufferHeight);
     glm::mat4 createOrthoMat(Size framebufferSize);
+
+    httplib::Result getURL(std::string url);
 }
 
 template <typename _Size = double>
