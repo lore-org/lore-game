@@ -17,7 +17,9 @@
 
 #include <discord-rpc.hpp>
 
-#include <cpr/cpr.h>
+#include <ada.h>
+
+#include <httplib.h>
 
 #include <fmt/base.h>
 #include <fmt/format.h>
@@ -199,15 +201,18 @@ void Sprite::draw(const long double dt) {
 }
 
 Sprite::Texture* Sprite::loadFromURL(std::string url) {
-    auto response = cpr::Get(cpr::Url { url });
-    if (response.status_code != 200) {
-        LogError(fmt::format("Image returned status code '{}'", response.status_code));
+    auto parsedUrl = ada::parse(url);
+    httplib::Client client(fmt::format("{}//{}", parsedUrl->get_protocol(), parsedUrl->get_host()));
+
+    auto response = client.Get(static_cast<std::string>(parsedUrl->get_pathname()));
+    if (response->status != 200) {
+        LogError(fmt::format("Image returned status code '{}'", response->status));
         return nullptr;
     }
 
     auto tex = new Texture();
     tex->data = stbi_load_from_memory(
-        reinterpret_cast<unsigned char*>(response.text.data()), response.text.size(),
+        reinterpret_cast<unsigned char*>(response->body.data()), response->body.size(),
         &tex->width, &tex->height,
         reinterpret_cast<int*>(&tex->channels), 0
     );

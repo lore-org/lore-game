@@ -360,38 +360,64 @@ CPMAddPackage(
     GIT_TAG v5.5.4
 )
 
+CPMAddPackage(
+    NAME simdutf
+    VERSION 7.7.0
+    GIT_REPOSITORY https://github.com/simdutf/simdutf.git
+    GIT_TAG v7.7.0
+)
+
 if (ANDROID)
     set(OpenSSL_CROSS "CROSS ON")
     set(OpenSSL_CROSS_TARGET "CROSS_TARGET mingw")
     set(OpenSSL_CROSS_ANDROID "CROSS_ANDROID ON")
 endif()
-
 if (APPLE)
     set(OpenSSL_BUILD_OPENSSL "BUILD_OPENSSL ON")
 endif()
 
-set(OpenSSL_VERSION 3.6.0)
 CPMAddPackage(
     NAME OpenSSL
-    VERSION ${OpenSSL_VERSION}
+    VERSION 3.6.0
     GIT_REPOSITORY https://github.com/viaduck/openssl-cmake.git
     GIT_TAG 7e0c2c4
     OPTIONS
-        "OPENSSL_BUILD_VERSION ${OpenSSL_VERSION}"
+        "OPENSSL_BUILD_VERSION 3.6.0"
         "${OpenSSL_CROSS}"
         "${OpenSSL_CROSS_TARGET}"
         "${OpenSSL_CROSS_ANDROID}"
         "${OpenSSL_BUILD_OPENSSL}"
 )
 
+if(NOT EXISTS OpenSSL::SSL)
+    add_library(OpenSSL::SSL ALIAS ssl)
+endif()
+if(NOT EXISTS OpenSSL::Crypto)
+    add_library(OpenSSL::Crypto ALIAS crypto)
+endif()
+
 CPMAddPackage(
-    NAME cpr
-    VERSION 1.14.1
-    GIT_REPOSITORY https://github.com/libcpr/cpr.git
-    GIT_TAG 1.14.1
+    NAME Ada
+    VERSION 3.4.2
+    GIT_REPOSITORY https://github.com/ada-url/ada.git
+    GIT_TAG v3.4.2
     OPTIONS
-        "CPR_USE_SYSTEM_LIB_PSL ON"
-        "CURL_USE_LIBPSL OFF"
+        "ADA_USE_SIMDUTF ON"
+)
+
+target_include_directories(
+    "${SANITISED_PROJECT_NAME}"
+    PUBLIC ${Ada_SOURCE_DIR}/include
+    PUBLIC ${Ada_SOURCE_DIR}/src
+)
+
+CPMAddPackage(
+    NAME cpp-httplib
+    VERSION 0.33.1
+    GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+    GIT_TAG v0.33.1
+    OPTIONS
+        "HTTPLIB_REQUIRE_OPENSSL ON"
 )
 
 CPMAddPackage(
@@ -401,13 +427,6 @@ CPMAddPackage(
     GIT_TAG 3.4
     OPTIONS
         "GLFW_BUILD_DOCS OFF"
-)
-
-CPMAddPackage(
-    NAME simdutf
-    VERSION 7.7.0
-    GIT_REPOSITORY https://github.com/simdutf/simdutf.git
-    GIT_TAG v7.7.0
 )
 
 CPMAddPackage(
@@ -487,7 +506,8 @@ target_link_libraries("${SANITISED_PROJECT_NAME}"
     glaze::glaze
     ssl
     crypto
-    cpr
+    ada
+    httplib
     glfw
     simdutf
     glad_gl_3_2
