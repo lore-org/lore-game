@@ -5,7 +5,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "command": "cmake --build build --target all -j $(nproc)",
+            "command": "cmake --build build --target all -j 6",
             "label": "Build",
             "type": "shell"
         }
