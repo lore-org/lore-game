@@ -136,7 +136,7 @@ GLFWmonitor* Engine::getCurrentMonitor() {
     glfwGetWindowPos(
         m_glWindow,
         reinterpret_cast<int*>(&windowPos.x),
-        reinterpret_cast<int*>(&windowPos.x)
+        reinterpret_cast<int*>(&windowPos.y)
     );
 
     Point windowCenter {
@@ -150,7 +150,7 @@ GLFWmonitor* Engine::getCurrentMonitor() {
     GLFWmonitor* currentMonitor = nullptr;
 
     for (int i = 0; i < monitorCount; i++) {
-        GLFWmonitor* monitor = *(monitors + i);
+        auto monitor = *(monitors + i);
 
         auto videoMode = glfwGetVideoMode(monitor);
 
