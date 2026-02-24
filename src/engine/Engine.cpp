@@ -1,3 +1,4 @@
+#include <cstring>
 #include <engine/Engine.h>
 
 #include <algorithm>
@@ -99,7 +100,7 @@ void Engine::showFPS(bool show) {
 
     if (!show) return;
 
-    std::ranges::fill(m_frameDeltas, m_framesPerSecond);
+    memset(m_frameDeltas, 0, sizeof(*m_frameDeltas) * m_sampleSize);
     m_frameAvg = m_framesPerSecond;
 }
 
@@ -108,7 +109,7 @@ void Engine::showTPS(bool show) {
 
     if (!show) return;
 
-    std::ranges::fill(m_tickDeltas, m_ticksPerSecond);
+    memset(m_tickDeltas, 0, sizeof(*m_tickDeltas) * m_sampleSize);
     m_tickAvg = m_ticksPerSecond;
 }
 
@@ -117,13 +118,10 @@ void Engine::setTimeDisplaySampleSize(uint64_t size) {
     m_sampleSize = size;
     m_deltaAverageMult = 1.f / m_sampleSize;
 
-    if (m_frameDeltas.capacity() > size) m_frameDeltas.resize(m_sampleSize);
-    else m_frameDeltas.resize(m_sampleSize);
-    std::ranges::fill(m_frameDeltas, m_framesPerSecond);
-
-    if (m_tickDeltas.capacity() > size) m_tickDeltas.resize(m_sampleSize);
-    else m_tickDeltas.resize(m_sampleSize);
-    std::ranges::fill(m_tickDeltas, m_ticksPerSecond);
+    if (m_frameDeltas) free(m_frameDeltas);
+    m_frameDeltas = reinterpret_cast<decltype(m_frameDeltas)>(calloc(m_sampleSize, sizeof(*m_frameDeltas)));
+    if (m_tickDeltas) free(m_tickDeltas);
+    m_tickDeltas = reinterpret_cast<decltype(m_tickDeltas)>(calloc(m_sampleSize, sizeof(*m_tickDeltas)));
 }
 
 void Engine::setWindowSize(Size size) {
@@ -317,8 +315,8 @@ void Engine::removeFramebufferUpdates(GLuint glProgram) {
 void Engine::setupEngine() {
     if (m_isSetup) return LogWarn("Engine has already been set up.");
 
-    m_frameDeltas.resize(m_sampleSize, m_framesPerSecond);
-    m_tickDeltas.resize(m_sampleSize, m_ticksPerSecond);
+    // Initialise the arrays
+    this->setTimeDisplaySampleSize(m_sampleSize);
 
     glfwInit();
 
@@ -438,8 +436,8 @@ void Engine::runEngine() {
 
             const long double dt = (startTime - lastTickTime) * SecondsPerNanosecond;
             if (m_tpsText->isVisible()) {
-                std::ranges::rotate(m_tickDeltas, m_tickDeltas.begin() + 1);
-                m_tickDeltas.back() = 1.f / dt;
+                memmove(m_tickDeltas, m_tickDeltas + 1, sizeof(*m_tickDeltas) * (m_sampleSize - 1));
+                *(m_tickDeltas + (m_sampleSize - 1)) = 1.f / dt;
             }
 
             scheduler->update(dt);
@@ -459,22 +457,21 @@ void Engine::runEngine() {
             uint64_t startTime = Engine::getTimeNS();
 
             if (
-                lastUpdateTime + NanosecondsPerSecond < startTime &&
-                m_frameDeltas.size() > 0 &&
-                m_tickDeltas.size() > 0
+                m_sampleSize > 0 &&
+                lastUpdateTime + NanosecondsPerSecond < startTime
             ) {
                 lastUpdateTime = startTime;
 
                 m_frameAvg = std::reduce(
                         par_unseq
-                        m_frameDeltas.begin(),
-                        m_frameDeltas.end()
+                        m_frameDeltas,
+                        m_frameDeltas + m_sampleSize
                     ) * m_deltaAverageMult;
 
                 m_tickAvg = std::reduce(
                         par_unseq
-                        m_tickDeltas.begin(),
-                        m_tickDeltas.end()
+                        m_tickDeltas,
+                        m_tickDeltas + m_sampleSize
                     ) * m_deltaAverageMult;
             }
             
@@ -501,8 +498,8 @@ void Engine::runEngine() {
 
         const long double dt = (startTime - lastFrameTime) * SecondsPerNanosecond;
         if (m_fpsText->isVisible()) {
-            std::ranges::rotate(m_frameDeltas, m_frameDeltas.begin() + 1);
-            m_frameDeltas.back() = 1.f / dt;
+            memmove(m_frameDeltas, m_frameDeltas + 1, sizeof(*m_frameDeltas) * (m_sampleSize - 1));
+            *(m_frameDeltas + (m_sampleSize - 1)) = 1.f / dt;
         }
 
         if (m_fpsText->isVisible()) m_fpsText->setDisplayedText(fmt::format("{} FPS", fmt::sprintf(format, m_frameAvg)));

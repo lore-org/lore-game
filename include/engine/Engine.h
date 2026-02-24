@@ -240,8 +240,8 @@ protected:
     uint64_t m_sampleSize;
     long double m_deltaAverageMult;
 
-    std::vector<long double> m_frameDeltas;
-    std::vector<long double> m_tickDeltas;
+    long double* m_frameDeltas;
+    long double* m_tickDeltas;
 
     long double m_frameAvg;
     long double m_tickAvg;
