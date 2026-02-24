@@ -238,13 +238,13 @@ protected:
     std::shared_ptr<TextNode> m_tpsText;
 
     uint64_t m_sampleSize;
-    long double m_deltaAverageMult;
+    double m_deltaAverageMult;
 
-    long double* m_frameDeltas;
-    long double* m_tickDeltas;
+    double* m_frameDeltas;
+    double* m_tickDeltas;
 
-    long double m_frameAvg;
-    long double m_tickAvg;
+    double m_frameAvg;
+    double m_tickAvg;
 
     uint64_t m_displayPrecision;
 
