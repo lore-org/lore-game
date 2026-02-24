@@ -243,9 +243,6 @@ protected:
     double* m_frameDeltas;
     double* m_tickDeltas;
 
-    double m_frameAvg;
-    double m_tickAvg;
-
     uint64_t m_displayPrecision;
 
     // -----------------

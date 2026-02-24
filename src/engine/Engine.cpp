@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cstring>
 #include <engine/Engine.h>
 
@@ -66,8 +67,7 @@ Engine::Engine() :
     m_isSetup(false), m_isStarted(false),
     m_windowSize(720, 480),
     m_nanosecondTimerFrequency(0),
-    m_sampleSize(10), m_deltaAverageMult(1.f / m_sampleSize), 
-    m_frameAvg(0), m_tickAvg(0),
+    m_sampleSize(10), m_deltaAverageMult(1.f / m_sampleSize),
     m_displayPrecision(0) {}
 
 std::shared_ptr<Engine> Engine::sharedInstance() {
@@ -101,7 +101,6 @@ void Engine::showFPS(bool show) {
     if (!show) return;
 
     memset(m_frameDeltas, 0, sizeof(*m_frameDeltas) * m_sampleSize);
-    m_frameAvg = m_framesPerSecond;
 }
 
 void Engine::showTPS(bool show) {
@@ -110,7 +109,6 @@ void Engine::showTPS(bool show) {
     if (!show) return;
 
     memset(m_tickDeltas, 0, sizeof(*m_tickDeltas) * m_sampleSize);
-    m_tickAvg = m_ticksPerSecond;
 }
 
 void Engine::setTimeDisplaySampleSize(uint64_t size) {
@@ -432,7 +430,7 @@ void Engine::runEngine() {
 
         auto lastTickTime = Engine::getTimeNS();
         while (!glfwWindowShouldClose(m_glWindow)) {
-            auto startTime = Engine::getTimeNS();
+            const auto startTime = Engine::getTimeNS();
 
             const long double dt = (startTime - lastTickTime) * SecondsPerNanosecond;
             if (m_tpsText->isVisible()) {
@@ -444,39 +442,15 @@ void Engine::runEngine() {
 
             lastTickTime = startTime;
 
-            auto endTime = Engine::getTimeNS();
-            Engine::preciseNanosecondDelay(startTime, endTime, m_nanosecondsPerTick);
-        }
-    });
-
-    // Specifically for engine-related processes that may take up computational time
-    std::thread backgroundThread([this]() {
-        uint64_t lastUpdateTime = Engine::getTimeNS();
-
-        while (!glfwWindowShouldClose(m_glWindow)) {
-            uint64_t startTime = Engine::getTimeNS();
-
-            if (
-                m_sampleSize > 0 &&
-                lastUpdateTime + NanosecondsPerSecond < startTime
-            ) {
-                lastUpdateTime = startTime;
-
-                m_frameAvg = std::reduce(
-                        par_unseq
-                        m_frameDeltas,
-                        m_frameDeltas + m_sampleSize
-                    ) * m_deltaAverageMult;
-
-                m_tickAvg = std::reduce(
-                        par_unseq
-                        m_tickDeltas,
-                        m_tickDeltas + m_sampleSize
-                    ) * m_deltaAverageMult;
-            }
-            
-            uint64_t endTime = Engine::getTimeNS();
-            Engine::preciseNanosecondDelay(startTime, endTime, m_nanosecondsPerTick);
+            std::this_thread::sleep_for(
+                std::chrono::nanoseconds(
+                    std::llround(m_nanosecondsPerTick) -
+                    (Engine::getTimeNS() - startTime)
+                ) - 
+                std::chrono::nanoseconds(500)
+            );
+            while ((Engine::getTimeNS() - startTime) < m_nanosecondsPerTick) { };
+            // Engine::preciseNanosecondDelay(startTime, endTime, m_nanosecondsPerTick);
         }
     });
 
@@ -492,8 +466,7 @@ void Engine::runEngine() {
 
     auto lastFrameTime = Engine::getTimeNS();
     while (!glfwWindowShouldClose(m_glWindow)) {
-        auto startTime = Engine::getTimeNS();
-
+        const auto startTime = Engine::getTimeNS();
         glfwPollEvents();
 
         const long double dt = (startTime - lastFrameTime) * SecondsPerNanosecond;
@@ -502,8 +475,22 @@ void Engine::runEngine() {
             *(m_frameDeltas + (m_sampleSize - 1)) = 1.f / dt;
         }
 
-        if (m_fpsText->isVisible()) m_fpsText->setDisplayedText(fmt::format("{} FPS", fmt::sprintf(format, m_frameAvg)));
-        if (m_tpsText->isVisible()) m_tpsText->setDisplayedText(fmt::format("{} TPS", fmt::sprintf(format, m_tickAvg)));
+        if (m_fpsText->isVisible()) {
+            auto frameAvg = std::reduce(
+                par_unseq
+                m_frameDeltas,
+                m_frameDeltas + m_sampleSize
+            ) * m_deltaAverageMult;
+            m_fpsText->setDisplayedText(fmt::format("{} FPS", fmt::sprintf(format, frameAvg)));
+        }
+        if (m_tpsText->isVisible()) {
+            auto tickAvg = std::reduce(
+                par_unseq
+                m_tickDeltas,
+                m_tickDeltas + m_sampleSize
+            ) * m_deltaAverageMult;
+            m_tpsText->setDisplayedText(fmt::format("{} TPS", fmt::sprintf(format, tickAvg)));
+        }
 
         director->draw(dt);
         m_fpsText->draw(dt);
@@ -517,7 +504,6 @@ void Engine::runEngine() {
     }
 
     updateThread.join();
-    backgroundThread.join();
 
     std::ranges::for_each(
         m_fontAtlasMap,
