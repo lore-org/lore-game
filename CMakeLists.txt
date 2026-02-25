@@ -233,7 +233,8 @@ set_target_properties("${SANITISED_PROJECT_NAME}" PROPERTIES
     MACOSX_BUNDLE_ICON_FILE "${CMAKE_BINARY_DIR}/assets/icon.icns"
 )
 
-if (NOT DEBUG)
+# Allow on RelWithDebInfo
+if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     set_target_properties("${SANITISED_PROJECT_NAME}" PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
