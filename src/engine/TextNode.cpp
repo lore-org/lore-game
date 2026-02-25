@@ -15,11 +15,9 @@
 
 #include <simdutf.h>
 
-#include <Trex/Atlas.hpp>
-#include <Trex/TextShaper.hpp>
-
 #include <engine/utils.h>
 #include <engine/Engine.h>
+#include <engine/FontManager.h>
 #include <engine/Typeable.h>
 
 TextNode::TextNode() :
@@ -31,14 +29,13 @@ TextNode::TextNode() :
 TextNode::~TextNode() {
     Engine::sharedInstance()->removeFramebufferUpdates(m_glProgram);
 
-    delete m_fontTextShaper;
     glDeleteTextures(1, &m_glTexture);
     glDeleteBuffers(1, &m_glVertexBuffer);
     glDeleteVertexArrays(1, &m_glVertexArray);
     glDeleteProgram(m_glProgram);
 }
 
-bool TextNode::init(Trex::Atlas* font, float fontPoint, Point position) {
+bool TextNode::init(FT_Face font, float fontPoint, Point position) {
     if (!ColorNode::init()) return false;
     
     auto engine = Engine::sharedInstance();
@@ -96,14 +93,14 @@ bool TextNode::init(Trex::Atlas* font, float fontPoint, Point position) {
 
     m_fontPoint = fontPoint;
     this->setPosition(position);
-    this->changeFontAtlas(font);
+    this->changeFont(font);
 
 
     return true;
 }
 
 // Font will default to `resources/Noto Sans.ttf` if not given
-std::shared_ptr<TextNode> TextNode::create(Trex::Atlas* font, float fontPoint, Point position) {
+std::shared_ptr<TextNode> TextNode::create(FT_Face font, float fontPoint, Point position) {
     auto ret = utils::protected_make_shared<TextNode>();
 
     if (
@@ -114,7 +111,7 @@ std::shared_ptr<TextNode> TextNode::create(Trex::Atlas* font, float fontPoint, P
 
 std::shared_ptr<TextNode> TextNode::create(std::string fontFile, float fontPoint, Point position) {
     return TextNode::create(
-        Engine::sharedInstance()->getOrCreateFontAtlas(
+        FontManager::sharedManager()->getOrCreateFontFace(
             fontFile, fontPoint
         ), fontPoint, position
     );
@@ -182,178 +179,175 @@ void TextNode::setDisplayedText(std::string displayedText) {
 void TextNode::setFontPoint(float fontPoint) {
     m_fontPoint = fontPoint;
 
-    auto font = Engine::sharedInstance()->getFontAtlas(m_fontAtlas);
-    this->changeFontAtlas(font.first);
+    auto font = FontManager::sharedManager()->getFontFace(m_fontFace);
+    this->changeFont(font.first);
 }
 
-void TextNode::changeFontAtlas(std::string fontFile) {
-    this->changeFontAtlas(Engine::sharedInstance()->getOrCreateFontAtlas(
+void TextNode::changeFont(std::string fontFile) {
+    this->changeFont(FontManager::sharedManager()->getOrCreateFontFace(
         fontFile, m_fontPoint
     ));
 }
 
 // Making font `nullptr` will default to `resources/Noto Sans.ttf`
-void TextNode::changeFontAtlas(Trex::Atlas* font) {
+void TextNode::changeFont(FT_Face font) {
     if (!font) {
-        font = Engine::sharedInstance()->getOrCreateFontAtlas(
+        font = FontManager::sharedManager()->getOrCreateFontFace(
             "resources/Noto Sans.ttf", m_fontPoint
         );
     } else {
-        auto fontDict = Engine::sharedInstance()->getFontAtlas(m_fontAtlas);
-        font = Engine::sharedInstance()->getOrCreateFontAtlas(
+        auto fontDict = FontManager::sharedManager()->getFontFace(m_fontFace);
+        font = FontManager::sharedManager()->getOrCreateFontFace(
             fontDict.first, m_fontPoint
         );
     }
 
-    m_fontAtlas = font;
-    
-    if (m_fontTextShaper) delete m_fontTextShaper;
-    m_fontTextShaper = new Trex::TextShaper(*font);
+    m_fontFace = font;
 
     m_statusBitset |= UPDATE_VERTICES | UPDATE_ATLAS;
 }
 
 void TextNode::_createAtlasTex() {
-    glUseProgram(m_glProgram);
+    // glUseProgram(m_glProgram);
 
-    if (!m_glTexture) glGenTextures(1, &m_glTexture);
+    // if (!m_glTexture) glGenTextures(1, &m_glTexture);
 
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_glTexture);
+    // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, m_glTexture);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    auto bitmap = m_fontAtlas->GetBitmap();
+    // auto bitmap = m_fontAtlas->GetBitmap();
     
-    glUniform2f(
-        glGetUniformLocation(m_glProgram, "atlasSize"),
-        bitmap.Width(), bitmap.Height()
-    );
+    // glUniform2f(
+    //     glGetUniformLocation(m_glProgram, "atlasSize"),
+    //     bitmap.Width(), bitmap.Height()
+    // );
 
 
-    GLint internalFormat;
-    GLint format;
+    // GLint internalFormat;
+    // GLint format;
 
-    switch (bitmap.Channels()) {
-        default:
-        case 1:
-            internalFormat = GL_R8;
-            format = GL_RED;
-            break;
-        case 2:
-            internalFormat = GL_RG8;
-            format = GL_RG;
-            break;
-        case 3:
-            internalFormat = GL_RGB8;
-            format = GL_RGB;
-            break;
-        case 4:
-            internalFormat = GL_RGBA8;
-            format = GL_RGBA;
-            break;
-    }
+    // switch (bitmap.Channels()) {
+    //     default:
+    //     case 1:
+    //         internalFormat = GL_R8;
+    //         format = GL_RED;
+    //         break;
+    //     case 2:
+    //         internalFormat = GL_RG8;
+    //         format = GL_RG;
+    //         break;
+    //     case 3:
+    //         internalFormat = GL_RGB8;
+    //         format = GL_RGB;
+    //         break;
+    //     case 4:
+    //         internalFormat = GL_RGBA8;
+    //         format = GL_RGBA;
+    //         break;
+    // }
 
-    glTexImage2D(
-        GL_TEXTURE_2D, 0,
-        format,
-        bitmap.Width(), bitmap.Height(),
-        0,
-        format, GL_UNSIGNED_BYTE,
-        bitmap.Data().data()
-    );
+    // glTexImage2D(
+    //     GL_TEXTURE_2D, 0,
+    //     format,
+    //     bitmap.Width(), bitmap.Height(),
+    //     0,
+    //     format, GL_UNSIGNED_BYTE,
+    //     bitmap.Data().data()
+    // );
 }
 
 void TextNode::_updateVertices() {
-    auto shapedGlyphs = m_fontTextShaper->ShapeUtf8(m_displayedText);
-    m_numChars = shapedGlyphs.size();
+    // auto shapedGlyphs = m_fontTextShaper->ShapeUtf8(m_displayedText);
+    // m_numChars = shapedGlyphs.size();
 
 
-    glUseProgram(m_glProgram);
+    // glUseProgram(m_glProgram);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_glVertexBuffer);
-    glBindVertexArray(m_glVertexArray);
+    // glBindBuffer(GL_ARRAY_BUFFER, m_glVertexBuffer);
+    // glBindVertexArray(m_glVertexArray);
     
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        sizeof(BufferData[6]) * m_numChars, NULL,
-        GL_STATIC_DRAW
-    );
+    // glBufferData(
+    //     GL_ARRAY_BUFFER,
+    //     sizeof(BufferData[6]) * m_numChars, NULL,
+    //     GL_STATIC_DRAW
+    // );
     
     
-    auto shaperMeasurement = Trex::TextShaper::Measure(shapedGlyphs);
-    auto fontMetrics = m_fontTextShaper->GetFontMetrics();
+    // auto shaperMeasurement = Trex::TextShaper::Measure(shapedGlyphs);
+    // auto fontMetrics = m_fontTextShaper->GetFontMetrics();
 
-    this->setContentSize(shaperMeasurement.width, fontMetrics.ascender - fontMetrics.descender);
+    // this->setContentSize(shaperMeasurement.width, fontMetrics.ascender - fontMetrics.descender);
 
-    if (m_numChars <= 0) return;
+    // if (m_numChars <= 0) return;
 
-    auto framebufferHeight = Engine::sharedInstance()->getFrameBufferHeight();
-    auto rect = this->getRect();
-    auto fontMeasurement = Trex::TextShaper::Measure(m_fontTextShaper->ShapeAscii("\xDB")); // "█"
+    // auto framebufferHeight = FontManager::sharedManager()->getFrameBufferHeight();
+    // auto rect = this->getRect();
+    // auto fontMeasurement = Trex::TextShaper::Measure(m_fontTextShaper->ShapeAscii("\xDB")); // "█"
 
-    auto xpos = rect.getMinX();
-    auto ypos = framebufferHeight - rect.getMinY() - fontMeasurement.height;
+    // auto xpos = rect.getMinX();
+    // auto ypos = framebufferHeight - rect.getMinY() - fontMeasurement.height;
 
-    glUniform2f(
-        glGetUniformLocation(m_glProgram, "rectOrigin"),
-        xpos + (rect.getWidth() * this->getAnchorX()),
-        ypos - (rect.getHeight() * this->getAnchorY())
-    );
+    // glUniform2f(
+    //     glGetUniformLocation(m_glProgram, "rectOrigin"),
+    //     xpos + (rect.getWidth() * this->getAnchorX()),
+    //     ypos - (rect.getHeight() * this->getAnchorY())
+    // );
 
-    for (size_t i = 0; i < m_numChars; i++) {
-        auto& shapedGlyph = shapedGlyphs[i];
-        auto& glyph = shapedGlyph.info;
+    // for (size_t i = 0; i < m_numChars; i++) {
+    //     auto& shapedGlyph = shapedGlyphs[i];
+    //     auto& glyph = shapedGlyph.info;
 
 
-        int x = xpos + shapedGlyph.xOffset + glyph.bearingX;
-        int y = ypos - shapedGlyph.yOffset + glyph.bearingY;
-        int w = glyph.width;
-        int h = glyph.height;
+    //     int x = xpos + shapedGlyph.xOffset + glyph.bearingX;
+    //     int y = ypos - shapedGlyph.yOffset + glyph.bearingY;
+    //     int w = glyph.width;
+    //     int h = glyph.height;
 
-        unsigned int texX = glyph.x;
-        unsigned int texY = glyph.y;
-        unsigned int texW = glyph.width;
-        unsigned int texH = glyph.height;
+    //     unsigned int texX = glyph.x;
+    //     unsigned int texY = glyph.y;
+    //     unsigned int texW = glyph.width;
+    //     unsigned int texH = glyph.height;
         
 
-        // Will be flipped across x-axis in vertex shader
-        /*
-            0     4---3
-            |\     \  |
-            | \     \ |
-            |  \     \|
-            1---2     5
-        */
-        BufferData data[6] {
-            { { x    , y     }, { texX       , texY        } },
-            { { x    , y - h }, { texX       , texY + texH } },
-            { { x + w, y - h }, { texX + texW, texY + texH } },
+    //     // Will be flipped across x-axis in vertex shader
+    //     /*
+    //         0     4---3
+    //         |\     \  |
+    //         | \     \ |
+    //         |  \     \|
+    //         1---2     5
+    //     */
+    //     BufferData data[6] {
+    //         { { x    , y     }, { texX       , texY        } },
+    //         { { x    , y - h }, { texX       , texY + texH } },
+    //         { { x + w, y - h }, { texX + texW, texY + texH } },
 
-            { { x + w, y     }, { texX + texW, texY        } },
-            { { x    , y     }, { texX       , texY        } },
-            { { x + w, y - h }, { texX + texW, texY + texH } }
-        };
+    //         { { x + w, y     }, { texX + texW, texY        } },
+    //         { { x    , y     }, { texX       , texY        } },
+    //         { { x + w, y - h }, { texX + texW, texY + texH } }
+    //     };
 
-        glBufferSubData(
-            GL_ARRAY_BUFFER,
-            sizeof(data) * i, sizeof(data), 
-            data
-        );
+    //     glBufferSubData(
+    //         GL_ARRAY_BUFFER,
+    //         sizeof(data) * i, sizeof(data), 
+    //         data
+    //     );
 
 
-        xpos += shapedGlyph.xAdvance;
-        ypos -= shapedGlyph.yAdvance;
-    }
+    //     xpos += shapedGlyph.xAdvance;
+    //     ypos -= shapedGlyph.yAdvance;
+    // }
 
     
-    if (auto typeable = dynamic_pointer_cast<Typeable>(m_parent)) {
-        typeable->_measureString();
-    }
+    // if (auto typeable = dynamic_pointer_cast<Typeable>(m_parent)) {
+    //     typeable->_measureString();
+    // }
 }
 
 void TextNode::setScale(long double scale) {

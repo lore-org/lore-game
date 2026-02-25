@@ -17,10 +17,6 @@
 
 #include <glm/glm.hpp>
 
-#include <Trex/Atlas.hpp>
-
-#include <Trex/Atlas.hpp>
-
 #include <engine/Geometry.h>
 #include <engine/utils.h>
 
@@ -150,14 +146,6 @@ public:
     // Gets the current DPI of any valid monitor.
     Size getMonitorDPI(GLFWmonitor* monitor);
 
-    // Mapped to <file, point>
-    using FontAtlasDict = std::pair<std::string, float>;
-
-    Trex::Atlas* getFontAtlas(std::string file, float point = 100);
-    FontAtlasDict getFontAtlas(Trex::Atlas* fontAtlas);
-    Trex::Atlas* createFont(std::string file, float point = 100);
-    Trex::Atlas* getOrCreateFontAtlas(std::string file, float point = 100);
-
     enum class ShaderType : GLenum {
         Unknown = 0,
         Compute = GL_COMPUTE_SHADER,
@@ -223,8 +211,6 @@ protected:
     // ---- Engine data ----
 
     GLFWwindow* m_glWindow;
-
-    std::unordered_map<FontAtlasDict, Trex::Atlas*, utils::hash_pair> m_fontAtlasMap;
 
     std::vector<Shader> m_loadedShaders;
     std::vector<std::shared_ptr<Typeable>> m_textInputCaptures;

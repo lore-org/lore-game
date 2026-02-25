@@ -1,8 +1,6 @@
 #pragma once
 
-#include "glm/ext/matrix_clip_space.hpp"
 #include <cmath>
-#include <httplib.h>
 #include <numbers>
 #include <string>
 #include <algorithm>

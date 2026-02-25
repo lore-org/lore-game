@@ -30,8 +30,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <Trex/Atlas.hpp>
-
 #include <simdutf.h>
 
 #include <openssl/sha.h>
@@ -188,39 +186,6 @@ Size Engine::getMonitorDPI(GLFWmonitor* monitor) {
     float verticalDPI = videoMode->height / monitorHeightIn;
 
     return MakeSize(horizontalDPI, verticalDPI);
-}
-
-Trex::Atlas* Engine::getFontAtlas(std::string file, float point) {
-    FontAtlasDict key(file, point);
-    if (m_fontAtlasMap.contains(key)) return m_fontAtlasMap.at(key);
-
-    return nullptr;
-}
-
-Engine::FontAtlasDict Engine::getFontAtlas(Trex::Atlas* fontAtlas) {
-    for (auto& storedFontAtlas : m_fontAtlasMap) {
-        if (storedFontAtlas.second == fontAtlas) return storedFontAtlas.first;
-    }
-
-    return { "", 0 };
-}
-
-Trex::Atlas* Engine::createFont(std::string file, float point) {
-    auto fontAtlas = new Trex::Atlas(
-        file, point
-    );
-
-    FontAtlasDict key(file, point);
-    if (!m_fontAtlasMap.contains(key)) {
-        m_fontAtlasMap.insert({ key, fontAtlas });
-    }
-
-    return fontAtlas;
-}
-
-Trex::Atlas* Engine::getOrCreateFontAtlas(std::string file, float point) {
-    if (auto fontAtlas = this->getFontAtlas(file, point)) return fontAtlas;
-    return this->createFont(file, point);
 }
 
 Engine::Shader Engine::loadShaderFromFile(ShaderType type, std::string file, const char* tag) {
@@ -507,13 +472,6 @@ void Engine::runEngine() {
     }
 
     updateThread.join();
-
-    std::ranges::for_each(
-        m_fontAtlasMap,
-        [](decltype(m_fontAtlasMap)::value_type fontAtlas) {
-            delete fontAtlas.second;
-        }
-    );
 
     glfwDestroyWindow(m_glWindow);
     glfwTerminate();

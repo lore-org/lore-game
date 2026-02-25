@@ -438,12 +438,17 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-    NAME Trex
-    VERSION 0.2
-    GIT_REPOSITORY https://github.com/KyrietS/trex.git
-    GIT_TAG v0.2
-    OPTIONS
-        "CMAKE_POLICY_VERSION_MINIMUM 3.5"
+    NAME FreeType
+    VERSION 2.14.1
+    GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
+    GIT_TAG VER-2-14-1
+)
+
+CPMAddPackage(
+    NAME harfbuzz
+    VERSION 12.3.2
+    GIT_REPOSITORY https://github.com/harfbuzz/harfbuzz.git
+    GIT_TAG 12.3.2
 )
 
 # Install Glad module for Python
@@ -513,7 +518,8 @@ target_link_libraries("${SANITISED_PROJECT_NAME}"
     simdutf
     glad_gl_3_2
     glm
-    trex
+    freetype
+    harfbuzz
 )
 
 # Copy resources and binaries after build

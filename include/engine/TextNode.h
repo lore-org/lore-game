@@ -9,10 +9,8 @@
 
 #include <GLFW/glfw3.h>
 
-#include <Trex/Atlas.hpp>
-#include "Trex/TextShaper.hpp"
-
 #include <engine/ColorNode.h>
+#include <engine/FontManager.h>
 
 #ifndef DEFAULT_FONT_POINT
 #define DEFAULT_FONT_POINT 28
@@ -25,9 +23,9 @@ class TextNode : public ColorNode {
 public:
     virtual ~TextNode();
 
-    virtual bool init(Trex::Atlas* font, float fontPoint, Point position);
+    virtual bool init(FT_Face font, float fontPoint, Point position);
 
-    static std::shared_ptr<TextNode> create(Trex::Atlas* font = nullptr, float fontPoint = DEFAULT_FONT_POINT, Point position = { 0, 0 });
+    static std::shared_ptr<TextNode> create(FT_Face font = nullptr, float fontPoint = DEFAULT_FONT_POINT, Point position = { 0, 0 });
     static std::shared_ptr<TextNode> create(std::string fontFile, float fontPoint = DEFAULT_FONT_POINT, Point position = { 0, 0 });
 
     virtual void draw(const long double dt) override;
@@ -39,8 +37,8 @@ public:
     inline float getFontPoint() { return m_fontPoint; }
 
     // TODO - impl changeFontHeight, which changes the font size to the desired height, calculates the difference from the actual height, and adjusts for the pt ratio
-    void changeFontAtlas(std::string fontFile);
-    void changeFontAtlas(Trex::Atlas* font);
+    void changeFont(std::string fontFile);
+    void changeFont(FT_Face font);
 
 
     // overrides for statusBitset
@@ -67,8 +65,7 @@ protected:
     std::string m_displayedText;
     float m_fontPoint;
 
-    Trex::Atlas* m_fontAtlas;
-    Trex::TextShaper* m_fontTextShaper;
+    FT_Face m_fontFace;
 
 
     struct BufferData {
