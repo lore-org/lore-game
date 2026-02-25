@@ -100,7 +100,7 @@ void Engine::showFPS(bool show) {
 
     if (!show) return;
 
-    memset(m_frameDeltas, 0, sizeof(*m_frameDeltas) * m_sampleSize);
+    memset(m_frameDeltas, m_secondsPerFrame, sizeof(*m_frameDeltas) * m_sampleSize);
 }
 
 void Engine::showTPS(bool show) {
@@ -108,7 +108,7 @@ void Engine::showTPS(bool show) {
 
     if (!show) return;
 
-    memset(m_tickDeltas, 0, sizeof(*m_tickDeltas) * m_sampleSize);
+    memset(m_tickDeltas, m_secondsPerTick, sizeof(*m_tickDeltas) * m_sampleSize);
 }
 
 void Engine::setTimeDisplaySampleSize(uint64_t size) {
@@ -118,8 +118,11 @@ void Engine::setTimeDisplaySampleSize(uint64_t size) {
 
     if (m_frameDeltas) free(m_frameDeltas);
     m_frameDeltas = reinterpret_cast<decltype(m_frameDeltas)>(calloc(m_sampleSize, sizeof(*m_frameDeltas)));
+    memset(m_frameDeltas, m_secondsPerFrame, sizeof(*m_frameDeltas) * m_sampleSize);
+    
     if (m_tickDeltas) free(m_tickDeltas);
     m_tickDeltas = reinterpret_cast<decltype(m_tickDeltas)>(calloc(m_sampleSize, sizeof(*m_tickDeltas)));
+    memset(m_tickDeltas, m_secondsPerTick, sizeof(*m_tickDeltas) * m_sampleSize);
 }
 
 void Engine::setWindowSize(Size size) {
