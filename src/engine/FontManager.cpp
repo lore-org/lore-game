@@ -13,7 +13,7 @@ FontManager::~FontManager() {
     for (auto& storedFontFace : m_fontFaceMap)
         FT_Done_Face(storedFontFace.second); // TODO - check for errors
 
-    FT_Done_FreeType(m_FTLibrary); // TODO - check for errors
+    FT_Done_FreeType(this->getFTLibrary()); // TODO - check for errors
 }
 
 std::shared_ptr<FontManager> FontManager::sharedManager() {
@@ -49,7 +49,7 @@ FontManager::FontFaceDict FontManager::getFontDict(FT_Face fontFace) {
 FT_Face FontManager::createFontFace(std::string file, float point) {
     FT_Face fontFace;
 
-    if (auto e = FT_New_Face(m_FTLibrary, file.c_str(), 0, &fontFace)) {
+    if (auto e = FT_New_Face(this->getFTLibrary(), file.c_str(), 0, &fontFace)) {
         LogError(fmt::format("Could not create font face (file={})", file));
         log_freetype_error();
         return nullptr;
