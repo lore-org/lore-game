@@ -25,11 +25,11 @@ public:
     static void setFontPoint(FT_Face font, float point);
 
 protected:
-    FontManager();
+    FontManager() = default;
 
-    FT_Library m_FTLibrary;
+    FT_Library m_FTLibrary = nullptr;
     std::unordered_map<FontFaceDict, FT_Face, utils::hash_pair> m_fontFaceMap;
 
 private:
-    static std::shared_ptr<FontManager> m_instance = nullptr;
+    static std::shared_ptr<FontManager> m_instance;
 };
