@@ -39,8 +39,10 @@ Sprite::Sprite() :
     m_glVertexArray(0), m_glVertexBuffer(0), m_glTexture(0) {}
 
 Sprite::~Sprite() {    
-    stbi_image_free(m_texture->data);
-    delete m_texture;
+    if (m_texture) {
+        stbi_image_free(m_texture->data);
+        delete m_texture;
+    }
 
     Engine::sharedInstance()->removeFramebufferUpdates(m_glProgram);
 
@@ -202,6 +204,10 @@ void Sprite::draw(const long double dt) {
 
 Sprite::Texture* Sprite::loadFromURL(std::string url) {
     auto response = utils::getURL(url);
+    if (!response) {
+        LogError(fmt::format("Could not get image (url={})", url));
+        return nullptr;
+    }
     if (response->status != 200) {
         LogError(fmt::format("Image returned status code '{}'", response->status));
         return nullptr;

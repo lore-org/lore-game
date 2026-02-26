@@ -414,8 +414,7 @@ void Engine::runEngine() {
                 std::chrono::nanoseconds(
                     std::llround(m_nanosecondsPerTick) -
                     (Engine::getTimeNS() - startTime)
-                ) - 
-                std::chrono::nanoseconds(500)
+                ) - std::chrono::milliseconds(1)
             );
             while ((Engine::getTimeNS() - startTime) < m_nanosecondsPerTick) { };
             // Engine::preciseNanosecondDelay(startTime, endTime, m_nanosecondsPerTick);
