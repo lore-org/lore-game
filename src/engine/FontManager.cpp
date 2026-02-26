@@ -18,8 +18,10 @@ std::shared_ptr<FontManager> FontManager::sharedManager() {
 }
 
 FT_Library FontManager::getFTLibrary() {
-    if (!m_FTLibrary) FT_Init_FreeType(&m_FTLibrary);
-    if (!m_FTLibrary) LogError("Could not initialise FreeType");
+    if (!m_FTLibrary) {
+        if (FT_Init_FreeType(&m_FTLibrary))
+            LogError("Could not initialise FreeType");
+    }
     return m_FTLibrary;
 }
 
