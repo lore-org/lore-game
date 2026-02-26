@@ -18,9 +18,11 @@ public:
     using FontFaceDict = std::pair<std::string, float>;
 
     FT_Face getFontFace(std::string file, float point);
-    FontFaceDict getFontFace(FT_Face fontFace);
+    FontFaceDict getFontDict(FT_Face fontFace);
     FT_Face createFontFace(std::string file, float point);
     FT_Face getOrCreateFontFace(std::string file, float point);
+
+    static void setFontPoint(FT_Face font, float point);
 
 protected:
     FontManager() = default;
