@@ -4,6 +4,8 @@
 #include <engine/Engine.h>
 #include <engine/utils.h>
 
+#define log_freetype_error() do { if (auto s = FT_Error_String(e)) LogDebug(s); else LogDebug("FT_Error_String returned NULL"); } while (0)
+
 std::shared_ptr<FontManager> FontManager::m_instance;
 
 FontManager::~FontManager() {
@@ -22,7 +24,7 @@ FT_Library FontManager::getFTLibrary() {
     if (!m_FTLibrary) {
         if (auto e = FT_Init_FreeType(&m_FTLibrary)) {
             LogError("Could not initialise FreeType");
-            LogDebug(FT_Error_String(e));
+            log_freetype_error();
         }
     }
     return m_FTLibrary;
@@ -48,7 +50,7 @@ FT_Face FontManager::createFontFace(std::string file, float point) {
 
     if (auto e = FT_New_Face(m_FTLibrary, file.c_str(), 0, &fontFace)) {
         LogError(fmt::format("Could not create font face (file={})", file));
-        LogDebug(FT_Error_String(e));
+        log_freetype_error();
         return nullptr;
     }
     
@@ -72,6 +74,6 @@ void FontManager::setFontPoint(FT_Face font, float point) {
     auto dpi = engine->getMonitorDPI(engine->getCurrentMonitor());
     if (auto e = FT_Set_Char_Size(font, 0, point * 64, dpi.width, dpi.height)) {
         LogError(fmt::format("Could not resize font face (point={})", point));
-        LogDebug(FT_Error_String(e));
+        LogDebug(FT_Error_String(e) || "No error description given.");
     }
 }
