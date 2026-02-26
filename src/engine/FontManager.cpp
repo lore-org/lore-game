@@ -6,7 +6,6 @@
 
 #define log_freetype_error() do { if (auto s = FT_Error_String(e)) LogDebug(s); else LogDebug("FT_Error_String returned NULL"); } while (0)
 
-std::shared_ptr<FontManager> FontManager::m_instance;
 
 FontManager::~FontManager() {
     for (auto& storedFontFace : m_fontFaceMap)
@@ -14,6 +13,8 @@ FontManager::~FontManager() {
 
     FT_Done_FreeType(m_FTLibrary); // TODO - check for errors
 }
+
+FontManager::FontManager() : m_FTLibrary(nullptr) { };
 
 std::shared_ptr<FontManager> FontManager::sharedManager() {
     if (!m_instance) m_instance = utils::protected_make_shared<FontManager>();

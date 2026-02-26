@@ -25,7 +25,7 @@ public:
     static void setFontPoint(FT_Face font, float point);
 
 protected:
-    FontManager() = default;
+    FontManager();
 
     FT_Library m_FTLibrary;
     std::unordered_map<FontFaceDict, FT_Face, utils::hash_pair> m_fontFaceMap;
