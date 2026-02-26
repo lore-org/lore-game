@@ -376,7 +376,6 @@ endif()
 if (APPLE)
     set(OpenSSL_BUILD_OPENSSL "BUILD_OPENSSL ON")
 endif()
-
 CPMAddPackage(
     NAME OpenSSL
     VERSION 3.6.0
@@ -389,7 +388,6 @@ CPMAddPackage(
         "${OpenSSL_CROSS_ANDROID}"
         "${OpenSSL_BUILD_OPENSSL}"
 )
-
 if(NOT EXISTS OpenSSL::SSL)
     add_library(OpenSSL::SSL ALIAS ssl)
 endif()
@@ -405,7 +403,6 @@ CPMAddPackage(
     OPTIONS
         "ADA_USE_SIMDUTF ON"
 )
-
 target_include_directories(
     "${SANITISED_PROJECT_NAME}"
     PUBLIC ${Ada_SOURCE_DIR}/include
@@ -442,6 +439,8 @@ CPMAddPackage(
     VERSION 2.14.1
     GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
     GIT_TAG VER-2-14-1
+    OPTIONS
+        "FT_ENABLE_ERROR_STRINGS ON"
 )
 
 CPMAddPackage(
