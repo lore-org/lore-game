@@ -31,5 +31,5 @@ protected:
     std::unordered_map<FontFaceDict, FT_Face, utils::hash_pair> m_fontFaceMap;
 
 private:
-    static std::shared_ptr<FontManager> m_instance;
+    static std::shared_ptr<FontManager> m_instance = nullptr;
 };
