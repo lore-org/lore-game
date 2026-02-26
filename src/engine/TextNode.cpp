@@ -179,7 +179,7 @@ void TextNode::setDisplayedText(std::string displayedText) {
 void TextNode::setFontPoint(float fontPoint) {
     m_fontPoint = fontPoint;
 
-    auto font = FontManager::sharedManager()->getFontFace(m_fontFace);
+    auto font = FontManager::sharedManager()->getFontDict(m_fontFace);
     this->changeFont(font.first);
 }
 
@@ -196,7 +196,7 @@ void TextNode::changeFont(FT_Face font) {
             "resources/Noto Sans.ttf", m_fontPoint
         );
     } else {
-        auto fontDict = FontManager::sharedManager()->getFontFace(m_fontFace);
+        auto fontDict = FontManager::sharedManager()->getFontDict(m_fontFace);
         font = FontManager::sharedManager()->getOrCreateFontFace(
             fontDict.first, m_fontPoint
         );

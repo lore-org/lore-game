@@ -34,6 +34,8 @@ FontManager::FontFaceDict FontManager::getFontDict(FT_Face fontFace) {
     for (auto& storedFontFace : m_fontFaceMap) {
         if (storedFontFace.second == fontFace) return storedFontFace.first;
     }
+
+    return { };
 }
 
 FT_Face FontManager::createFontFace(std::string file, float point) {
