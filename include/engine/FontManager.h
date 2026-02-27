@@ -1,10 +1,11 @@
 #pragma once
 
-#include <engine/utils.h>
 #include <engine/Object.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+#include <simdutf.h>
 
 class FontManager : public Object {
 public:
@@ -14,7 +15,6 @@ public:
 
     FT_Library getFTLibrary();
 
-    // Mapped to <file, point>
     struct FontFace {
         FT_Face fontFace;
         float point;
@@ -28,11 +28,16 @@ public:
     static void setFontPoint(FT_Face font, float point);
     static float getFontPoint(FT_Face font);
 
+    static void loadGlyph(char codepoint);
+    static void loadGlyph(char16_t codepoint);
+    static void loadGlyph(char32_t codepoint);
+
 protected:
     FontManager() = default;
 
     FT_Library m_FTLibrary = nullptr;
     std::unordered_map<std::string, FontFace> m_fontFaceMap;
+    std::unordered_map<FT_Face, std::vector<void*>> m_renderedGlyphs;
 
 private:
     static std::shared_ptr<FontManager> m_instance;
