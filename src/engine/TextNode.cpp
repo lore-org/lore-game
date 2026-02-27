@@ -111,9 +111,8 @@ std::shared_ptr<TextNode> TextNode::create(FT_Face font, float fontPoint, Point 
 
 std::shared_ptr<TextNode> TextNode::create(std::string fontFile, float fontPoint, Point position) {
     return TextNode::create(
-        FontManager::sharedManager()->getOrCreateFontFace(
-            fontFile, fontPoint
-        ), fontPoint, position
+        FontManager::sharedManager()->getOrCreateFontFace(fontFile),
+        fontPoint, position
     );
 }
 
@@ -178,28 +177,17 @@ void TextNode::setDisplayedText(std::string displayedText) {
 
 void TextNode::setFontPoint(float fontPoint) {
     m_fontPoint = fontPoint;
-
-    auto font = FontManager::sharedManager()->getFontDict(m_fontFace);
-    this->changeFont(font.first);
+    m_statusBitset |= UPDATE_VERTICES | UPDATE_ATLAS;
 }
 
 void TextNode::changeFont(std::string fontFile) {
-    this->changeFont(FontManager::sharedManager()->getOrCreateFontFace(
-        fontFile, m_fontPoint
-    ));
+    this->changeFont(FontManager::sharedManager()->getOrCreateFontFace(fontFile));
 }
 
 // Making font `nullptr` will default to `resources/Noto Sans.ttf`
 void TextNode::changeFont(FT_Face font) {
     if (!font) {
-        font = FontManager::sharedManager()->getOrCreateFontFace(
-            "resources/Noto Sans.ttf", m_fontPoint
-        );
-    } else {
-        auto fontDict = FontManager::sharedManager()->getFontDict(m_fontFace);
-        font = FontManager::sharedManager()->getOrCreateFontFace(
-            fontDict.first, m_fontPoint
-        );
+        font = FontManager::sharedManager()->getOrCreateFontFace("resources/Noto Sans.ttf");
     }
 
     m_fontFace = font;
