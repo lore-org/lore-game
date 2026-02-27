@@ -1,3 +1,5 @@
+#include "freetype/freetype.h"
+#include <cstdint>
 #include <engine/FontManager.h>
 
 #include <simdutf.h>
@@ -26,7 +28,7 @@ std::shared_ptr<FontManager> FontManager::m_instance;
 
 FontManager::~FontManager() {
     for (auto& storedFontFace : m_fontFaceMap)
-        FT_Done_Face(storedFontFace.second.fontFace); // TODO - check for errors
+        FT_Done_Face(storedFontFace.second.ftFontFace); // TODO - check for errors
 
     FT_Done_FreeType(this->getFTLibrary()); // TODO - check for errors
 }
@@ -46,69 +48,67 @@ FT_Library FontManager::getFTLibrary() {
     return m_FTLibrary;
 }
 
-FT_Face FontManager::getFontFace(std::string file) {
-    if (m_fontFaceMap.contains(file)) return m_fontFaceMap[file].fontFace;
+FontManager::FontFace* FontManager::getFontFace(std::string file) {
+    if (m_fontFaceMap.contains(file))
+        return &m_fontFaceMap[file];
 
     return nullptr;
 }
 
-std::string FontManager::getFontFile(FT_Face fontFace) {
+std::string FontManager::getFontFile(FontManager::FontFace* fontFace) {
     for (auto& storedFontFace : m_fontFaceMap) {
-        if (storedFontFace.second.fontFace == fontFace) return storedFontFace.first;
+        if (storedFontFace.second == *fontFace) return storedFontFace.first;
     }
 
     return { };
 }
 
-FT_Face FontManager::createFontFace(std::string file) {
-    FT_Face fontFace;
+FontManager::FontFace* FontManager::createFontFace(std::string file) {
+    FontFace fontFace;
 
-    if (auto e = FT_New_Face(this->getFTLibrary(), file.c_str(), 0, &fontFace)) {
+    if (auto e = FT_New_Face(this->getFTLibrary(), file.c_str(), 0, &fontFace.ftFontFace)) {
         LogError(fmt::format("Could not create font face (file={})", file));
         log_freetype_error();
         return nullptr;
     }
-    
-    this->setFontPoint(fontFace, 12);
+    fontFace.setFontPoint(12);
 
-    if (m_fontFaceMap.contains(file))
-        FT_Done_Face(m_fontFaceMap[file].fontFace); // Delete existing face (TODO - check for errors)
-    m_fontFaceMap[file].fontFace = fontFace;
+    if (m_fontFaceMap.contains(file)) {
+        FT_Done_Face(m_fontFaceMap[file].ftFontFace); // Delete existing face
+        if (m_renderedGlyphs.contains(fontFace.ftFontFace)) {
+            // Clear cached glyphs
+            m_renderedGlyphs[fontFace.ftFontFace].clear();
+        }
+    }
+    m_fontFaceMap[file] = fontFace;
 
-    return fontFace;
+    return &m_fontFaceMap[file];
 }
 
-FT_Face FontManager::getOrCreateFontFace(std::string file) {
+FontManager::FontFace* FontManager::getOrCreateFontFace(std::string file) {
     if (auto fontFace = this->getFontFace(file)) return fontFace;
     else return this->createFontFace(file);
 }
 
-void FontManager::setFontPoint(FT_Face font, float point) {
-    if (point == FontManager::getFontPoint(font)) return;
+void FontManager::FontFace::setFontPoint(float point) {
+    if (m_point == point) return;
 
     auto fontManager = FontManager::sharedManager();
     auto engine = Engine::sharedInstance();
 
     auto dpi = engine->getMonitorDPI(engine->getCurrentMonitor());
-    if (auto e = FT_Set_Char_Size(font, 0, point * 64, dpi.width, dpi.height)) {
+    if (auto e = FT_Set_Char_Size(this->ftFontFace, 0, point * 64, dpi.width, dpi.height)) {
         LogError(fmt::format("Could not resize font face (point={})", point));
         log_freetype_error();
     }
 
-    if (fontManager->m_renderedGlyphs.contains(font)) {
+    if (fontManager->m_renderedGlyphs.contains(this->ftFontFace)) {
         // Clear cached glyphs
-        fontManager->m_renderedGlyphs[font].clear();
+        fontManager->m_renderedGlyphs[this->ftFontFace].clear();
     }
 }
 
-float FontManager::getFontPoint(FT_Face font) {
-    auto fontManager = FontManager::sharedManager();
-    auto fontFile = fontManager->getFontFile(font);
-    if (!fontManager->m_fontFaceMap.contains(fontFile)) return 0;
-    return fontManager->m_fontFaceMap[fontFile].point;
-}
-
-void FontManager::loadGlyph(char codepoint) {
+void FontManager::FontFace::loadGlyph(char codepoint) {
     char32_t convertedCodepoint;
     auto result = simdutf::convert_utf8_to_utf32_with_errors(&codepoint, 1, &convertedCodepoint);
     if (result.is_err()) {
@@ -117,10 +117,10 @@ void FontManager::loadGlyph(char codepoint) {
         return;
     }
 
-    FontManager::loadGlyph(convertedCodepoint);
+    FontFace::loadGlyph(convertedCodepoint);
 }
 
-void FontManager::loadGlyph(char16_t codepoint) {
+void FontManager::FontFace::loadGlyph(char16_t codepoint) {
     char32_t convertedCodepoint;
     auto result = simdutf::convert_utf16_to_utf32_with_errors(&codepoint, 1, &convertedCodepoint);
     if (result.is_err()) {
@@ -129,11 +129,69 @@ void FontManager::loadGlyph(char16_t codepoint) {
         return;
     }
 
-    FontManager::loadGlyph(convertedCodepoint);
+    FontFace::loadGlyph(convertedCodepoint);
 }
 
+void FontManager::FontFace::loadGlyph(char32_t codepoint) {
+    auto glyphIndex = FT_Get_Char_Index(this->ftFontFace, codepoint);
+    if (auto e = FT_Load_Glyph(this->ftFontFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_COLOR)) {
+        LogError(fmt::format("Could not create load glyph (codepoint={})", static_cast<uint32_t>(codepoint)));
+        log_freetype_error();
+        return;
+    }
 
 
-void FontManager::loadGlyph(char32_t codepoint) {
-    LogDebug(fmt::format("do something with utf32 glyph here!! (codepoint={})", static_cast<int>(codepoint)));
+}
+
+FontManager::Bitmap* FontManager::Bitmap::create(int size, short channels)  {
+    auto bmp = new Bitmap();
+    bmp->bitmapSize = size;
+    bmp->bitmapChannels = channels;
+    bmp->bitmap = static_cast<char*>(calloc(size * size, channels));
+
+    return bmp;
+}
+
+void FontManager::Bitmap::resize(int size) {
+    char* newBitmap = static_cast<char*>(calloc(size * size, bitmapChannels));
+    const auto oldLineBytes = this->bitmapSize * bitmapChannels;
+    const auto newLineBytes = size * bitmapChannels;
+
+    if (size > this->bitmapSize) {
+        // Expand Bitmap
+        
+        for (int y = 0; y < size; y++) {
+            memcpy(
+                newBitmap + (y * newLineBytes),
+                this->bitmap + (y * oldLineBytes),
+                oldLineBytes
+            );
+        }
+    } else {
+        // Shrink Bitmap
+
+        for (int y = 0; y < size; y++) {
+            memcpy(
+                newBitmap + (y * newLineBytes),
+                this->bitmap + (y * oldLineBytes),
+                newLineBytes
+            );
+        }
+    }
+
+    free(this->bitmap);
+    this->bitmap = newBitmap;
+    this->bitmapSize = size;
+}
+
+char* FontManager::Bitmap::getPixel(int x, int y) {
+    if (x > bitmapSize || y > bitmapSize) {
+        LogError(fmt::format("Bitmap coordinates outside of range (x={}, y={})", x, y));
+        return nullptr;
+    }
+
+    const auto xSkip = x * bitmapChannels;
+    const auto ySkip = y * bitmapChannels * bitmapSize;
+
+    return this->bitmap + xSkip + ySkip;
 }
