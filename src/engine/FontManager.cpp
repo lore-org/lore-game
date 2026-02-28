@@ -27,10 +27,17 @@
 std::shared_ptr<FontManager> FontManager::m_instance;
 
 FontManager::~FontManager() {
-    for (auto& storedFontFace : m_fontFaceMap)
-        FT_Done_Face(storedFontFace.second.ftFontFace); // TODO - check for errors
+    for (auto& storedFontFace : m_fontFaceMap) {
+        if (auto e = FT_Done_Face(storedFontFace.second.ftFontFace)) {
+            LogError("Could not delete font face");
+            log_freetype_error();
+        }
+    }
 
-    FT_Done_FreeType(this->getFTLibrary()); // TODO - check for errors
+    if (auto e = FT_Done_FreeType(this->getFTLibrary())) {
+        LogError("Could not deinitialise FreeType");
+        log_freetype_error();
+    }
 }
 
 std::shared_ptr<FontManager> FontManager::sharedManager() {
