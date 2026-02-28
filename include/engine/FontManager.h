@@ -36,6 +36,7 @@ public:
     };
 
     struct Bitmap {
+    public:
         char* bitmap;
         // width and height
         int bitmapSize;
@@ -47,6 +48,21 @@ public:
         void resize(int size);
         // Get pointer to pixel at given coordinates
         char* getPixel(int x, int y);
+    };
+
+    struct Rect {
+        int x, y;
+        int width, height;
+    };
+
+    struct Atlas : public Bitmap {
+    public:
+        static Atlas* create(int size = 1024, short channels = 1);
+
+        Rect insertRect(int width, int height);
+
+    protected:
+        std::vector<Rect> m_freeRectangles;
     };
 
     struct Glyph {

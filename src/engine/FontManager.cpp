@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <engine/FontManager.h>
 
+#include <iterator>
 #include <simdutf.h>
 
 #include <engine/Engine.h>
@@ -165,12 +166,12 @@ void FontManager::FontFace::loadGlyph(char32_t codepoint) {
 }
 
 FontManager::Bitmap* FontManager::Bitmap::create(int size, short channels)  {
-    auto bmp = new Bitmap();
-    bmp->bitmapSize = size;
-    bmp->bitmapChannels = channels;
-    bmp->bitmap = static_cast<char*>(calloc(size * size, channels));
+    auto bitmap = new Bitmap();
+    bitmap->bitmapSize = size;
+    bitmap->bitmapChannels = channels;
+    bitmap->bitmap = static_cast<char*>(calloc(size * size, channels));
 
-    return bmp;
+    return bitmap;
 }
 
 void FontManager::Bitmap::resize(int size) {
@@ -215,4 +216,95 @@ char* FontManager::Bitmap::getPixel(int x, int y) {
     const auto ySkip = y * bitmapChannels * bitmapSize;
 
     return this->bitmap + xSkip + ySkip;
+}
+
+FontManager::Atlas* FontManager::Atlas::create(int size, short channels) {
+    auto atlas = new Atlas();
+    atlas->bitmapSize = size;
+    atlas->bitmapChannels = channels;
+    atlas->bitmap = static_cast<char*>(calloc(size * size, channels));
+    atlas->m_freeRectangles.push_back({ 0, 0, size, size });
+
+    return atlas;
+}
+
+FontManager::Rect FontManager::Atlas::insertRect(int width, int height) {
+    // TODO - integrate this into the bitmap to draw an array to an inserted rect
+    Rect rect { 0, 0, width, height };
+
+    for (int i = m_freeRectangles.size(); i >= 0; i--) {
+        auto& freeRectangle = m_freeRectangles[i];
+        if (rect.width > freeRectangle.width && rect.height > freeRectangle.height) {
+            // TODO - evaluate all viable free rects and choose the one which leaves the least amount of area remaining
+            rect.x = freeRectangle.x;
+            rect.y = freeRectangle.y;
+
+            std::vector<Rect> availableRectangles;
+            const int verticalJoinArea = (freeRectangle.width - rect.width) * (freeRectangle.height);
+            const int horizontalJoinArea = (freeRectangle.width) * (freeRectangle.height - rect.height);
+            if (verticalJoinArea > horizontalJoinArea) {
+                availableRectangles = {
+                    {
+                        rect.x + rect.width,
+                        rect.y,
+                        freeRectangle.width - rect.width,
+                        freeRectangle.height
+                    },
+                    {
+                        rect.x,
+                        rect.y + rect.height,
+                        rect.width,
+                        freeRectangle.height - rect.height
+                    }
+                };
+            } else {
+                availableRectangles = {
+                    {
+                        rect.x + rect.width,
+                        rect.y,
+                        freeRectangle.width - rect.width,
+                        rect.height
+                    },
+                    {
+                        rect.x,
+                        rect.y + rect.height,
+                        freeRectangle.width,
+                        freeRectangle.height - rect.height
+                    }
+                };
+            }
+
+            m_freeRectangles.erase(m_freeRectangles.begin() + i);
+            std::move(
+                availableRectangles.begin(), availableRectangles.end(),
+                std::back_inserter(m_freeRectangles)
+            );
+
+            return rect;
+        }
+    }
+
+    std::vector<Rect> availableRectangles {
+        {
+            bitmapSize,
+            0,
+            bitmapSize,
+            bitmapSize * 2
+        },
+        {
+            0,
+            bitmapSize,
+            bitmapSize,
+            bitmapSize
+        }
+    };
+    std::move(
+        availableRectangles.begin(), availableRectangles.end(),
+        std::back_inserter(m_freeRectangles)
+    );
+
+    this->resize(bitmapSize * 2);
+    rect = this->insertRect(width, height);
+
+    return rect;
 }
