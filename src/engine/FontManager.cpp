@@ -133,14 +133,28 @@ void FontManager::FontFace::loadGlyph(char16_t codepoint) {
 }
 
 void FontManager::FontFace::loadGlyph(char32_t codepoint) {
-    auto glyphIndex = FT_Get_Char_Index(this->ftFontFace, codepoint);
-    if (auto e = FT_Load_Glyph(this->ftFontFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_COLOR)) {
+    auto glyphIndex = FT_Get_Char_Index(ftFontFace, codepoint);
+    if (auto e = FT_Load_Glyph(ftFontFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_COLOR)) {
         LogError(fmt::format("Could not create load glyph (codepoint={})", static_cast<uint32_t>(codepoint)));
         log_freetype_error();
         return;
     }
 
+    auto& ftGlyph = ftFontFace->glyph;
 
+    Glyph glyph {
+        ftFontFace,
+
+        codepoint,
+        glyphIndex,
+
+        0, 0,
+        ftGlyph->metrics.horiBearingX, ftGlyph->metrics.horiBearingY,
+        ftGlyph->metrics.width, ftGlyph->metrics.height,
+        ftGlyph->metrics.horiAdvance
+    };
+
+    FontManager::sharedManager()->m_renderedGlyphs[ftFontFace].push_back(glyph);
 }
 
 FontManager::Bitmap* FontManager::Bitmap::create(int size, short channels)  {

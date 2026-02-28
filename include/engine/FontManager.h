@@ -50,7 +50,15 @@ public:
     };
 
     struct Glyph {
+        FT_Face ftFontFace;
 
+        FT_ULong codepoint;
+        FT_UInt glyphIndex;
+
+        int x, y; // Bitmap offset
+        int xOffset, yOffset; // Top-left offset
+        int width, height; // Dimensions
+        int advance; // Next origin x-offset
     };
 
     FontFace* getFontFace(std::string file);
