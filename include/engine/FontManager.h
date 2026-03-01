@@ -1,12 +1,17 @@
 #pragma once
 
 #include <cstdlib>
-#include <engine/Object.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
 #include <simdutf.h>
+#include <rectpack2D/finders_interface.h>
+
+#include <engine/Object.h>
+
+// Disallow texture flipping and use default allocator
+using empty_spaces = rectpack2D::empty_spaces<false>;
+using rect_t = rectpack2D::output_rect_t<empty_spaces>;
 
 class FontManager : public Object {
 public:
@@ -48,21 +53,24 @@ public:
         void resize(int size);
         // Get pointer to pixel at given coordinates
         char* getPixel(int x, int y);
-    };
-
-    struct Rect {
-        int x, y;
-        int width, height;
+    
+    protected:
+        Bitmap(int size, short channels) : bitmapSize(size), bitmapChannels(channels) { };
     };
 
     struct Atlas : public Bitmap {
-    public:
+    public:        
         static Atlas* create(int size = 1024, short channels = 1);
 
-        Rect insertRect(int width, int height);
+        rect_t insertRect(int width, int height);
+        // Resize from the top-left corner
+        void resize(int size);
 
     protected:
-        std::vector<Rect> m_freeRectangles;
+        Atlas(int size, short channels) : Bitmap(size, channels), m_packer({ size, size }) { };
+
+        std::vector<rect_t> m_placedRects;
+        empty_spaces m_packer;
     };
 
     struct Glyph {

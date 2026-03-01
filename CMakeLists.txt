@@ -435,6 +435,13 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+    NAME harfbuzz
+    VERSION 12.3.2
+    GIT_REPOSITORY https://github.com/harfbuzz/harfbuzz.git
+    GIT_TAG 12.3.2
+)
+
+CPMAddPackage(
     NAME FreeType
     VERSION 2.14.1
     GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype.git
@@ -444,10 +451,9 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
-    NAME harfbuzz
-    VERSION 12.3.2
-    GIT_REPOSITORY https://github.com/harfbuzz/harfbuzz.git
-    GIT_TAG 12.3.2
+    NAME rectpack2D
+    GIT_REPOSITORY https://github.com/TeamHypersomnia/rectpack2D.git
+    GIT_TAG bbc9d0e
 )
 
 # Install Glad module for Python
@@ -517,8 +523,9 @@ target_link_libraries("${SANITISED_PROJECT_NAME}"
     simdutf
     glad_gl_3_2
     glm
-    freetype
     harfbuzz
+    freetype
+    rectpack2D
 )
 
 # Copy resources and binaries after build

@@ -1,9 +1,12 @@
-#include "freetype/freetype.h"
-#include <cstdint>
 #include <engine/FontManager.h>
 
-#include <iterator>
+#include <cstdint>
+
+#include FT_FREETYPE_H
 #include <simdutf.h>
+
+#include <rectpack2D/finders_interface.h>
+#include <rectpack2D/empty_spaces.h>
 
 #include <engine/Engine.h>
 #include <engine/utils.h>
@@ -166,9 +169,7 @@ void FontManager::FontFace::loadGlyph(char32_t codepoint) {
 }
 
 FontManager::Bitmap* FontManager::Bitmap::create(int size, short channels)  {
-    auto bitmap = new Bitmap();
-    bitmap->bitmapSize = size;
-    bitmap->bitmapChannels = channels;
+    auto bitmap = new Bitmap(size, channels);
     bitmap->bitmap = static_cast<char*>(calloc(size * size, channels));
 
     return bitmap;
@@ -219,92 +220,40 @@ char* FontManager::Bitmap::getPixel(int x, int y) {
 }
 
 FontManager::Atlas* FontManager::Atlas::create(int size, short channels) {
-    auto atlas = new Atlas();
-    atlas->bitmapSize = size;
-    atlas->bitmapChannels = channels;
+    auto atlas = new Atlas(size, channels);
     atlas->bitmap = static_cast<char*>(calloc(size * size, channels));
-    atlas->m_freeRectangles.push_back({ 0, 0, size, size });
+    atlas->m_packer.flipping_mode = rectpack2D::flipping_option::DISABLED;
 
     return atlas;
 }
 
-FontManager::Rect FontManager::Atlas::insertRect(int width, int height) {
+rect_t FontManager::Atlas::insertRect(int width, int height) {
     // TODO - integrate this into the bitmap to draw an array to an inserted rect
-    Rect rect { 0, 0, width, height };
+    m_placedRects.push_back({ 0, 0, width, height });
+    rect_t& rect = m_placedRects.back();
 
-    for (int i = m_freeRectangles.size(); i >= 0; i--) {
-        auto& freeRectangle = m_freeRectangles[i];
-        if (rect.width > freeRectangle.width && rect.height > freeRectangle.height) {
-            // TODO - evaluate all viable free rects and choose the one which leaves the least amount of area remaining
-            rect.x = freeRectangle.x;
-            rect.y = freeRectangle.y;
-
-            std::vector<Rect> availableRectangles;
-            const int verticalJoinArea = (freeRectangle.width - rect.width) * (freeRectangle.height);
-            const int horizontalJoinArea = (freeRectangle.width) * (freeRectangle.height - rect.height);
-            if (verticalJoinArea > horizontalJoinArea) {
-                availableRectangles = {
-                    {
-                        rect.x + rect.width,
-                        rect.y,
-                        freeRectangle.width - rect.width,
-                        freeRectangle.height
-                    },
-                    {
-                        rect.x,
-                        rect.y + rect.height,
-                        rect.width,
-                        freeRectangle.height - rect.height
-                    }
-                };
-            } else {
-                availableRectangles = {
-                    {
-                        rect.x + rect.width,
-                        rect.y,
-                        freeRectangle.width - rect.width,
-                        rect.height
-                    },
-                    {
-                        rect.x,
-                        rect.y + rect.height,
-                        freeRectangle.width,
-                        freeRectangle.height - rect.height
-                    }
-                };
-            }
-
-            m_freeRectangles.erase(m_freeRectangles.begin() + i);
-            std::move(
-                availableRectangles.begin(), availableRectangles.end(),
-                std::back_inserter(m_freeRectangles)
-            );
-
-            return rect;
+    do {
+        std::optional<rect_t> insertedRect = m_packer.insert(rect.get_wh());
+        if (insertedRect.has_value()) {
+            rect = *insertedRect;
+            break;
+        } else {
+            this->resize(bitmapSize + std::max(rect.w, rect.h));
         }
-    }
-
-    std::vector<Rect> availableRectangles {
-        {
-            bitmapSize,
-            0,
-            bitmapSize,
-            bitmapSize * 2
-        },
-        {
-            0,
-            bitmapSize,
-            bitmapSize,
-            bitmapSize
-        }
-    };
-    std::move(
-        availableRectangles.begin(), availableRectangles.end(),
-        std::back_inserter(m_freeRectangles)
-    );
-
-    this->resize(bitmapSize * 2);
-    rect = this->insertRect(width, height);
+    } while (true);
 
     return rect;
+}
+
+void FontManager::Atlas::resize(int size) {
+    Bitmap::resize(size);
+
+    m_packer.reset({ size, size });
+    for (auto rect : m_placedRects) {
+        std::optional<rect_t> insertedRect = m_packer.insert(rect.get_wh());
+        if (!insertedRect) {
+            this->resize(size + std::max(rect.w, rect.h));
+            break;
+        }
+    }
 }
