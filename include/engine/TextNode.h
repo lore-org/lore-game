@@ -12,10 +12,6 @@
 #include <engine/ColorNode.h>
 #include <engine/FontManager.h>
 
-#ifndef DEFAULT_FONT_POINT
-#define DEFAULT_FONT_POINT 28
-#endif
-
 class TextNode : public ColorNode {
     friend class Typeable;
     friend class Engine;
@@ -23,22 +19,22 @@ class TextNode : public ColorNode {
 public:
     virtual ~TextNode();
 
-    virtual bool init(FT_Face font, float fontPoint, Point position);
+    virtual bool init(FontManager::FontFace* font, Point position);
 
-    static std::shared_ptr<TextNode> create(FT_Face font = nullptr, float fontPoint = DEFAULT_FONT_POINT, Point position = { 0, 0 });
-    static std::shared_ptr<TextNode> create(std::string fontFile, float fontPoint = DEFAULT_FONT_POINT, Point position = { 0, 0 });
+    static std::shared_ptr<TextNode> create(FontManager::FontFace* font = nullptr, Point position = { 0, 0 });
+    static std::shared_ptr<TextNode> create(std::string fontFile, Point position = { 0, 0 });
 
     virtual void draw(const long double dt) override;
 
     void setDisplayedText(std::string displayedText);
     inline std::string getDisplayedText() { return m_displayedText; }
 
-    void setFontPoint(float fontPoint);
-    inline float getFontPoint() { return m_fontPoint; }
+    void setFontPoint(float point);
+    inline float getFontPoint() { return m_fontFace->getFontPoint(); }
 
     // TODO - impl changeFontHeight, which changes the font size to the desired height, calculates the difference from the actual height, and adjusts for the pt ratio
     void changeFont(std::string fontFile);
-    void changeFont(FT_Face font);
+    void changeFont(FontManager::FontFace* font);
 
 
     // overrides for statusBitset
@@ -63,9 +59,8 @@ protected:
     TextNode();
 
     std::string m_displayedText;
-    float m_fontPoint;
 
-    FT_Face m_fontFace;
+    FontManager::FontFace* m_fontFace;
 
 
     struct BufferData {

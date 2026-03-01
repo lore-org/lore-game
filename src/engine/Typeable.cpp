@@ -24,7 +24,6 @@ bool Typeable::init(Color4 displayTextColor, Color4 placeholderTextColor, Color4
 
     m_displayText = TextNode::create(
         nullptr,
-        20,
         {
             rect.getMinX() + 2,
             rect.getMinY() + (rect.getHeight() / 2.)
@@ -37,7 +36,6 @@ bool Typeable::init(Color4 displayTextColor, Color4 placeholderTextColor, Color4
 
     m_placeholderText = TextNode::create(
         nullptr,
-        m_displayText->getFontPoint(),
         m_displayText->getPosition()
     );
     m_placeholderText->setAnchorPoint(m_displayText->getAnchorPoint());

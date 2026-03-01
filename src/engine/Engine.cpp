@@ -355,13 +355,13 @@ void Engine::setupEngine() {
 
 
     m_fpsText = TextNode::create(
-        nullptr, 20,
+        nullptr,
         { 5, 5 }
     );
     m_fpsText->setAnchorPoint(0);
 
     m_tpsText = TextNode::create(
-        nullptr, 20,
+        nullptr,
         { 5, m_fpsText->isVisible() ? 30 : 5. }
     );
     m_tpsText->setAnchorPoint(0);

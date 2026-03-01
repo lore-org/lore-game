@@ -21,7 +21,7 @@
 #include <engine/Typeable.h>
 
 TextNode::TextNode() :
-    m_displayedText(""), m_fontPoint(DEFAULT_FONT_POINT),
+    m_displayedText(""),
     m_glProgram(glCreateProgram()),
     m_glVertexArray(0), m_glVertexBuffer(0), m_glTexture(0),
     m_numChars(0) {}
@@ -35,7 +35,7 @@ TextNode::~TextNode() {
     glDeleteProgram(m_glProgram);
 }
 
-bool TextNode::init(FT_Face font, float fontPoint, Point position) {
+bool TextNode::init(FontManager::FontFace* font, Point position) {
     if (!ColorNode::init()) return false;
     
     auto engine = Engine::sharedInstance();
@@ -91,7 +91,6 @@ bool TextNode::init(FT_Face font, float fontPoint, Point position) {
 
     engine->requestFramebufferUpdates(m_glProgram);
 
-    m_fontPoint = fontPoint;
     this->setPosition(position);
     this->changeFont(font);
 
@@ -100,19 +99,19 @@ bool TextNode::init(FT_Face font, float fontPoint, Point position) {
 }
 
 // Font will default to `resources/Noto Sans.ttf` if not given
-std::shared_ptr<TextNode> TextNode::create(FT_Face font, float fontPoint, Point position) {
+std::shared_ptr<TextNode> TextNode::create(FontManager::FontFace* font, Point position) {
     auto ret = utils::protected_make_shared<TextNode>();
 
     if (
-        !ret->init(font, fontPoint, position)
+        !ret->init(font, position)
     ) return nullptr;
     return ret;
 }
 
-std::shared_ptr<TextNode> TextNode::create(std::string fontFile, float fontPoint, Point position) {
+std::shared_ptr<TextNode> TextNode::create(std::string fontFile, Point position) {
     return TextNode::create(
         FontManager::sharedManager()->getOrCreateFontFace(fontFile),
-        fontPoint, position
+        position
     );
 }
 
@@ -175,8 +174,8 @@ void TextNode::setDisplayedText(std::string displayedText) {
     m_statusBitset |= UPDATE_VERTICES;
 }
 
-void TextNode::setFontPoint(float fontPoint) {
-    m_fontPoint = fontPoint;
+void TextNode::setFontPoint(float point) {
+    m_fontFace->setFontPoint(point);
     m_statusBitset |= UPDATE_VERTICES | UPDATE_ATLAS;
 }
 
@@ -185,7 +184,7 @@ void TextNode::changeFont(std::string fontFile) {
 }
 
 // Making font `nullptr` will default to `resources/Noto Sans.ttf`
-void TextNode::changeFont(FT_Face font) {
+void TextNode::changeFont(FontManager::FontFace* font) {
     if (!font) {
         font = FontManager::sharedManager()->getOrCreateFontFace("resources/Noto Sans.ttf");
     }
