@@ -32,15 +32,8 @@
 std::shared_ptr<FontManager> FontManager::m_instance;
 
 FontManager::~FontManager() {
-    for (auto& storedFontFace : m_fontFaceMap) {
-        auto& fontFace = storedFontFace.second;
-
-        delete fontFace.glyphAtlas;
-        if (auto e = FT_Done_Face(fontFace.ftFontFace)) {
-            LogError("Could not delete font face");
-            log_freetype_error();
-        }
-    }
+    // Run destructor before freetype library is deinitialised
+    m_fontFaceMap.clear();
 
     if (auto e = FT_Done_FreeType(this->getFTLibrary())) {
         LogError("Could not deinitialise FreeType");
@@ -79,45 +72,14 @@ std::string FontManager::getFontFile(FontManager::FontFace* fontFace) {
 }
 
 FontManager::FontFace* FontManager::createFontFace(std::string file) {
-    FontFace fontFace;
-
-    if (auto e = FT_New_Face(this->getFTLibrary(), file.c_str(), 0, &fontFace.ftFontFace)) {
+    FT_Face ftFontFace;
+    if (auto e = FT_New_Face(this->getFTLibrary(), file.c_str(), 0, &ftFontFace)) {
         LogError(fmt::format("Could not create font face (file={})", file));
         log_freetype_error();
         return nullptr;
     }
-    fontFace.setFontPoint(12);
-    switch (fontFace.ftFontFace->glyph->bitmap.pixel_mode) {
-        case FT_PIXEL_MODE_GRAY:
-            fontFace.glyphAtlas = Atlas::create(1024, 1);
-            break;
-        case FT_PIXEL_MODE_LCD:
-        case FT_PIXEL_MODE_LCD_V:
-            fontFace.glyphAtlas = Atlas::create(1024, 1);
-            break;
-        case FT_PIXEL_MODE_BGRA:
-            fontFace.glyphAtlas = Atlas::create(1024, 1);
-            break;
-        default:
-            LogError(fmt::format("Unsupported glyph render mode (mode=)", fontFace.ftFontFace->glyph->bitmap.pixel_mode));
-            break;
-    }
 
-    if (m_fontFaceMap.contains(file)) {
-        // Delete existing atlas
-        delete m_fontFaceMap[file].glyphAtlas;
-
-        // Delete existing face
-        if (auto e = FT_Done_Face(m_fontFaceMap[file].ftFontFace)) {
-            LogError("Could not delete font face");
-            log_freetype_error();
-        }
-
-        // Clear cached glyphs
-        if (m_renderedGlyphs.contains(fontFace.ftFontFace)) {
-            m_renderedGlyphs[fontFace.ftFontFace].clear();
-        }
-    }
+    FontFace fontFace(ftFontFace);
 
     m_fontFaceMap[file] = fontFace;
     return &m_fontFaceMap[file];
@@ -128,6 +90,41 @@ FontManager::FontFace* FontManager::getOrCreateFontFace(std::string file) {
     else return this->createFontFace(file);
 }
 
+FontManager::FontFace::FontFace(FT_Face font, float point) {
+    m_ftFontFace = font;
+    m_point = point;
+
+    auto& pixelMode = font->glyph->bitmap.pixel_mode;
+    switch (pixelMode) {
+        case FT_PIXEL_MODE_GRAY:
+            m_glyphAtlas = new Atlas(1024, 1);
+            break;
+        case FT_PIXEL_MODE_LCD:
+        case FT_PIXEL_MODE_LCD_V:
+            m_glyphAtlas = new Atlas(1024, 3);
+            break;
+        case FT_PIXEL_MODE_BGRA:
+            m_glyphAtlas = new Atlas(1024, 4);
+            break;
+        default:
+            LogError(fmt::format("Unsupported glyph render mode (mode={})", pixelMode));
+            break;
+    }
+}
+
+FontManager::FontFace::~FontFace() {
+    delete m_glyphAtlas;
+
+    if (auto e = FT_Done_Face(m_ftFontFace)) {
+        LogError("Could not delete font face");
+        log_freetype_error();
+    }
+}
+
+bool FontManager::FontFace::operator==(FontFace second) {
+    return m_ftFontFace == second.m_ftFontFace;
+}
+
 void FontManager::FontFace::setFontPoint(float point) {
     if (m_point == point) return;
 
@@ -135,15 +132,12 @@ void FontManager::FontFace::setFontPoint(float point) {
     auto engine = Engine::sharedInstance();
 
     auto dpi = engine->getMonitorDPI(engine->getCurrentMonitor());
-    if (auto e = FT_Set_Char_Size(this->ftFontFace, 0, point * 64, dpi.width, dpi.height)) {
+    if (auto e = FT_Set_Char_Size(this->m_ftFontFace, 0, point * 64, dpi.width, dpi.height)) {
         LogError(fmt::format("Could not resize font face (point={})", point));
         log_freetype_error();
     }
 
-    if (fontManager->m_renderedGlyphs.contains(this->ftFontFace)) {
-        // Clear cached glyphs
-        fontManager->m_renderedGlyphs[this->ftFontFace].clear();
-    }
+    m_renderedGlyphs.clear();
 }
 
 FontManager::Glyph* FontManager::FontFace::loadGlyph(char codepoint) {
@@ -171,20 +165,26 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char16_t codepoint) {
 }
 
 FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
-    auto glyphIndex = FT_Get_Char_Index(ftFontFace, codepoint);
-    if (auto e = FT_Load_Glyph(ftFontFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_COLOR)) {
+    auto glyphIndex = FT_Get_Char_Index(m_ftFontFace, codepoint);
+    if (auto e = FT_Load_Glyph(m_ftFontFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_COLOR)) {
         LogError(fmt::format("Could not create load glyph (codepoint={})", static_cast<uint32_t>(codepoint)));
         log_freetype_error();
         return nullptr;
     }
 
-    auto& ftGlyph = ftFontFace->glyph;
-    auto glyphRect = glyphAtlas->insertRect(ftGlyph->metrics.width, ftGlyph->metrics.height);
-    auto& renderedGlyphs = FontManager::sharedManager()->m_renderedGlyphs[ftFontFace];
+    // Look for cached glyphs
+    for (auto& renderedGlyph : m_renderedGlyphs) {
+        if (renderedGlyph.codepoint == codepoint) return &renderedGlyph;
+    }
 
-    renderedGlyphs.push_back({
-        ftFontFace,
-        glyphAtlas,
+
+    auto& ftGlyph = m_ftFontFace->glyph;
+    auto glyphRect = m_glyphAtlas->insertRect(ftGlyph->metrics.width, ftGlyph->metrics.height);
+
+    m_glyphAtlas->drawPixels(glyphRect, reinterpret_cast<char*>(ftGlyph->bitmap.buffer));
+    m_renderedGlyphs.push_back({
+        m_ftFontFace,
+        m_glyphAtlas,
 
         codepoint,
         glyphIndex,
@@ -194,28 +194,32 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
         glyphRect.w, glyphRect.h,
         ftGlyph->metrics.horiAdvance
     });
-    return &renderedGlyphs.back();
+
+    return &m_renderedGlyphs.back();
 }
 
-FontManager::Bitmap* FontManager::Bitmap::create(int size, short channels)  {
-    auto bitmap = new Bitmap(size, channels);
-    bitmap->bitmap = static_cast<char*>(calloc(size * size, channels));
+FontManager::Bitmap::Bitmap(int size, short channels)  {
+    m_bitmap = static_cast<char*>(calloc(size * size, channels));
+    m_bitmapSize = size;
+    m_bitmapChannels = channels;
+}
 
-    return bitmap;
+FontManager::Bitmap::~Bitmap() {
+    free(m_bitmap);
 }
 
 void FontManager::Bitmap::resize(int size) {
-    char* newBitmap = static_cast<char*>(calloc(size * size, bitmapChannels));
-    const auto oldLineBytes = this->bitmapSize * bitmapChannels;
-    const auto newLineBytes = size * bitmapChannels;
+    char* newBitmap = static_cast<char*>(calloc(size * size, m_bitmapChannels));
+    const auto oldLineBytes = m_bitmapSize * m_bitmapChannels;
+    const auto newLineBytes = size * m_bitmapChannels;
 
-    if (size > this->bitmapSize) {
+    if (size > m_bitmapSize) {
         // Expand Bitmap
         
         for (int y = 0; y < size; y++) {
             memcpy(
                 newBitmap + (y * newLineBytes),
-                this->bitmap + (y * oldLineBytes),
+                m_bitmap + (y * oldLineBytes),
                 oldLineBytes
             );
         }
@@ -225,39 +229,46 @@ void FontManager::Bitmap::resize(int size) {
         for (int y = 0; y < size; y++) {
             memcpy(
                 newBitmap + (y * newLineBytes),
-                this->bitmap + (y * oldLineBytes),
+                m_bitmap + (y * oldLineBytes),
                 newLineBytes
             );
         }
     }
 
-    free(this->bitmap);
-    this->bitmap = newBitmap;
-    this->bitmapSize = size;
+    free(m_bitmap);
+    m_bitmap = newBitmap;
+    m_bitmapSize = size;
 }
 
 char* FontManager::Bitmap::getPixel(int x, int y) {
-    if (x > bitmapSize || y > bitmapSize) {
+    if (x > m_bitmapSize || y > m_bitmapSize) {
         LogError(fmt::format("Bitmap coordinates outside of range (x={}, y={})", x, y));
         return nullptr;
     }
 
-    const auto xSkip = x * bitmapChannels;
-    const auto ySkip = y * bitmapChannels * bitmapSize;
+    const auto xSkip = x * m_bitmapChannels;
+    const auto ySkip = y * m_bitmapChannels * m_bitmapSize;
 
-    return this->bitmap + xSkip + ySkip;
+    return m_bitmap + xSkip + ySkip;
 }
 
-FontManager::Atlas* FontManager::Atlas::create(int size, short channels) {
-    auto atlas = new Atlas(size, channels);
-    atlas->bitmap = static_cast<char*>(calloc(size * size, channels));
-    atlas->m_packer.flipping_mode = rectpack2D::flipping_option::DISABLED;
+void FontManager::Bitmap::drawPixels(rect_t dimensions, char* data) {
+    auto [ x, y, w, h ] = dimensions;
+    for (int line = 0; line < h; line++) {
+        memcpy(
+            this->getPixel(x, y + line),
+            data + ((y + line) * m_bitmapChannels * w),
+            w * m_bitmapChannels
+        );
+    }
+}
 
-    return atlas;
+FontManager::Atlas::Atlas(int size, short channels) : m_packer({ size, size }) {
+    m_packer.flipping_mode = rectpack2D::flipping_option::DISABLED;
 }
 
 rect_t FontManager::Atlas::insertRect(int width, int height) {
-    // TODO - integrate this into the bitmap to draw an array to an inserted rect
+    // TODO - integrate this into the m_bitmap to draw an array to an inserted rect
     m_placedRects.push_back({ 0, 0, width, height });
     rect_t& rect = m_placedRects.back();
 
@@ -267,7 +278,7 @@ rect_t FontManager::Atlas::insertRect(int width, int height) {
             rect = *insertedRect;
             break;
         } else {
-            this->resize(bitmapSize + std::max(rect.w, rect.h));
+            this->resize(m_bitmapSize + std::max(rect.w, rect.h));
         }
     } while (true);
 

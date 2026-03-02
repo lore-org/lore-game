@@ -23,10 +23,13 @@ public:
 
     struct Bitmap {
     public:
-        char* bitmap;
+        Bitmap(int size = 1024, short channels = 1);
+        ~Bitmap();
+
+        char* m_bitmap;
         // width and height
-        int bitmapSize;
-        short bitmapChannels;
+        int m_bitmapSize;
+        short m_bitmapChannels;
 
         static Bitmap* create(int size = 1024, short channels = 1);
 
@@ -34,22 +37,19 @@ public:
         void resize(int size);
         // Get pointer to pixel at given coordinates
         char* getPixel(int x, int y);
-    
-    protected:
-        Bitmap(int size, short channels) : bitmapSize(size), bitmapChannels(channels) { };
+        void drawPixels(rect_t dimensions, char* data);
     };
 
     struct Atlas : public Bitmap {
-    public:        
-        static Atlas* create(int size = 1024, short channels = 1);
+    public:
+        Atlas(int size = 1024, short channels = 1);
+        ~Atlas() = default;
 
         rect_t insertRect(int width, int height);
         // Resize from the top-left corner
         void resize(int size);
 
     protected:
-        Atlas(int size, short channels) : Bitmap(size, channels), m_packer({ size, size }) { };
-
         std::vector<rect_t> m_placedRects;
         empty_spaces m_packer;
     };
@@ -69,8 +69,13 @@ public:
 
     struct FontFace {
     public:
-        FT_Face ftFontFace;
-        Atlas* glyphAtlas;
+        FontFace(FT_Face font, float point = 14);
+        ~FontFace();
+
+        FT_Face m_ftFontFace;
+        Atlas* m_glyphAtlas;
+
+        bool operator==(FontFace second);
 
         void setFontPoint(float point);
         float getFontPoint() { return m_point; }
@@ -79,16 +84,9 @@ public:
         Glyph* loadGlyph(char16_t codepoint);
         Glyph* loadGlyph(char32_t codepoint);
 
-        bool operator==(FontFace second) {
-            return this->ftFontFace == second.ftFontFace;
-        }
-
     protected:
-        friend class FontManager;
-
-        FontFace() = default;
         float m_point;
-        std::vector<Glyph> m_renderedGlyphs; // TODO - move FontManager cache to FontFace
+        std::vector<Glyph> m_renderedGlyphs;
     };
 
     FontFace* getFontFace(std::string file);
@@ -102,7 +100,6 @@ protected:
 
     FT_Library m_FTLibrary = nullptr;
     std::unordered_map<std::string, FontFace> m_fontFaceMap;
-    std::unordered_map<FT_Face, std::vector<Glyph>> m_renderedGlyphs;
 
 private:
     static std::shared_ptr<FontManager> m_instance;
