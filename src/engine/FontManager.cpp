@@ -1,6 +1,7 @@
 #include <engine/FontManager.h>
 
 #include <cstdint>
+#include <optional>
 
 #include FT_FREETYPE_H
 #include <simdutf.h>
@@ -32,7 +33,10 @@ std::shared_ptr<FontManager> FontManager::m_instance;
 
 FontManager::~FontManager() {
     for (auto& storedFontFace : m_fontFaceMap) {
-        if (auto e = FT_Done_Face(storedFontFace.second.ftFontFace)) {
+        auto& fontFace = storedFontFace.second;
+
+        delete fontFace.glyphAtlas;
+        if (auto e = FT_Done_Face(fontFace.ftFontFace)) {
             LogError("Could not delete font face");
             log_freetype_error();
         }
@@ -83,16 +87,39 @@ FontManager::FontFace* FontManager::createFontFace(std::string file) {
         return nullptr;
     }
     fontFace.setFontPoint(12);
+    switch (fontFace.ftFontFace->glyph->bitmap.pixel_mode) {
+        case FT_PIXEL_MODE_GRAY:
+            fontFace.glyphAtlas = Atlas::create(1024, 1);
+            break;
+        case FT_PIXEL_MODE_LCD:
+        case FT_PIXEL_MODE_LCD_V:
+            fontFace.glyphAtlas = Atlas::create(1024, 1);
+            break;
+        case FT_PIXEL_MODE_BGRA:
+            fontFace.glyphAtlas = Atlas::create(1024, 1);
+            break;
+        default:
+            LogError(fmt::format("Unsupported glyph render mode (mode=)", fontFace.ftFontFace->glyph->bitmap.pixel_mode));
+            break;
+    }
 
     if (m_fontFaceMap.contains(file)) {
-        FT_Done_Face(m_fontFaceMap[file].ftFontFace); // Delete existing face
+        // Delete existing atlas
+        delete m_fontFaceMap[file].glyphAtlas;
+
+        // Delete existing face
+        if (auto e = FT_Done_Face(m_fontFaceMap[file].ftFontFace)) {
+            LogError("Could not delete font face");
+            log_freetype_error();
+        }
+
+        // Clear cached glyphs
         if (m_renderedGlyphs.contains(fontFace.ftFontFace)) {
-            // Clear cached glyphs
             m_renderedGlyphs[fontFace.ftFontFace].clear();
         }
     }
-    m_fontFaceMap[file] = fontFace;
 
+    m_fontFaceMap[file] = fontFace;
     return &m_fontFaceMap[file];
 }
 
@@ -119,53 +146,55 @@ void FontManager::FontFace::setFontPoint(float point) {
     }
 }
 
-void FontManager::FontFace::loadGlyph(char codepoint) {
+FontManager::Glyph* FontManager::FontFace::loadGlyph(char codepoint) {
     char32_t convertedCodepoint;
     auto result = simdutf::convert_utf8_to_utf32_with_errors(&codepoint, 1, &convertedCodepoint);
     if (result.is_err()) {
         LogError(fmt::format("Could not load glyph (codepoint={})", static_cast<int>(codepoint)));
         log_simdutf_error();
-        return;
+        return nullptr;
     }
 
-    FontFace::loadGlyph(convertedCodepoint);
+    return FontFace::loadGlyph(convertedCodepoint);
 }
 
-void FontManager::FontFace::loadGlyph(char16_t codepoint) {
+FontManager::Glyph* FontManager::FontFace::loadGlyph(char16_t codepoint) {
     char32_t convertedCodepoint;
     auto result = simdutf::convert_utf16_to_utf32_with_errors(&codepoint, 1, &convertedCodepoint);
     if (result.is_err()) {
         LogError(fmt::format("Could not load glyph (codepoint={})", static_cast<int>(codepoint)));
         log_simdutf_error();
-        return;
+        return nullptr;
     }
 
-    FontFace::loadGlyph(convertedCodepoint);
+    return FontFace::loadGlyph(convertedCodepoint);
 }
 
-void FontManager::FontFace::loadGlyph(char32_t codepoint) {
+FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
     auto glyphIndex = FT_Get_Char_Index(ftFontFace, codepoint);
     if (auto e = FT_Load_Glyph(ftFontFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_COLOR)) {
         LogError(fmt::format("Could not create load glyph (codepoint={})", static_cast<uint32_t>(codepoint)));
         log_freetype_error();
-        return;
+        return nullptr;
     }
 
     auto& ftGlyph = ftFontFace->glyph;
+    auto glyphRect = glyphAtlas->insertRect(ftGlyph->metrics.width, ftGlyph->metrics.height);
+    auto& renderedGlyphs = FontManager::sharedManager()->m_renderedGlyphs[ftFontFace];
 
-    Glyph glyph {
+    renderedGlyphs.push_back({
         ftFontFace,
+        glyphAtlas,
 
         codepoint,
         glyphIndex,
 
-        0, 0,
+        glyphRect.x, glyphRect.y,
         ftGlyph->metrics.horiBearingX, ftGlyph->metrics.horiBearingY,
-        ftGlyph->metrics.width, ftGlyph->metrics.height,
+        glyphRect.w, glyphRect.h,
         ftGlyph->metrics.horiAdvance
-    };
-
-    FontManager::sharedManager()->m_renderedGlyphs[ftFontFace].push_back(glyph);
+    });
+    return &renderedGlyphs.back();
 }
 
 FontManager::Bitmap* FontManager::Bitmap::create(int size, short channels)  {

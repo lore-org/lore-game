@@ -21,25 +21,6 @@ public:
 
     FT_Library getFTLibrary();
 
-    struct FontFace {
-    public:
-        FT_Face ftFontFace;
-
-        void setFontPoint(float point);
-        float getFontPoint() { return m_point; }
-
-        void loadGlyph(char codepoint);
-        void loadGlyph(char16_t codepoint);
-        void loadGlyph(char32_t codepoint);
-
-        bool operator==(FontFace second) {
-            return this->ftFontFace == second.ftFontFace;
-        }
-
-    protected:
-        float m_point;
-    };
-
     struct Bitmap {
     public:
         char* bitmap;
@@ -75,14 +56,39 @@ public:
 
     struct Glyph {
         FT_Face ftFontFace;
+        Atlas* glyphAtlas;
 
         FT_ULong codepoint;
         FT_UInt glyphIndex;
 
-        int x, y; // Bitmap offset
-        int xOffset, yOffset; // Top-left offset
+        int atlasX, atlasY; // Atlas offset
+        int offsetX, offsetY; // Top-left offset from cursor
         int width, height; // Dimensions
-        int advance; // Next origin x-offset
+        int advanceX; // Next cursor's offset
+    };
+
+    struct FontFace {
+    public:
+        FT_Face ftFontFace;
+        Atlas* glyphAtlas;
+
+        void setFontPoint(float point);
+        float getFontPoint() { return m_point; }
+
+        Glyph* loadGlyph(char codepoint);
+        Glyph* loadGlyph(char16_t codepoint);
+        Glyph* loadGlyph(char32_t codepoint);
+
+        bool operator==(FontFace second) {
+            return this->ftFontFace == second.ftFontFace;
+        }
+
+    protected:
+        friend class FontManager;
+
+        FontFace() = default;
+        float m_point;
+        std::vector<Glyph> m_renderedGlyphs; // TODO - move FontManager cache to FontFace
     };
 
     FontFace* getFontFace(std::string file);
