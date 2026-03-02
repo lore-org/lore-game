@@ -58,7 +58,7 @@ FT_Library FontManager::getFTLibrary() {
 
 FontManager::FontFace* FontManager::getFontFace(std::string file) {
     if (m_fontFaceMap.contains(file))
-        return &m_fontFaceMap[file];
+        return &m_fontFaceMap.at(file);
 
     return nullptr;
 }
@@ -81,8 +81,8 @@ FontManager::FontFace* FontManager::createFontFace(std::string file) {
 
     FontFace fontFace(ftFontFace);
 
-    m_fontFaceMap[file] = fontFace;
-    return &m_fontFaceMap[file];
+    m_fontFaceMap.emplace(file, fontFace);
+    return &m_fontFaceMap.at(file);
 }
 
 FontManager::FontFace* FontManager::getOrCreateFontFace(std::string file) {
