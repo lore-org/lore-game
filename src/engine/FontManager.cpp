@@ -154,8 +154,14 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char16_t codepoint) {
 FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
     auto& ftGlyph = m_ftFontFace->glyph;
     auto glyphIndex = FT_Get_Char_Index(m_ftFontFace, codepoint);
-    if (auto e = FT_Load_Glyph(m_ftFontFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_COLOR)) {
-        LogError(fmt::format("Could not create load glyph (codepoint={})", static_cast<uint32_t>(codepoint)));
+
+    if (auto e = FT_Load_Glyph(m_ftFontFace, glyphIndex, FT_LOAD_COLOR)) {
+        LogError(fmt::format("Could not load glyph (codepoint={})", static_cast<uint32_t>(codepoint)));
+        log_freetype_error();
+        return nullptr;
+    }
+    if (auto e = FT_Render_Glyph(ftGlyph, FT_RENDER_MODE_NORMAL)) {
+        LogError(fmt::format("Could not render glyph (codepoint={})", static_cast<uint32_t>(codepoint)));
         log_freetype_error();
         return nullptr;
     }
