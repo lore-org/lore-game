@@ -86,7 +86,7 @@ public:
 
     protected:
         float m_point;
-        std::vector<Glyph> m_renderedGlyphs;
+        std::vector<Glyph*> m_renderedGlyphs;
     };
 
     FontFace* getFontFace(std::string file);
@@ -99,7 +99,7 @@ protected:
     FontManager() = default;
 
     FT_Library m_FTLibrary = nullptr;
-    std::unordered_map<std::string, FontFace> m_fontFaceMap;
+    std::unordered_map<std::string, FontFace*> m_fontFaceMap;
 
 private:
     static std::shared_ptr<FontManager> m_instance;

@@ -32,8 +32,10 @@
 std::shared_ptr<FontManager> FontManager::m_instance;
 
 FontManager::~FontManager() {
-    // Run destructor before freetype library is deinitialised
-    m_fontFaceMap.clear();
+    for (auto& fontFacePair : m_fontFaceMap) {
+        auto& fontFace = fontFacePair.second;
+        if (fontFace) delete fontFace;
+    }
 
     if (auto e = FT_Done_FreeType(this->getFTLibrary())) {
         LogError("Could not deinitialise FreeType");
@@ -58,14 +60,14 @@ FT_Library FontManager::getFTLibrary() {
 
 FontManager::FontFace* FontManager::getFontFace(std::string file) {
     if (m_fontFaceMap.contains(file))
-        return &m_fontFaceMap.at(file);
+        return m_fontFaceMap.at(file);
 
     return nullptr;
 }
 
 std::string FontManager::getFontFile(FontManager::FontFace* fontFace) {
     for (auto& storedFontFace : m_fontFaceMap) {
-        if (storedFontFace.second == *fontFace) return storedFontFace.first;
+        if (storedFontFace.second == fontFace) return storedFontFace.first;
     }
 
     return { };
@@ -78,11 +80,10 @@ FontManager::FontFace* FontManager::createFontFace(std::string file) {
         log_freetype_error();
         return nullptr;
     }
-
-    FontFace fontFace(ftFontFace);
-
-    m_fontFaceMap.emplace(file, fontFace);
-    return &m_fontFaceMap.at(file);
+    
+    auto fontFace = new FontFace(ftFontFace);
+    m_fontFaceMap[file] = fontFace;
+    return fontFace;
 }
 
 FontManager::FontFace* FontManager::getOrCreateFontFace(std::string file) {
@@ -113,7 +114,11 @@ FontManager::FontFace::FontFace(FT_Face font, float point) {
 }
 
 FontManager::FontFace::~FontFace() {
-    delete m_glyphAtlas;
+    if (m_glyphAtlas) delete m_glyphAtlas;
+
+    for (auto& renderedGlyph : m_renderedGlyphs) {
+        if (renderedGlyph) delete renderedGlyph;
+    }
 
     if (auto e = FT_Done_Face(m_ftFontFace)) {
         LogError("Could not delete font face");
@@ -174,7 +179,7 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
 
     // Look for cached glyphs
     for (auto& renderedGlyph : m_renderedGlyphs) {
-        if (renderedGlyph.codepoint == codepoint) return &renderedGlyph;
+        if (renderedGlyph->codepoint == codepoint) return renderedGlyph;
     }
 
 
@@ -182,7 +187,8 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
     auto glyphRect = m_glyphAtlas->insertRect(ftGlyph->metrics.width, ftGlyph->metrics.height);
 
     m_glyphAtlas->drawPixels(glyphRect, reinterpret_cast<char*>(ftGlyph->bitmap.buffer));
-    m_renderedGlyphs.push_back({
+
+    auto glyph = new Glyph({
         m_ftFontFace,
         m_glyphAtlas,
 
@@ -194,8 +200,8 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
         glyphRect.w, glyphRect.h,
         static_cast<int>(ftGlyph->metrics.horiAdvance)
     });
-
-    return &m_renderedGlyphs.back();
+    m_renderedGlyphs.push_back(glyph);
+    return glyph;
 }
 
 FontManager::Bitmap::Bitmap(int size, short channels)  {
