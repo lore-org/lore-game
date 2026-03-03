@@ -91,9 +91,12 @@ FontManager::FontFace* FontManager::getOrCreateFontFace(std::string file) {
     else return this->createFontFace(file);
 }
 
-FontManager::FontFace::FontFace(FT_Face font, float point) {
-    m_ftFontFace = font;
-    m_point = point;
+FontManager::FontFace::FontFace(FT_Face font, float point) : m_ftFontFace(font), m_point(point) {
+    // Load default missing glyph (󯿿)
+    if (auto e = FT_Load_Glyph(m_ftFontFace, 0, FT_LOAD_RENDER | FT_LOAD_COLOR)) {
+        LogError(fmt::format("Could not load default missing glyph"));
+        log_freetype_error();
+    }
 
     auto& pixelMode = font->glyph->bitmap.pixel_mode;
     switch (pixelMode) {
@@ -133,6 +136,7 @@ bool FontManager::FontFace::operator==(FontFace second) {
 
 void FontManager::FontFace::setFontPoint(float point) {
     if (m_point == point) return;
+    m_point = point;
 
     auto fontManager = FontManager::sharedManager();
     auto engine = Engine::sharedInstance();
