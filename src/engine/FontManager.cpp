@@ -80,9 +80,9 @@ FontManager::FontFace* FontManager::createFontFace(std::string file) {
         log_freetype_error();
         return nullptr;
     }
-    
+
     auto fontFace = new FontFace(ftFontFace);
-    m_fontFaceMap[file] = fontFace;
+    m_fontFaceMap.emplace(file, fontFace);
     return fontFace;
 }
 
@@ -116,7 +116,8 @@ FontManager::FontFace::FontFace(FT_Face font, float point) {
 FontManager::FontFace::~FontFace() {
     if (m_glyphAtlas) delete m_glyphAtlas;
 
-    for (auto& renderedGlyph : m_renderedGlyphs) {
+    for (auto& renderedGlyphPair : m_renderedGlyphs) {
+        auto& renderedGlyph = renderedGlyphPair.second;
         if (renderedGlyph) delete renderedGlyph;
     }
 
@@ -178,8 +179,8 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
     }
 
     // Look for cached glyphs
-    for (auto& renderedGlyph : m_renderedGlyphs) {
-        if (renderedGlyph->codepoint == codepoint) return renderedGlyph;
+    if (m_renderedGlyphs.contains(codepoint)) {
+        return m_renderedGlyphs.at(codepoint);
     }
 
 
@@ -200,7 +201,7 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
         glyphRect.w, glyphRect.h,
         static_cast<int>(ftGlyph->metrics.horiAdvance)
     });
-    m_renderedGlyphs.push_back(glyph);
+    m_renderedGlyphs.emplace(codepoint, glyph);
     return glyph;
 }
 

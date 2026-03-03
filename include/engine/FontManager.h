@@ -86,7 +86,7 @@ public:
 
     protected:
         float m_point;
-        std::vector<Glyph*> m_renderedGlyphs;
+        std::unordered_map<char32_t, Glyph*> m_renderedGlyphs;
     };
 
     FontFace* getFontFace(std::string file);
