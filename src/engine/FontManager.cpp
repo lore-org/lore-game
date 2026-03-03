@@ -190,9 +190,9 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
         glyphIndex,
 
         glyphRect.x, glyphRect.y,
-        ftGlyph->metrics.horiBearingX, ftGlyph->metrics.horiBearingY,
+        static_cast<int>(ftGlyph->metrics.horiBearingX), static_cast<int>(ftGlyph->metrics.horiBearingY),
         glyphRect.w, glyphRect.h,
-        ftGlyph->metrics.horiAdvance
+        static_cast<int>(ftGlyph->metrics.horiAdvance)
     });
 
     return &m_renderedGlyphs.back();
