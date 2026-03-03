@@ -91,30 +91,7 @@ FontManager::FontFace* FontManager::getOrCreateFontFace(std::string file) {
     else return this->createFontFace(file);
 }
 
-FontManager::FontFace::FontFace(FT_Face font, float point) : m_ftFontFace(font), m_point(point) {
-    // Load default missing glyph (󯿿)
-    if (auto e = FT_Load_Glyph(m_ftFontFace, 0, FT_LOAD_RENDER | FT_LOAD_COLOR)) {
-        LogError(fmt::format("Could not load default missing glyph"));
-        log_freetype_error();
-    }
-
-    auto& pixelMode = font->glyph->bitmap.pixel_mode;
-    switch (pixelMode) {
-        case FT_PIXEL_MODE_GRAY:
-            m_glyphAtlas = new Atlas(1024, 1);
-            break;
-        case FT_PIXEL_MODE_LCD:
-        case FT_PIXEL_MODE_LCD_V:
-            m_glyphAtlas = new Atlas(1024, 3);
-            break;
-        case FT_PIXEL_MODE_BGRA:
-            m_glyphAtlas = new Atlas(1024, 4);
-            break;
-        default:
-            LogError(fmt::format("Unsupported glyph render mode (mode={})", pixelMode));
-            break;
-    }
-}
+FontManager::FontFace::FontFace(FT_Face font, float point) : m_ftFontFace(font), m_point(point) { }
 
 FontManager::FontFace::~FontFace() {
     if (m_glyphAtlas) delete m_glyphAtlas;
@@ -175,6 +152,7 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char16_t codepoint) {
 }
 
 FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
+    auto& ftGlyph = m_ftFontFace->glyph;
     auto glyphIndex = FT_Get_Char_Index(m_ftFontFace, codepoint);
     if (auto e = FT_Load_Glyph(m_ftFontFace, glyphIndex, FT_LOAD_RENDER | FT_LOAD_COLOR)) {
         LogError(fmt::format("Could not create load glyph (codepoint={})", static_cast<uint32_t>(codepoint)));
@@ -186,9 +164,27 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
     if (m_renderedGlyphs.contains(codepoint)) {
         return m_renderedGlyphs.at(codepoint);
     }
+    
+    // Load atlas if it does not already exist
+    if (!m_glyphAtlas) {
+        auto& pixelMode = ftGlyph->bitmap.pixel_mode;
+        switch (pixelMode) {
+            case FT_PIXEL_MODE_GRAY:
+                m_glyphAtlas = new Atlas(1024, 1);
+                break;
+            case FT_PIXEL_MODE_LCD:
+            case FT_PIXEL_MODE_LCD_V:
+                m_glyphAtlas = new Atlas(1024, 3);
+                break;
+            case FT_PIXEL_MODE_BGRA:
+                m_glyphAtlas = new Atlas(1024, 4);
+                break;
+            default:
+                LogError(fmt::format("Unsupported glyph render mode (mode={})", pixelMode));
+                break;
+        }
+    }
 
-
-    auto& ftGlyph = m_ftFontFace->glyph;
     auto glyphRect = m_glyphAtlas->insertRect(ftGlyph->metrics.width, ftGlyph->metrics.height);
 
     m_glyphAtlas->drawPixels(glyphRect, reinterpret_cast<char*>(ftGlyph->bitmap.buffer));
