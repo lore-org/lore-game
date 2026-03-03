@@ -205,10 +205,8 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
     return glyph;
 }
 
-FontManager::Bitmap::Bitmap(int size, short channels)  {
+FontManager::Bitmap::Bitmap(int size, short channels) : m_bitmapSize(size), m_bitmapChannels(channels) {
     m_bitmap = static_cast<char*>(calloc(size * size, channels));
-    m_bitmapSize = size;
-    m_bitmapChannels = channels;
 }
 
 FontManager::Bitmap::~Bitmap() {
@@ -270,7 +268,7 @@ void FontManager::Bitmap::drawPixels(rect_t dimensions, char* data) {
     }
 }
 
-FontManager::Atlas::Atlas(int size, short channels) : m_packer({ size, size }) {
+FontManager::Atlas::Atlas(int size, short channels) : Bitmap(size, channels), m_packer({ size, size }) {
     m_packer.flipping_mode = rectpack2D::flipping_option::DISABLED;
 }
 
