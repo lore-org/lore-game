@@ -273,7 +273,6 @@ FontManager::Atlas::Atlas(int size, short channels) : Bitmap(size, channels), m_
 }
 
 rect_t FontManager::Atlas::insertRect(int width, int height) {
-    // TODO - integrate this into the m_bitmap to draw an array to an inserted rect
     m_placedRects.push_back({ 0, 0, width, height });
     rect_t& rect = m_placedRects.back();
 
