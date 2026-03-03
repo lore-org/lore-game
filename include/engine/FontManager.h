@@ -84,6 +84,9 @@ public:
         Glyph* loadGlyph(char16_t codepoint);
         Glyph* loadGlyph(char32_t codepoint);
 
+        std::vector<Glyph*> loadString(std::string string);
+        std::vector<Glyph*> loadString(std::u32string string);
+
     protected:
         float m_point;
         std::unordered_map<char32_t, Glyph*> m_renderedGlyphs;
