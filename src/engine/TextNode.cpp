@@ -195,146 +195,150 @@ void TextNode::changeFont(FontManager::FontFace* font) {
 }
 
 void TextNode::_createAtlasTex() {
-    // glUseProgram(m_glProgram);
+    glUseProgram(m_glProgram);
 
-    // if (!m_glTexture) glGenTextures(1, &m_glTexture);
+    if (!m_glTexture) glGenTextures(1, &m_glTexture);
 
-    // glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, m_glTexture);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_glTexture);
 
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // auto bitmap = m_fontAtlas->GetBitmap();
+    auto& atlas = m_fontFace->m_glyphAtlas;
     
-    // glUniform2f(
-    //     glGetUniformLocation(m_glProgram, "atlasSize"),
-    //     bitmap.Width(), bitmap.Height()
-    // );
+    glUniform2f(
+        glGetUniformLocation(m_glProgram, "atlasSize"),
+        atlas->m_bitmapSize, atlas->m_bitmapSize
+    );
 
 
-    // GLint internalFormat;
-    // GLint format;
+    GLint internalFormat;
+    GLint format;
 
-    // switch (bitmap.Channels()) {
-    //     default:
-    //     case 1:
-    //         internalFormat = GL_R8;
-    //         format = GL_RED;
-    //         break;
-    //     case 2:
-    //         internalFormat = GL_RG8;
-    //         format = GL_RG;
-    //         break;
-    //     case 3:
-    //         internalFormat = GL_RGB8;
-    //         format = GL_RGB;
-    //         break;
-    //     case 4:
-    //         internalFormat = GL_RGBA8;
-    //         format = GL_RGBA;
-    //         break;
-    // }
+    switch (atlas->m_bitmapChannels) {
+        default:
+        case 1:
+            internalFormat = GL_R8;
+            format = GL_RED;
+            break;
+        case 2:
+            internalFormat = GL_RG8;
+            format = GL_RG;
+            break;
+        case 3:
+            internalFormat = GL_RGB8;
+            format = GL_RGB;
+            break;
+        case 4:
+            internalFormat = GL_RGBA8;
+            format = GL_RGBA;
+            break;
+    }
 
-    // glTexImage2D(
-    //     GL_TEXTURE_2D, 0,
-    //     format,
-    //     bitmap.Width(), bitmap.Height(),
-    //     0,
-    //     format, GL_UNSIGNED_BYTE,
-    //     bitmap.Data().data()
-    // );
+    glTexImage2D(
+        GL_TEXTURE_2D, 0,
+        format,
+        atlas->m_bitmapSize, atlas->m_bitmapSize,
+        0,
+        format, GL_UNSIGNED_BYTE,
+        atlas->m_bitmap
+    );
 }
 
 void TextNode::_updateVertices() {
-    // auto shapedGlyphs = m_fontTextShaper->ShapeUtf8(m_displayedText);
-    // m_numChars = shapedGlyphs.size();
+    auto glyphs = m_fontFace->loadString(m_displayedText);
+    m_numChars = glyphs.size();
 
 
-    // glUseProgram(m_glProgram);
+    glUseProgram(m_glProgram);
 
-    // glBindBuffer(GL_ARRAY_BUFFER, m_glVertexBuffer);
-    // glBindVertexArray(m_glVertexArray);
+    glBindBuffer(GL_ARRAY_BUFFER, m_glVertexBuffer);
+    glBindVertexArray(m_glVertexArray);
     
-    // glBufferData(
-    //     GL_ARRAY_BUFFER,
-    //     sizeof(BufferData[6]) * m_numChars, NULL,
-    //     GL_STATIC_DRAW
-    // );
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(BufferData[6]) * m_numChars, NULL,
+        GL_STATIC_DRAW
+    );
     
-    
-    // auto shaperMeasurement = Trex::TextShaper::Measure(shapedGlyphs);
-    // auto fontMetrics = m_fontTextShaper->GetFontMetrics();
+    int width = 0;
+    int ascender = 0, descender = 0;
+
+    for (size_t i = 0; i < m_numChars; i++) {
+        auto& glyph = glyphs[i];
+        if (i < m_numChars - 1) width += glyph->advanceX;
+        else width += glyph->offsetX + glyph->advanceX;
+
+        // TODO - add height calculations
+    }
 
     // this->setContentSize(shaperMeasurement.width, fontMetrics.ascender - fontMetrics.descender);
 
-    // if (m_numChars <= 0) return;
+    if (m_numChars <= 0) return;
 
-    // auto framebufferHeight = FontManager::sharedManager()->getFrameBufferHeight();
-    // auto rect = this->getRect();
-    // auto fontMeasurement = Trex::TextShaper::Measure(m_fontTextShaper->ShapeAscii("\xDB")); // "█"
+    auto framebufferHeight = Engine::sharedInstance()->getFrameBufferHeight();
+    auto rect = this->getRect();
+    auto referenceGlyph = m_fontFace->loadGlyph('\xDB');
 
-    // auto xpos = rect.getMinX();
-    // auto ypos = framebufferHeight - rect.getMinY() - fontMeasurement.height;
+    auto xpos = rect.getMinX();
+    auto ypos = framebufferHeight - rect.getMinY() - referenceGlyph->height;
 
-    // glUniform2f(
-    //     glGetUniformLocation(m_glProgram, "rectOrigin"),
-    //     xpos + (rect.getWidth() * this->getAnchorX()),
-    //     ypos - (rect.getHeight() * this->getAnchorY())
-    // );
+    glUniform2f(
+        glGetUniformLocation(m_glProgram, "rectOrigin"),
+        xpos + (rect.getWidth() * this->getAnchorX()),
+        ypos - (rect.getHeight() * this->getAnchorY())
+    );
 
-    // for (size_t i = 0; i < m_numChars; i++) {
-    //     auto& shapedGlyph = shapedGlyphs[i];
-    //     auto& glyph = shapedGlyph.info;
+    for (size_t i = 0; i < m_numChars; i++) {
+        auto& glyph = glyphs[i];
 
+        int x = xpos + glyph->offsetX;
+        int y = ypos - glyph->offsetY;
+        int w = glyph->width;
+        int h = glyph->height;
 
-    //     int x = xpos + shapedGlyph.xOffset + glyph.bearingX;
-    //     int y = ypos - shapedGlyph.yOffset + glyph.bearingY;
-    //     int w = glyph.width;
-    //     int h = glyph.height;
-
-    //     unsigned int texX = glyph.x;
-    //     unsigned int texY = glyph.y;
-    //     unsigned int texW = glyph.width;
-    //     unsigned int texH = glyph.height;
+        unsigned int texX = glyph->atlasX;
+        unsigned int texY = glyph->atlasY;
+        unsigned int texW = glyph->width;
+        unsigned int texH = glyph->height;
         
 
-    //     // Will be flipped across x-axis in vertex shader
-    //     /*
-    //         0     4---3
-    //         |\     \  |
-    //         | \     \ |
-    //         |  \     \|
-    //         1---2     5
-    //     */
-    //     BufferData data[6] {
-    //         { { x    , y     }, { texX       , texY        } },
-    //         { { x    , y - h }, { texX       , texY + texH } },
-    //         { { x + w, y - h }, { texX + texW, texY + texH } },
+        // Will be flipped across x-axis in vertex shader
+        /*
+            0     4---3
+            |\     \  |
+            | \     \ |
+            |  \     \|
+            1---2     5
+        */
+        BufferData data[6] {
+            { { x    , y     }, { texX       , texY        } },
+            { { x    , y - h }, { texX       , texY + texH } },
+            { { x + w, y - h }, { texX + texW, texY + texH } },
 
-    //         { { x + w, y     }, { texX + texW, texY        } },
-    //         { { x    , y     }, { texX       , texY        } },
-    //         { { x + w, y - h }, { texX + texW, texY + texH } }
-    //     };
+            { { x + w, y     }, { texX + texW, texY        } },
+            { { x    , y     }, { texX       , texY        } },
+            { { x + w, y - h }, { texX + texW, texY + texH } }
+        };
 
-    //     glBufferSubData(
-    //         GL_ARRAY_BUFFER,
-    //         sizeof(data) * i, sizeof(data), 
-    //         data
-    //     );
+        glBufferSubData(
+            GL_ARRAY_BUFFER,
+            sizeof(data) * i, sizeof(data), 
+            data
+        );
 
 
-    //     xpos += shapedGlyph.xAdvance;
-    //     ypos -= shapedGlyph.yAdvance;
-    // }
+        xpos += glyph->advanceX;
+    }
 
     
-    // if (auto typeable = dynamic_pointer_cast<Typeable>(m_parent)) {
-    //     typeable->_measureString();
-    // }
+    if (auto typeable = dynamic_pointer_cast<Typeable>(m_parent)) {
+        typeable->_measureString();
+    }
 }
 
 void TextNode::setScale(long double scale) {
