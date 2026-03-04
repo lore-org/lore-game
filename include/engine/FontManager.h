@@ -3,6 +3,7 @@
 #include <cstdlib>
 
 #include <ft2build.h>
+#include <string>
 #include FT_FREETYPE_H
 #include <simdutf.h>
 #include <rectpack2D/finders_interface.h>
@@ -85,6 +86,7 @@ public:
         Glyph* loadGlyph(char32_t codepoint);
 
         std::vector<Glyph*> loadString(std::string string);
+        std::vector<Glyph*> loadString(std::u16string string);
         std::vector<Glyph*> loadString(std::u32string string);
 
     protected:

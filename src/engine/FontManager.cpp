@@ -231,6 +231,24 @@ std::vector<FontManager::Glyph*> FontManager::FontFace::loadString(std::string s
     return FontFace::loadString(convertedString);
 }
 
+std::vector<FontManager::Glyph*> FontManager::FontFace::loadString(std::u16string string) {
+    std::u32string convertedString(
+        simdutf::utf32_length_from_utf16(string),
+        '\0'
+    );
+    auto result = simdutf::convert_utf16_to_utf32_with_errors(
+        string.data(), string.size(),
+        convertedString.data()
+    );
+    if (result.is_err()) {
+        LogError(fmt::format("Could not load string (string='{}')", string.c_str()));
+        log_simdutf_error();
+        return { };
+    }
+
+    return FontFace::loadString(convertedString);
+}
+
 std::vector<FontManager::Glyph*> FontManager::FontFace::loadString(std::u32string string) {
     std::vector<Glyph*> charVec;
     for (auto& charToLoad : string) {
