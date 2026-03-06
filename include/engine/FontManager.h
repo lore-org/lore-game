@@ -27,7 +27,7 @@ public:
         Bitmap(int size = 1024, short channels = 1);
         ~Bitmap();
 
-        char* m_bitmap;
+        char* m_bitmap = nullptr;
         // width and height
         int m_bitmapSize;
         short m_bitmapChannels;
@@ -56,8 +56,8 @@ public:
     };
 
     struct Glyph {
-        FT_Face ftFontFace;
-        Atlas* glyphAtlas;
+        FT_Face ftFontFace = nullptr;
+        Atlas* glyphAtlas = nullptr;
 
         FT_ULong codepoint;
         FT_UInt glyphIndex;
