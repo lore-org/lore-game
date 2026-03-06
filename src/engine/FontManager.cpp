@@ -93,7 +93,11 @@ FontManager::FontFace* FontManager::getOrCreateFontFace(std::string file) {
     else return this->createFontFace(file);
 }
 
-FontManager::FontFace::FontFace(FT_Face font, float point) : m_ftFontFace(font), m_point(point) { }
+FontManager::FontFace::FontFace(FT_Face font, float point) :
+    m_ftFontFace(font), m_point(point),
+    m_lineSpacing(font->height / 64),
+    m_globalAscender(font->ascender / 64), m_globalDescender(font->descender / 64),
+    m_underlineOffset(font->underline_position / 64), m_underlineThickness(font->underline_thickness / 64) { }
 
 FontManager::FontFace::~FontFace() {
     if (m_glyphAtlas) delete m_glyphAtlas;

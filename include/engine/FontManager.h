@@ -73,8 +73,19 @@ public:
         FontFace(FT_Face font, float point = 14);
         ~FontFace();
 
-        FT_Face m_ftFontFace;
-        Atlas* m_glyphAtlas;
+        FT_Face m_ftFontFace = nullptr;
+        Atlas* m_glyphAtlas = nullptr;
+
+        // Vertical offset to the next baseline of a new line
+        int m_lineSpacing;
+        // Global vertical ascension from the baseline (Not the maximum ascent)
+        int m_globalAscender;
+        // Global vertical descension from the baseline (Not the maximuim descent)
+        int m_globalDescender;
+        // Vertical offset from the baseline of the underline.
+        int m_underlineOffset;
+        // Vertical thickness of the underline
+        int m_underlineThickness;
 
         bool operator==(FontFace second);
 
