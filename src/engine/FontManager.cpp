@@ -37,6 +37,7 @@ FontManager::~FontManager() {
     for (auto& fontFacePair : m_fontFaceMap) {
         auto& fontFace = fontFacePair.second;
         if (fontFace) delete fontFace;
+        fontFace = nullptr;
     }
 
     if (auto e = FT_Done_FreeType(this->getFTLibrary())) {
@@ -101,10 +102,12 @@ FontManager::FontFace::FontFace(FT_Face font, float point) :
 
 FontManager::FontFace::~FontFace() {
     if (m_glyphAtlas) delete m_glyphAtlas;
+    m_glyphAtlas = nullptr;
 
     for (auto& renderedGlyphPair : m_renderedGlyphs) {
         auto& renderedGlyph = renderedGlyphPair.second;
         if (renderedGlyph) delete renderedGlyph;
+        renderedGlyph = nullptr;
     }
 
     if (auto e = FT_Done_Face(m_ftFontFace)) {
