@@ -200,7 +200,7 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
         }
     }
 
-    auto glyphRect = m_glyphAtlas->insertRect(ftGlyph->metrics.width, ftGlyph->metrics.height);
+    auto glyphRect = m_glyphAtlas->insertRect(ftGlyph->metrics.width / 64, ftGlyph->metrics.height / 64);
 
     m_glyphAtlas->drawPixels(glyphRect, reinterpret_cast<char*>(ftGlyph->bitmap.buffer));
 
@@ -212,9 +212,9 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
         glyphIndex,
 
         glyphRect.x, glyphRect.y,
-        static_cast<int>(ftGlyph->metrics.horiBearingX), static_cast<int>(ftGlyph->metrics.horiBearingY),
+        static_cast<int>(ftGlyph->metrics.horiBearingX / 64), static_cast<int>(ftGlyph->metrics.horiBearingY / 64),
         glyphRect.w, glyphRect.h,
-        static_cast<int>(ftGlyph->metrics.horiAdvance)
+        static_cast<int>(ftGlyph->metrics.horiAdvance / 64)
     });
     m_renderedGlyphs.emplace(codepoint, glyph);
     return glyph;
