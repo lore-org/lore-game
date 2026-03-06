@@ -225,7 +225,7 @@ void TextNode::_createAtlasTex() {
             internalFormat = GL_R8;
             format = GL_RED;
             break;
-        case 2:
+        case 2: // Should be unused
             internalFormat = GL_RG8;
             format = GL_RG;
             break;
@@ -235,13 +235,13 @@ void TextNode::_createAtlasTex() {
             break;
         case 4:
             internalFormat = GL_RGBA8;
-            format = GL_RGBA;
+            format = GL_BGRA;
             break;
     }
 
     glTexImage2D(
         GL_TEXTURE_2D, 0,
-        format,
+        internalFormat,
         atlas->m_bitmapSize, atlas->m_bitmapSize,
         0,
         format, GL_UNSIGNED_BYTE,
