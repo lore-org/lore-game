@@ -1,4 +1,5 @@
 #include "simdutf/implementation.h"
+#include <algorithm>
 #include <engine/FontManager.h>
 
 #include <cstdint>
@@ -140,7 +141,7 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char codepoint) {
     char32_t convertedCodepoint;
     auto result = simdutf::convert_utf8_to_utf32_with_errors(&codepoint, 1, &convertedCodepoint);
     if (result.is_err()) {
-        LogError(fmt::format("Could not load glyph (codepoint={})", static_cast<int>(codepoint)));
+        LogError(fmt::format("Could not load utf-8 char (codepoint={})", static_cast<int>(codepoint)));
         log_simdutf_error();
         return nullptr;
     }
@@ -152,7 +153,7 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char16_t codepoint) {
     char32_t convertedCodepoint;
     auto result = simdutf::convert_utf16_to_utf32_with_errors(&codepoint, 1, &convertedCodepoint);
     if (result.is_err()) {
-        LogError(fmt::format("Could not load glyph (codepoint={})", static_cast<int>(codepoint)));
+        LogError(fmt::format("Could not load utf-16 char (codepoint={})", static_cast<int>(codepoint)));
         log_simdutf_error();
         return nullptr;
     }
@@ -230,7 +231,7 @@ std::vector<FontManager::Glyph*> FontManager::FontFace::loadString(std::string s
         convertedString.data()
     );
     if (result.is_err()) {
-        LogError(fmt::format("Could not load string (string='{}')", string));
+        LogError(fmt::format("Could not load utf-8 string (string='{}')", string));
         log_simdutf_error();
         return { };
     }
@@ -248,7 +249,7 @@ std::vector<FontManager::Glyph*> FontManager::FontFace::loadString(std::u16strin
         convertedString.data()
     );
     if (result.is_err()) {
-        LogError(fmt::format("Could not load string (string='{}')", string.c_str()));
+        LogError("Could not load utf-16 string");
         log_simdutf_error();
         return { };
     }
@@ -265,9 +266,10 @@ std::vector<FontManager::Glyph*> FontManager::FontFace::loadString(std::u32strin
     return charVec;
 }
 
-FontManager::Bitmap::Bitmap(int size, short channels) : m_bitmapSize(size), m_bitmapChannels(channels) {
-    m_bitmap = static_cast<char*>(calloc(size * size, channels));
-}
+FontManager::Bitmap::Bitmap(int size, short channels) :
+    m_bitmapSize(size), m_bitmapChannels(channels) {
+        m_bitmap = static_cast<char*>(calloc(size * size, channels));
+    }
 
 FontManager::Bitmap::~Bitmap() {
     free(m_bitmap);
@@ -322,15 +324,16 @@ void FontManager::Bitmap::drawPixels(rect_t dimensions, char* data) {
     for (int line = 0; line < h; line++) {
         memcpy(
             this->getPixel(x, y + line),
-            data + ((y + line) * m_bitmapChannels * w),
+            data + ((y + line) * w * m_bitmapChannels),
             w * m_bitmapChannels
         );
     }
 }
 
-FontManager::Atlas::Atlas(int size, short channels) : Bitmap(size, channels), m_packer({ size, size }) {
-    m_packer.flipping_mode = rectpack2D::flipping_option::DISABLED;
-}
+FontManager::Atlas::Atlas(int size, short channels) :
+    Bitmap(size, channels), m_packer({ size, size }) {
+        m_packer.flipping_mode = rectpack2D::flipping_option::DISABLED;
+    }
 
 rect_t FontManager::Atlas::insertRect(int width, int height) {
     m_placedRects.push_back({ 0, 0, width, height });
