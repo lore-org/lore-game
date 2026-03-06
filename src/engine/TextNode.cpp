@@ -266,26 +266,22 @@ void TextNode::_updateVertices() {
     );
     
     int width = 0;
-    int ascender = 0, descender = 0;
-
+    int height = m_fontFace->m_globalAscender;
     for (size_t i = 0; i < m_numChars; i++) {
         auto& glyph = glyphs[i];
         if (i < m_numChars - 1) width += glyph->advanceX;
         else width += glyph->offsetX + glyph->advanceX;
-
-        // TODO - add height calculations
     }
 
-    // this->setContentSize(shaperMeasurement.width, fontMetrics.ascender - fontMetrics.descender);
+    this->setContentSize(width, height);
 
     if (m_numChars <= 0) return;
 
     auto framebufferHeight = Engine::sharedInstance()->getFrameBufferHeight();
     auto rect = this->getRect();
-    auto referenceGlyph = m_fontFace->loadGlyph('\xDB');
 
     auto xpos = rect.getMinX();
-    auto ypos = framebufferHeight - rect.getMinY() - referenceGlyph->height;
+    auto ypos = framebufferHeight - rect.getMinY() - height;
 
     glUniform2f(
         glGetUniformLocation(m_glProgram, "rectOrigin"),
