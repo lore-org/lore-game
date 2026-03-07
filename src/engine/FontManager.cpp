@@ -201,8 +201,7 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
         }
     }
 
-    auto glyphRect = m_glyphAtlas->insertRect(ftGlyph->metrics.width / 64, ftGlyph->metrics.height / 64);
-
+    auto glyphRect = m_glyphAtlas->insertRect(ftGlyph->bitmap.width, ftGlyph->bitmap.rows);
     m_glyphAtlas->drawPixels(glyphRect, reinterpret_cast<char*>(ftGlyph->bitmap.buffer));
 
     auto glyph = new Glyph({
