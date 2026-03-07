@@ -63,9 +63,9 @@ public:
         FT_UInt glyphIndex;
 
         int atlasX, atlasY; // Atlas offset
-        int offsetX, offsetY; // Top-left offset from cursor
+        float offsetX, offsetY; // Top-left offset from cursor
         int width, height; // Dimensions
-        int advanceX; // Next cursor's offset
+        float advanceX; // Next cursor's offset
     };
 
     struct FontFace {
@@ -77,15 +77,15 @@ public:
         Atlas* m_glyphAtlas = nullptr;
 
         // Vertical offset to the next baseline of a new line
-        int m_lineSpacing;
+        float m_lineSpacing;
         // Global vertical ascension from the baseline (Not the maximum ascent)
-        int m_globalAscender;
+        float m_globalAscender;
         // Global vertical descension from the baseline (Not the maximuim descent)
-        int m_globalDescender;
+        float m_globalDescender;
         // Vertical offset from the baseline of the underline.
-        int m_underlineOffset;
+        float m_underlineOffset;
         // Vertical thickness of the underline
-        int m_underlineThickness;
+        float m_underlineThickness;
 
         bool operator==(FontFace second);
 

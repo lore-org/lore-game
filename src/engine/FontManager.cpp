@@ -97,9 +97,9 @@ FontManager::FontFace* FontManager::getOrCreateFontFace(std::string file) {
 
 FontManager::FontFace::FontFace(FT_Face font, float point) :
     m_ftFontFace(font), m_point(point),
-    m_lineSpacing(font->height / 64),
-    m_globalAscender(font->ascender / 64), m_globalDescender(font->descender / 64),
-    m_underlineOffset(font->underline_position / 64), m_underlineThickness(font->underline_thickness / 64) { }
+    m_lineSpacing(font->height / 64.f),
+    m_globalAscender(font->ascender / 64.f), m_globalDescender(font->descender / 64.f),
+    m_underlineOffset(font->underline_position / 64.f), m_underlineThickness(font->underline_thickness / 64.f) { }
 
 FontManager::FontFace::~FontFace() {
     if (m_glyphAtlas) delete m_glyphAtlas;
@@ -212,9 +212,9 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
         glyphIndex,
 
         glyphRect.x, glyphRect.y,
-        static_cast<int>(ftGlyph->metrics.horiBearingX / 64), static_cast<int>(ftGlyph->metrics.horiBearingY / 64),
+        ftGlyph->metrics.horiBearingX / 64.f, ftGlyph->metrics.horiBearingY / 64.f,
         glyphRect.w, glyphRect.h,
-        static_cast<int>(ftGlyph->metrics.horiAdvance / 64)
+        ftGlyph->metrics.horiAdvance / 64.f
     });
     m_renderedGlyphs.emplace(codepoint, glyph);
     return glyph;
@@ -320,7 +320,7 @@ char* FontManager::Bitmap::getPixel(int x, int y) {
 
 void FontManager::Bitmap::drawPixels(rect_t dimensions, char* data) {
     auto [ x, y, w, h ] = dimensions;
-    for (int line = 0; line < h; line++) {
+    for (int line = 0; line < h + 1; line++) {
         memcpy(
             this->getPixel(x, y + line),
             data + ((y + line) * w * m_bitmapChannels),
