@@ -25,6 +25,6 @@ out vec4 fragColor;
 
 
 void main() {
-    float texAlpha = 1.0 - texture(glyphAtlas, fragTexCoord).r;
+    float texAlpha = texture(glyphAtlas, fragTexCoord).r;
     fragColor = vec4(textColor.rgb, textColor.a * texAlpha);
 }
