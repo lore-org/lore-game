@@ -141,7 +141,7 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char codepoint) {
     char32_t convertedCodepoint;
     auto result = simdutf::convert_utf8_to_utf32_with_errors(&codepoint, 1, &convertedCodepoint);
     if (result.is_err()) {
-        LogError(fmt::format("Could not load utf-8 char (codepoint={})", static_cast<int>(codepoint)));
+        LogError(fmt::format("Could not load utf-8 char (codepoint={} ({}))", static_cast<int>(codepoint), static_cast<char>(codepoint)));
         log_simdutf_error();
         return nullptr;
     }
@@ -153,7 +153,7 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char16_t codepoint) {
     char32_t convertedCodepoint;
     auto result = simdutf::convert_utf16_to_utf32_with_errors(&codepoint, 1, &convertedCodepoint);
     if (result.is_err()) {
-        LogError(fmt::format("Could not load utf-16 char (codepoint={})", static_cast<int>(codepoint)));
+        LogError(fmt::format("Could not load utf-16 char (codepoint={} ({}))", static_cast<int>(codepoint), static_cast<char>(codepoint)));
         log_simdutf_error();
         return nullptr;
     }
@@ -164,23 +164,20 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char16_t codepoint) {
 FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
     // Look for cached glyphs
     if (m_renderedGlyphs.contains(codepoint)) {
-        LogDebug(fmt::format("Rendered Cached Glyph '{}' ('{}')", static_cast<uint32_t>(codepoint), static_cast<char>(codepoint)));
         return m_renderedGlyphs.at(codepoint);
     }
-    
-    LogDebug(fmt::format("Rendered Non-Cached Glyph '{}' ('{}')", static_cast<uint32_t>(codepoint), static_cast<char>(codepoint)));
 
     auto& ftGlyph = m_ftFontFace->glyph;
     auto& ftMetrics = ftGlyph->metrics;
     auto glyphIndex = FT_Get_Char_Index(m_ftFontFace, codepoint);
 
     if (auto e = FT_Load_Glyph(m_ftFontFace, glyphIndex, FT_LOAD_COLOR)) {
-        LogError(fmt::format("Could not load glyph (codepoint={})", static_cast<uint32_t>(codepoint)));
+        LogError(fmt::format("Could not load glyph (codepoint={} ({}))", static_cast<uint32_t>(codepoint), static_cast<char>(codepoint)));
         log_freetype_error();
         return nullptr;
     }
     if (auto e = FT_Render_Glyph(ftGlyph, FT_RENDER_MODE_NORMAL)) {
-        LogError(fmt::format("Could not render glyph (codepoint={})", static_cast<uint32_t>(codepoint)));
+        LogError(fmt::format("Could not render glyph (codepoint={} ({}))", static_cast<uint32_t>(codepoint), static_cast<char>(codepoint)));
         log_freetype_error();
         return nullptr;
     }
