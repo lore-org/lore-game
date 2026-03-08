@@ -299,8 +299,8 @@ void TextNode::_updateVertices() {
 
         unsigned int texX = glyph->atlasX;
         unsigned int texY = glyph->atlasY;
-        unsigned int texW = glyph->width;
-        unsigned int texH = glyph->height;
+        unsigned int texW = glyph->atlasWidth;
+        unsigned int texH = glyph->atlasHeight;
         
 
         // Will be flipped across x-axis in vertex shader

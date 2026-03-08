@@ -171,6 +171,7 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
     LogDebug(fmt::format("Rendered Non-Cached Glyph '{}' ('{}')", static_cast<uint32_t>(codepoint), static_cast<char>(codepoint)));
 
     auto& ftGlyph = m_ftFontFace->glyph;
+    auto& ftMetrics = ftGlyph->metrics;
     auto glyphIndex = FT_Get_Char_Index(m_ftFontFace, codepoint);
 
     if (auto e = FT_Load_Glyph(m_ftFontFace, glyphIndex, FT_LOAD_COLOR)) {
@@ -215,9 +216,10 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
         glyphIndex,
 
         glyphRect.x, glyphRect.y,
-        ftGlyph->metrics.horiBearingX / 64.f, ftGlyph->metrics.horiBearingY / 64.f,
         glyphRect.w, glyphRect.h,
-        ftGlyph->metrics.horiAdvance / 64.f
+        ftMetrics.horiBearingX / 64.f, ftMetrics.horiBearingY / 64.f,
+        ftMetrics.width / 64.f, ftMetrics.height / 64.f,
+        ftMetrics.horiAdvance / 64.f
     });
     m_renderedGlyphs.emplace(codepoint, glyph);
     return glyph;

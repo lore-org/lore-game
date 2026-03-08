@@ -66,8 +66,9 @@ public:
         FT_UInt glyphIndex;
 
         int atlasX, atlasY; // Atlas offset
+        int atlasWidth, atlasHeight; // Atlas dimensions
         float offsetX, offsetY; // Top-left offset from cursor
-        int width, height; // Dimensions
+        float width, height; // Dimensions
         float advanceX; // Next cursor's offset
     };
 
