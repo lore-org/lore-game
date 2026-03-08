@@ -162,6 +162,14 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char16_t codepoint) {
 }
 
 FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
+    // Look for cached glyphs
+    if (m_renderedGlyphs.contains(codepoint)) {
+        LogDebug(fmt::format("Rendered Cached Glyph '{}' ('{}')", static_cast<uint32_t>(codepoint), static_cast<char>(codepoint)));
+        return m_renderedGlyphs.at(codepoint);
+    }
+    
+    LogDebug(fmt::format("Rendered Non-Cached Glyph '{}' ('{}')", static_cast<uint32_t>(codepoint), static_cast<char>(codepoint)));
+
     auto& ftGlyph = m_ftFontFace->glyph;
     auto glyphIndex = FT_Get_Char_Index(m_ftFontFace, codepoint);
 
@@ -174,11 +182,6 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
         LogError(fmt::format("Could not render glyph (codepoint={})", static_cast<uint32_t>(codepoint)));
         log_freetype_error();
         return nullptr;
-    }
-
-    // Look for cached glyphs
-    if (m_renderedGlyphs.contains(codepoint)) {
-        return m_renderedGlyphs.at(codepoint);
     }
     
     // Load atlas if it does not already exist
