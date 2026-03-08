@@ -359,12 +359,14 @@ void Engine::setupEngine() {
         { 5, 5 }
     );
     m_fpsText->setAnchorPoint(0);
+    m_fpsText->setFontPoint(16);
 
     m_tpsText = TextNode::create(
         nullptr,
         { 5, m_fpsText->isVisible() ? 30 : 5. }
     );
     m_tpsText->setAnchorPoint(0);
+    m_tpsText->setFontPoint(16);
 
 
     auto presenceManager = utils::PresenceManager::sharedManager();
