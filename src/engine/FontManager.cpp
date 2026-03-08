@@ -101,6 +101,9 @@ FontManager::FontFace::FontFace(FT_Face font, float point) :
     m_globalAscender(font->ascender / 64.f), m_globalDescender(font->descender / 64.f),
     m_underlineOffset(font->underline_position / 64.f), m_underlineThickness(font->underline_thickness / 64.f) { }
 
+FontManager::FontFace::FontFace(const FontFace& fontFace) :
+    m_glyphAtlas(fontFace.m_glyphAtlas) { }
+
 FontManager::FontFace::~FontFace() {
     if (m_glyphAtlas) delete m_glyphAtlas;
     m_glyphAtlas = nullptr;
@@ -271,6 +274,10 @@ FontManager::Bitmap::Bitmap(int size, short channels) :
     m_bitmapSize(size), m_bitmapChannels(channels) {
         m_bitmap = static_cast<char*>(calloc(size * size, channels));
     }
+
+FontManager::Bitmap::Bitmap(const Bitmap& bitmap) {
+    m_bitmap = static_cast<char*>(calloc(bitmap.m_bitmapSize * bitmap.m_bitmapSize, bitmap.m_bitmapChannels));
+}
 
 FontManager::Bitmap::~Bitmap() {
     free(m_bitmap);

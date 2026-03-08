@@ -25,6 +25,7 @@ public:
     struct Bitmap {
     public:
         Bitmap(int size = 1024, short channels = 1);
+        Bitmap(const Bitmap&);
         ~Bitmap();
 
         char* m_bitmap = nullptr;
@@ -73,6 +74,7 @@ public:
     struct FontFace {
     public:
         FontFace(FT_Face font, float point = 14);
+        FontFace(const FontFace&);
         ~FontFace();
 
         FT_Face m_ftFontFace = nullptr;
