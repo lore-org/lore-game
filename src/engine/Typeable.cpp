@@ -213,19 +213,15 @@ void Typeable::_handleSeeking(int32_t start, int32_t length) {
 
 void Typeable::_measureString() {
     auto& inputText = m_displayText->m_displayedText;
-    // auto& textShaper = m_displayText->m_fontTextShaper;
 
-    // auto shapedGlyphs = textShaper->ShapeUtf8(
-    //     inputText.substr(0, m_seekBounds.start)
-    // );
-
-    // m_widthToCursor = Trex::TextShaper::Measure(shapedGlyphs).width;
+    auto glyphs = m_displayText->m_fontFace->loadString(m_displayText->m_displayedText);
     m_widthToCursor = 0;
-    // if (!shapedGlyphs.empty()) {
-    //     auto lastShapedGlyph = (shapedGlyphs.end() - 1);
-    //     auto& lastGlyph = lastShapedGlyph->info;
-    //     m_widthToCursor += lastShapedGlyph->xAdvance - lastGlyph.width;
-    // }
+    for (size_t i = 0; i < glyphs.size(); i++) {
+        auto& glyph = glyphs[i];
+        
+        if (i < glyphs.size() - 1) m_widthToCursor += glyph->advanceX;
+        else m_widthToCursor += glyph->offsetX + glyph->advanceX;
+    }
 
     m_cursor->setPositionX(this->getRect().getMinX() + 2 + m_widthToCursor);
 }
