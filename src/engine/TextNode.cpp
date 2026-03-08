@@ -289,7 +289,7 @@ void TextNode::_updateVertices() {
         auto& glyph = glyphs[i];
 
         int x = xpos + glyph->offsetX;
-        int y = ypos - glyph->offsetY;
+        int y = ypos + glyph->offsetY;
         int w = glyph->width;
         int h = glyph->height;
 
