@@ -306,24 +306,27 @@ void FontManager::Bitmap::resize(int size) {
     m_bitmapSize = size;
 }
 
-char* FontManager::Bitmap::getPixel(int x, int y) {
-    if (x > m_bitmapSize || y > m_bitmapSize) {
-        LogError(fmt::format("Bitmap coordinates outside of range (x={}, y={})", x, y));
+template <typename T>
+T* FontManager::Bitmap::getPixel(int x, int y, T* buffer, int width, int height, short stride) {
+    if (x > width || y > height) {
+        LogError(fmt::format("Pixel coordinates buffer outside of range (x={}, y={})", x, y));
         return nullptr;
     }
 
-    const auto xSkip = x * m_bitmapChannels;
-    const auto ySkip = y * m_bitmapChannels * m_bitmapSize;
+    const auto offset = (y * width + x) * stride;
+    return buffer + offset;
+}
 
-    return m_bitmap + xSkip + ySkip;
+char* FontManager::Bitmap::getPixel(int x, int y) {
+    return Bitmap::getPixel(x, y, m_bitmap, m_bitmapSize, m_bitmapSize, m_bitmapChannels);
 }
 
 void FontManager::Bitmap::drawPixels(rect_t dimensions, char* data) {
     auto [ x, y, w, h ] = dimensions;
-    for (int line = 0; line < h + 1; line++) {
+    for (int line = 0; line < h; line++) {
         memcpy(
             this->getPixel(x, y + line),
-            data + ((y + line) * w * m_bitmapChannels),
+            Bitmap::getPixel(0, line, data, w, h, m_bitmapChannels),
             w * m_bitmapChannels
         );
     }

@@ -36,7 +36,10 @@ public:
 
         // Resize from the top-left corner
         void resize(int size);
-        // Get pointer to pixel at given coordinates
+        // Get a pointer to a pixel from a given buffer at the given coordinates
+        template <typename T>
+        static T* getPixel(int x, int y, T* buffer, int width, int height, short stride);
+        // Get a pointer to a pixel from the current bitmap at the given coordinates
         char* getPixel(int x, int y);
         void drawPixels(rect_t dimensions, char* data);
     };
