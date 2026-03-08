@@ -137,6 +137,7 @@ void TextNode::draw(const long double dt) {
     if (m_statusBitset & UPDATE_VERTICES) {
         m_statusBitset &= ~UPDATE_VERTICES;
 
+        this->_createAtlasTex();
         this->_updateVertices();
         if (m_numChars <= 0) return;
     }
@@ -159,12 +160,6 @@ void TextNode::draw(const long double dt) {
         );
     }
 
-    if (m_statusBitset & UPDATE_ATLAS) {
-        m_statusBitset &= ~UPDATE_ATLAS;
-
-        this->_createAtlasTex();
-    }
-
 
     glDrawArrays(GL_TRIANGLES, 0, m_numChars * 6);
 }
@@ -176,7 +171,7 @@ void TextNode::setDisplayedText(std::string displayedText) {
 
 void TextNode::setFontPoint(float point) {
     m_fontFace->setFontPoint(point);
-    m_statusBitset |= UPDATE_VERTICES | UPDATE_ATLAS;
+    m_statusBitset |= UPDATE_VERTICES;
 }
 
 void TextNode::changeFont(std::string fontFile) {
@@ -191,7 +186,7 @@ void TextNode::changeFont(FontManager::FontFace* font) {
 
     m_fontFace = font;
 
-    m_statusBitset |= UPDATE_VERTICES | UPDATE_ATLAS;
+    m_statusBitset |= UPDATE_VERTICES;
 }
 
 void TextNode::_createAtlasTex() {

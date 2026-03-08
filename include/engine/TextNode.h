@@ -83,10 +83,9 @@ private:
     enum : char {
         UPDATE_VERTICES =   1 << 0,
         UPDATE_COLOR =      1 << 1,
-        UPDATE_ROTATION =   1 << 2,
-        UPDATE_ATLAS =      1 << 3
+        UPDATE_ROTATION =   1 << 2
     };
-    char m_statusBitset = 0b1111;
+    char m_statusBitset = 0b111;
 
     void _measureString();
 
