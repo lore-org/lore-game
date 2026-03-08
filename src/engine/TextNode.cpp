@@ -137,8 +137,8 @@ void TextNode::draw(const long double dt) {
     if (m_statusBitset & UPDATE_VERTICES) {
         m_statusBitset &= ~UPDATE_VERTICES;
 
-        this->_createAtlasTex();
         this->_updateVertices();
+        this->_createAtlasTex();
         if (m_numChars <= 0) return;
     }
 
@@ -204,6 +204,7 @@ void TextNode::_createAtlasTex() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     auto& atlas = m_fontFace->m_glyphAtlas;
+    if (!atlas) return;
     
     glUniform2f(
         glGetUniformLocation(m_glProgram, "atlasSize"),
