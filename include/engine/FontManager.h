@@ -32,8 +32,6 @@ public:
         int m_bitmapSize;
         short m_bitmapChannels;
 
-        static Bitmap* create(int size = 1024, short channels = 1);
-
         // Resize from the top-left corner
         void resize(int size);
         // Get a pointer to a pixel from a given buffer at the given coordinates
