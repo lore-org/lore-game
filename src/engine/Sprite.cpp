@@ -1,7 +1,6 @@
 #include <furredengine/Sprite.h>
 
 #include <memory>
-#include <regex>
 
 #if __ANDROID__
     #include <glad/gles1.h>
@@ -9,22 +8,12 @@
 #else
     #include <glad/gl.h>
 #endif
-
 #include <GLFW/glfw3.h>
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-
-#include <discord-rpc.hpp>
-
 #include <ada.h>
-
 #include <httplib.h>
-
-#include <fmt/base.h>
 #include <fmt/format.h>
-#include <fmt/ranges.h>
-#include <fmt/printf.h>
 
 #include <furredengine/config.hpp>
 #include <furredengine/utils.h>

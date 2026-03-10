@@ -6,7 +6,6 @@
 #else
     #include <glad/gl.h>
 #endif
-
 #include <GLFW/glfw3.h>
 
 #include <furredengine/ColorNode.h>

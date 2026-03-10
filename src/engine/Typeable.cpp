@@ -1,6 +1,6 @@
-#include <cmath>
 #include <furredengine/Typeable.h>
 
+#include <cmath>
 #include <memory>
 #include <cstdint>
 

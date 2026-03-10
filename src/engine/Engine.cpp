@@ -1,7 +1,7 @@
-#include <chrono>
-#include <cstring>
 #include <furredengine/Engine.h>
 
+#include <chrono>
+#include <cstring>
 #include <algorithm>
 #include <memory>
 #include <stdexcept>
@@ -9,7 +9,6 @@
 #include <utility>
 #include <cstdint>
 #include <condition_variable>
-
 #ifdef HAS_PAR_UNSEQ
     #include <execution>
     #define par_unseq std::execution::par_unseq,
@@ -23,22 +22,13 @@
 #else
     #include <glad/gl.h>
 #endif
-
 #include <GLFW/glfw3.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 #include <simdutf.h>
-
 #include <openssl/sha.h>
-
-#include <discord-rpc.hpp>
-
-#include <fmt/base.h>
 #include <fmt/format.h>
-#include <fmt/ranges.h>
 #include <fmt/printf.h>
 
 #include <furredengine/config.hpp>
@@ -371,7 +361,7 @@ void Engine::setupEngine() {
     m_tpsText->setFontPoint(16);
 
 
-    auto presenceManager = utils::PresenceManager::sharedManager();
+    auto presenceManager = PresenceManager::sharedManager();
 
     auto clientID = config->at("DISCORD_CLIENT_ID");
     if (!clientID) clientID = "0";
@@ -381,7 +371,7 @@ void Engine::setupEngine() {
         discord::RPCManager::get()
             .setClientID(clientID.get<std::string>())
             .onReady([](auto) {
-                utils::PresenceManager::sharedManager()->setActive(true);
+                PresenceManager::sharedManager()->setActive(true);
                 LogInfo("Discord Presence initialised.");
             })
             .onErrored([](auto, auto) {

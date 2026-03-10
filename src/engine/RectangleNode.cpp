@@ -1,7 +1,4 @@
-#include "glad/gl.h"
 #include <furredengine/RectangleNode.h>
-
-#include <discord-rpc.hpp>
 
 #include <fmt/base.h>
 #include <fmt/format.h>

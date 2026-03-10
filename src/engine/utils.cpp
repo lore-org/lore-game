@@ -1,5 +1,6 @@
-#include <glm/ext/matrix_clip_space.hpp>
 #include <furredengine/utils.h>
+
+#include <glm/glm.hpp>
 
 using namespace FurredEngine;
 

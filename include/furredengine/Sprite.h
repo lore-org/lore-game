@@ -1,29 +1,20 @@
 #pragma once
 
+#include <memory>
+
 #if __ANDROID__
     #include <glad/gles1.h>
     #include <glad/gles2.h>
 #else
     #include <glad/gl.h>
 #endif
-
 #include <GLFW/glfw3.h>
-
 #include <stb_image.h>
-
-#include <fmt/base.h>
-#include <fmt/format.h>
-#include <fmt/ranges.h>
-#include <fmt/printf.h>
-
-#include <discord-rpc.hpp>
 
 #include <furredengine/config.hpp>
 #include <furredengine/Engine.h>
 #include <furredengine/Geometry.h>
 #include <furredengine/utils.h>
-
-#include <memory>
 
 #include <furredengine/ColorNode.h>
 

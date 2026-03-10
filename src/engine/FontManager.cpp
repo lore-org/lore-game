@@ -1,14 +1,12 @@
-#include "simdutf/implementation.h"
-#include <algorithm>
 #include <furredengine/FontManager.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <optional>
 #include <string>
 
 #include FT_FREETYPE_H
 #include <simdutf.h>
-
 #include <rectpack2D/finders_interface.h>
 #include <rectpack2D/empty_spaces.h>
 

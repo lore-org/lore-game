@@ -14,20 +14,10 @@
 #else
     #include <glad/gl.h>
 #endif
-
-#include <glm/mat4x4.hpp>
-
+#include <glm/glm.hpp>
 #include <openssl/sha.h>
-
-#include <fmt/base.h>
 #include <fmt/format.h>
-#include <fmt/ranges.h>
-#include <fmt/printf.h>
-
-#include <discord-rpc.hpp>
-
 #include <ada.h>
-
 #include <httplib.h>
 
 #include <furredengine/config.hpp>

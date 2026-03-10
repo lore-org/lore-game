@@ -8,11 +8,8 @@
 #else
     #include <glad/gl.h>
 #endif
-
 #include <GLFW/glfw3.h>
-
 #include <glm/glm.hpp>
-
 #include <simdutf.h>
 
 #include <furredengine/utils.h>

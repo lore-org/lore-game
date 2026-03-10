@@ -1,23 +1,11 @@
-#include <memory>
-
-#include <discord-rpc.hpp>
-
-#include <fmt/base.h>
-#include <fmt/format.h>
-#include <fmt/ranges.h>
-#include <fmt/printf.h>
-
-#include <furredengine/config.hpp>
 #include <furredengine/Engine.h>
-#include <furredengine/Geometry.h>
-#include <furredengine/utils.h>
 #include <furredengine/PresenceManager.h>
 #include <furredengine/Scene.h>
 #include <furredengine/Sprite.h>
-#include <furredengine/Director.h>
 #include <furredengine/Typeable.h>
-#include <furredengine/RectangleNode.h>
 #include <furredengine/TextNode.h>
+#include <furredengine/RectangleNode.h>
+#include <furredengine/Director.h>
 
 using namespace FurredEngine;
 

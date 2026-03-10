@@ -1,10 +1,5 @@
 #include <furredengine/ColorNode.h>
 
-#include <fmt/base.h>
-#include <fmt/format.h>
-#include <fmt/ranges.h>
-#include <fmt/printf.h>
-
 #include <furredengine/config.hpp>
 #include <furredengine/Engine.h>
 #include <furredengine/Geometry.h>
