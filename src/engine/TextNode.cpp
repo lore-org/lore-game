@@ -195,6 +195,8 @@ void TextNode::_createAtlasTex() {
     glUseProgram(m_glProgram);
 
     if (!m_glTexture) glGenTextures(1, &m_glTexture);
+    auto& atlas = m_fontFace->m_glyphAtlas;
+    if (!atlas) return;
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glActiveTexture(GL_TEXTURE0);
@@ -204,15 +206,6 @@ void TextNode::_createAtlasTex() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    auto& atlas = m_fontFace->m_glyphAtlas;
-    if (!atlas) return;
-    
-    glUniform2f(
-        glGetUniformLocation(m_glProgram, "atlasSize"),
-        atlas->m_bitmapSize, atlas->m_bitmapSize
-    );
-
 
     GLint internalFormat;
     GLint format;
@@ -263,8 +256,8 @@ void TextNode::_updateVertices() {
         GL_STATIC_DRAW
     );
     
-    int width = 0;
-    int height = m_fontFace->m_globalAscender;
+    float width = 0;
+    float height = m_fontFace->m_globalAscender;
     for (size_t i = 0; i < m_numChars; i++) {
         auto& glyph = glyphs[i];
         if (i < m_numChars - 1) width += glyph->advanceX;
@@ -277,6 +270,7 @@ void TextNode::_updateVertices() {
 
     auto framebufferHeight = Engine::sharedInstance()->getFrameBufferHeight();
     auto rect = this->getRect();
+    auto& atlasSize = m_fontFace->m_glyphAtlas->m_bitmapSize;
 
     auto xpos = rect.getMinX();
     auto ypos = framebufferHeight - rect.getMinY() - height;
@@ -290,15 +284,15 @@ void TextNode::_updateVertices() {
     for (size_t i = 0; i < m_numChars; i++) {
         auto& glyph = glyphs[i];
 
-        int x = xpos + glyph->offsetX;
-        int y = ypos + glyph->offsetY;
-        int w = glyph->width;
-        int h = glyph->height;
+        float x = xpos + glyph->offsetX;
+        float y = ypos + glyph->offsetY;
+        float& w = glyph->width;
+        float& h = glyph->height;
 
-        unsigned int texX = glyph->atlasX;
-        unsigned int texY = glyph->atlasY;
-        unsigned int texW = glyph->atlasWidth;
-        unsigned int texH = glyph->atlasHeight;
+        float texX = glyph->atlasX / atlasSize;
+        float texY = glyph->atlasY / atlasSize;
+        float texW = glyph->atlasWidth / atlasSize;
+        float texH = glyph->atlasHeight / atlasSize;
         
 
         // Will be flipped across x-axis in vertex shader
@@ -325,10 +319,8 @@ void TextNode::_updateVertices() {
             data
         );
 
-
         xpos += glyph->advanceX;
     }
-
     
     if (auto typeable = dynamic_pointer_cast<Typeable>(m_parent)) {
         typeable->_measureString();

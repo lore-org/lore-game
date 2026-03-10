@@ -2,7 +2,6 @@
 precision highp float;
 
 uniform mat4 orthoMat;
-uniform vec2 atlasSize;
 uniform vec2 rectOrigin;
 uniform float rotateDeg;
 
@@ -29,5 +28,5 @@ vec2 rotatePointAroundOrigin(vec2 point, vec2 origin, float deg) {
 void main() {
     vec2 rotatedVertPos = rotatePointAroundOrigin(vertPos, rectOrigin, rotateDeg);
     gl_Position = orthoMat * vec4(rotatedVertPos, 0.0, 1.0);
-    fragTexCoord = texCoord / atlasSize;
+    fragTexCoord = texCoord;
 }
