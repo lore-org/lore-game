@@ -1,5 +1,5 @@
 #version 150 core
-precision highp float;
+precision mediump float;
 
 uniform mat4 orthoMat;
 uniform vec2 rectOrigin;

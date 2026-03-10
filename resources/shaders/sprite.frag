@@ -1,5 +1,5 @@
 #version 150 core // GLSL 1.50 Core
-precision highp float;
+precision mediump float;
 
 uniform vec4 color;
 uniform sampler2D spriteTex;
