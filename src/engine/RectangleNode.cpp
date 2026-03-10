@@ -1,5 +1,5 @@
 #include "glad/gl.h"
-#include <engine/RectangleNode.h>
+#include <furredengine/RectangleNode.h>
 
 #include <discord-rpc.hpp>
 
@@ -8,11 +8,13 @@
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
 
-#include <engine/config.hpp>
-#include <engine/Engine.h>
-#include <engine/Geometry.h>
-#include <engine/utils.h>
-#include <engine/Engine.h>
+#include <furredengine/config.hpp>
+#include <furredengine/Engine.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/utils.h>
+#include <furredengine/Engine.h>
+
+using namespace FurredEngine;
 
 RectangleNode::RectangleNode() :
     m_filled(true),

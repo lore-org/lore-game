@@ -1,5 +1,5 @@
 #include "glad/gl.h"
-#include <engine/Director.h>
+#include <furredengine/Director.h>
 
 #include <thread>
 
@@ -10,14 +10,16 @@
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
 
-#include <engine/config.hpp>
-#include <engine/Engine.h>
-#include <engine/Geometry.h>
-#include <engine/utils.h>
-#include <engine/Object.h>
-#include <engine/Scene.h>
-#include <engine/Engine.h>
-#include <engine/RectangleNode.h>
+#include <furredengine/config.hpp>
+#include <furredengine/Engine.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/utils.h>
+#include <furredengine/Object.h>
+#include <furredengine/Scene.h>
+#include <furredengine/Engine.h>
+#include <furredengine/RectangleNode.h>
+
+using namespace FurredEngine;
 
 std::shared_ptr<Director> Director::m_instance;
 

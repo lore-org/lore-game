@@ -8,6 +8,8 @@
 #define Event_Callback std::function<void(void*)>
 #define Update_Callback std::function<void(const long double)>
 
+namespace FurredEngine {
+
 // This uses Object* instead of std::shared_ptr<Object> for updates as the Object is never deconstructed
 class Object : public std::enable_shared_from_this<Object> {
 public:
@@ -45,3 +47,5 @@ protected:
 private:
     std::shared_ptr<Update_Callback> m_updateCallback;
 };
+
+}

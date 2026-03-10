@@ -4,7 +4,9 @@
 #include <vector>
 #include <unordered_set>
 
-#include <engine/Object.h>
+#include <furredengine/Object.h>
+
+namespace FurredEngine {
 
 struct _entry {
     Object* target;
@@ -56,3 +58,5 @@ private:
     // Returns nullptr if target does not exist
     std::shared_ptr<_entry> _getEntryFromTarget(Object* target);
 };
+
+}

@@ -1,14 +1,16 @@
-#include <engine/ColorNode.h>
+#include <furredengine/ColorNode.h>
 
 #include <fmt/base.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
 
-#include <engine/config.hpp>
-#include <engine/Engine.h>
-#include <engine/Geometry.h>
-#include <engine/utils.h>
+#include <furredengine/config.hpp>
+#include <furredengine/Engine.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/utils.h>
+
+using namespace FurredEngine;
 
 ColorNode::ColorNode() : m_color({ 255, 255, 255, 255 }), m_blendMode(BlendMode::Blend) {}
 

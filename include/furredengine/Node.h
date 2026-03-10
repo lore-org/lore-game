@@ -3,9 +3,11 @@
 #include <cstdint>
 #include <vector>
 
-#include <engine/Object.h>
-#include <engine/utils.h>
-#include <engine/Geometry.h>
+#include <furredengine/Object.h>
+#include <furredengine/utils.h>
+#include <furredengine/Geometry.h>
+
+namespace FurredEngine {
 
 class Node : public Object {
 public:
@@ -133,3 +135,5 @@ private:
     // Returns -1 if child does not exist
     size_t _getIndexOfChild(std::shared_ptr<Node> child);
 };
+
+}

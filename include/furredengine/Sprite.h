@@ -18,14 +18,16 @@
 
 #include <discord-rpc.hpp>
 
-#include <engine/config.hpp>
-#include <engine/Engine.h>
-#include <engine/Geometry.h>
-#include <engine/utils.h>
+#include <furredengine/config.hpp>
+#include <furredengine/Engine.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/utils.h>
 
 #include <memory>
 
-#include <engine/ColorNode.h>
+#include <furredengine/ColorNode.h>
+
+namespace FurredEngine {
 
 class Sprite : public ColorNode {
 public:
@@ -112,3 +114,5 @@ private:
     void _createTexture();
     void _updateVertices();
 };
+
+}

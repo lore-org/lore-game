@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #if __ANDROID__
     #include <glad/gles1.h>
     #include <glad/gles2.h>
@@ -9,21 +7,36 @@
     #include <glad/gl.h>
 #endif
 
-#include <engine/ColorNode.h>
+#include <GLFW/glfw3.h>
 
-class RectangleNode : public ColorNode {
+#include <furredengine/ColorNode.h>
+#include <furredengine/FontManager.h>
+
+namespace FurredEngine {
+
+class TextNode : public ColorNode {
+    friend class Typeable;
+    friend class Engine;
+
 public:
-    virtual ~RectangleNode();
+    virtual ~TextNode();
 
-    virtual bool init(Point origin, Size size);
+    virtual bool init(FontManager::FontFace* font, Point position);
 
-    static std::shared_ptr<RectangleNode> create();
-
-    static std::shared_ptr<RectangleNode> createWithVec(Point origin, Size size);
-
-    static std::shared_ptr<RectangleNode> createWithRect(Rect rectangle);
+    static std::shared_ptr<TextNode> create(FontManager::FontFace* font = nullptr, Point position = { 0, 0 });
+    static std::shared_ptr<TextNode> create(std::string fontFile, Point position = { 0, 0 });
 
     virtual void draw(const long double dt) override;
+
+    void setDisplayedText(std::string displayedText);
+    inline std::string getDisplayedText() { return m_displayedText; }
+
+    void setFontPoint(float point);
+    inline float getFontPoint() { return m_fontFace->getFontPoint(); }
+
+    // TODO - impl changeFontHeight, which changes the font size to the desired height, calculates the difference from the actual height, and adjusts for the pt ratio
+    void changeFont(std::string fontFile);
+    void changeFont(FontManager::FontFace* font);
 
 
     // overrides for statusBitset
@@ -45,22 +58,29 @@ public:
     virtual inline void setColorA(Color4 color) override { setColorA(color.r, color.g, color.b, color.a); }; // Includes alpha channel
 
 protected:
-    RectangleNode();
+    TextNode();
 
-    // unused
-    bool m_filled;
+    std::string m_displayedText;
+
+    FontManager::FontFace* m_fontFace;
+
 
     struct BufferData {
         vec2<int> vertPos;
+        vec2<unsigned int> texCoord;
     };
+
+    GLuint m_glProgram;
 
     GLuint m_glVertexArray;
     GLuint m_glVertexBuffer;
 
-    GLuint m_glProgram;
+    GLuint m_glTexture;
+    
+
+    size_t m_numChars;
 
 private:
-    using ColorNode::init;
 
     enum : char {
         UPDATE_VERTICES =   1 << 0,
@@ -69,5 +89,10 @@ private:
     };
     char m_statusBitset = 0b111;
 
+    void _measureString();
+
+    void _createAtlasTex();
     void _updateVertices();
 };
+
+}

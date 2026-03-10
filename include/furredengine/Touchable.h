@@ -1,8 +1,10 @@
 #pragma once
 
-#include <engine/Node.h>
-#include <engine/Engine.h>
-#include <engine/utils.h>
+#include <furredengine/Node.h>
+#include <furredengine/Engine.h>
+#include <furredengine/utils.h>
+
+namespace FurredEngine {
 
 // sets up events for interacting with Mouse input. Use `Engine::sharedInstance()->getMouseData()` to get the current data involving the mouse instead.
 class Touchable : public Node {
@@ -49,3 +51,5 @@ protected:
     
     Engine::MouseData m_lastMouseData;
 };
+
+}

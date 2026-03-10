@@ -1,6 +1,6 @@
 #include <chrono>
 #include <cstring>
-#include <engine/Engine.h>
+#include <furredengine/Engine.h>
 
 #include <algorithm>
 #include <memory>
@@ -41,17 +41,19 @@
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
 
-#include <engine/config.hpp>
-#include <engine/Engine.h>
-#include <engine/utils.h>
-#include <engine/PresenceManager.h>
-#include <engine/Scheduler.h>
-#include <engine/Director.h>
-#include <engine/Typeable.h>
-#include <engine/TextNode.h>
-#include <engine/Geometry.h>
+#include <furredengine/config.hpp>
+#include <furredengine/Engine.h>
+#include <furredengine/utils.h>
+#include <furredengine/PresenceManager.h>
+#include <furredengine/Scheduler.h>
+#include <furredengine/Director.h>
+#include <furredengine/Typeable.h>
+#include <furredengine/TextNode.h>
+#include <furredengine/Geometry.h>
 
 // TODO - move some functions to their own classes to reduce clutter
+
+using namespace FurredEngine;
 
 std::shared_ptr<Engine> Engine::m_instance;
 

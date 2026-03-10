@@ -8,7 +8,9 @@
 #include <simdutf.h>
 #include <rectpack2D/finders_interface.h>
 
-#include <engine/Object.h>
+#include <furredengine/Object.h>
+
+namespace FurredEngine {
 
 // Disallow texture flipping and use default allocator
 using empty_spaces = rectpack2D::empty_spaces<false>;
@@ -124,3 +126,5 @@ protected:
 private:
     static std::shared_ptr<FontManager> m_instance;
 };
+
+}

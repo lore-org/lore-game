@@ -17,8 +17,10 @@
 
 #include <glm/glm.hpp>
 
-#include <engine/Geometry.h>
-#include <engine/utils.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/utils.h>
+
+namespace FurredEngine {
 
 class TextNode;
 class Typeable;
@@ -243,3 +245,5 @@ private:
     static void _glfwCursorPosCallback(GLFWwindow*, double x, double y);
     static void _glfwMouseButtonCallback(GLFWwindow*, int button, int action, int mods);
 };
+
+}

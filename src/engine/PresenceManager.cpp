@@ -1,4 +1,4 @@
-#include <engine/PresenceManager.h>
+#include <furredengine/PresenceManager.h>
 
 #include <memory>
 
@@ -9,12 +9,12 @@
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
 
-#include <engine/config.hpp>
-#include <engine/Engine.h>
-#include <engine/Geometry.h>
-#include <engine/utils.h>
+#include <furredengine/config.hpp>
+#include <furredengine/Engine.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/utils.h>
 
-using namespace utils;
+using namespace FurredEngine;
 
 std::shared_ptr<PresenceManager> PresenceManager::m_instance;
 

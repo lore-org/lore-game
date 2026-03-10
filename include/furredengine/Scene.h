@@ -1,6 +1,8 @@
 #pragma once
 
-#include <engine/Node.h>
+#include <furredengine/Node.h>
+
+namespace FurredEngine {
 
 class Scene : public Node {
 public:
@@ -8,3 +10,5 @@ public:
 
     static std::shared_ptr<Scene> create();
 };
+
+}

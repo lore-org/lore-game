@@ -2,9 +2,11 @@
 
 #include <memory>
 
-#include <engine/ColorNode.h>
-#include <engine/RectangleNode.h>
-#include <engine/Touchable.h>
+#include <furredengine/ColorNode.h>
+#include <furredengine/RectangleNode.h>
+#include <furredengine/Touchable.h>
+
+namespace FurredEngine {
 
 class TextNode;
 
@@ -104,3 +106,5 @@ private:
 
     void _updateChildren();
 };
+
+}

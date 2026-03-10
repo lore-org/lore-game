@@ -1,4 +1,4 @@
-#include <engine/TextNode.h>
+#include <furredengine/TextNode.h>
 
 #include <cstring>
 
@@ -15,10 +15,12 @@
 
 #include <simdutf.h>
 
-#include <engine/utils.h>
-#include <engine/Engine.h>
-#include <engine/FontManager.h>
-#include <engine/Typeable.h>
+#include <furredengine/utils.h>
+#include <furredengine/Engine.h>
+#include <furredengine/FontManager.h>
+#include <furredengine/Typeable.h>
+
+using namespace FurredEngine;
 
 TextNode::TextNode() :
     m_displayedText(""),

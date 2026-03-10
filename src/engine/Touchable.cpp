@@ -1,4 +1,4 @@
-#include <engine/Touchable.h>
+#include <furredengine/Touchable.h>
 
 #include <cstdint>
 
@@ -9,12 +9,14 @@
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
 
-#include <engine/config.hpp>
-#include <engine/Engine.h>
-#include <engine/Geometry.h>
-#include <engine/utils.h>
-#include <engine/Scheduler.h>
-#include <engine/Engine.h>
+#include <furredengine/config.hpp>
+#include <furredengine/Engine.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/utils.h>
+#include <furredengine/Scheduler.h>
+#include <furredengine/Engine.h>
+
+using namespace FurredEngine;
 
 Touchable::Touchable() : m_isHovered(false), m_isPressed(false), m_isFocused(false), m_lastMouseData(Engine::sharedInstance()->getMouseData()) {}
 

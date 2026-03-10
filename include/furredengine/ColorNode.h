@@ -1,6 +1,8 @@
 #pragma once
 
-#include <engine/Node.h>
+#include <furredengine/Node.h>
+
+namespace FurredEngine {
 
 class ColorNode : public Node {
 public:
@@ -63,3 +65,5 @@ protected:
     Color4 m_color;
     BlendMode m_blendMode;
 };
+
+}

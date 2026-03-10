@@ -1,4 +1,4 @@
-#include <engine/Node.h>
+#include <furredengine/Node.h>
 
 #include <algorithm>
 #include <memory>
@@ -12,12 +12,14 @@
 
 #include <discord-rpc.hpp>
 
-#include <engine/config.hpp>
-#include <engine/Engine.h>
-#include <engine/Geometry.h>
-#include <engine/utils.h>
-#include <engine/Object.h>
-#include <engine/Scheduler.h>
+#include <furredengine/config.hpp>
+#include <furredengine/Engine.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/utils.h>
+#include <furredengine/Object.h>
+#include <furredengine/Scheduler.h>
+
+using namespace FurredEngine;
 
 Node::Node() :
     m_rotation(.0f), m_scale(1.f), m_position(0),

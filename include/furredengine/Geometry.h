@@ -6,6 +6,10 @@
 #include <string>
 
 #include <fmt/format.h>
+#include <glm/ext/vector_float2.hpp>
+#include <glm/ext/vector_float4.hpp>
+
+namespace FurredEngine {
 
 template <typename _Size>
 struct vec2;
@@ -59,7 +63,11 @@ public:
     Point rotateAroundCenter(Point center, long double angle);
 };
 
-inline std::string format_as(Point p) { return p; }
+}
+
+inline std::string format_as(FurredEngine::Point p) { return p; }
+
+namespace FurredEngine {
 
 class Size : public std::enable_shared_from_this<Size> {
 public:
@@ -90,7 +98,11 @@ public:
     bool equals(const Size& target) const;
 };
 
-inline std::string format_as(Size s) { return s; }
+}
+
+inline std::string format_as(FurredEngine::Size s) { return s; }
+
+namespace FurredEngine {
 
 class Rect : public std::enable_shared_from_this<Rect> {
 public:
@@ -129,4 +141,6 @@ public:
     long double getHeight() const;
 };
 
-inline std::string format_as(Rect r) { return r; }
+}
+
+inline std::string format_as(FurredEngine::Rect r) { return r; }

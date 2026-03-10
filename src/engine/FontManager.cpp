@@ -1,6 +1,6 @@
 #include "simdutf/implementation.h"
 #include <algorithm>
-#include <engine/FontManager.h>
+#include <furredengine/FontManager.h>
 
 #include <cstdint>
 #include <optional>
@@ -12,8 +12,10 @@
 #include <rectpack2D/finders_interface.h>
 #include <rectpack2D/empty_spaces.h>
 
-#include <engine/Engine.h>
-#include <engine/utils.h>
+#include <furredengine/Engine.h>
+#include <furredengine/utils.h>
+
+using namespace FurredEngine;
 
 #define log_freetype_error() do { if (auto s = FT_Error_String(e)) LogDebug(s); else LogDebug("FT_Error_String returned NULL"); } while (0)
 #define log_simdutf_error() do { \

@@ -1,4 +1,4 @@
-#include <engine/Object.h>
+#include <furredengine/Object.h>
 
 #include <algorithm>
 #include <memory>
@@ -11,11 +11,13 @@
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
 
-#include <engine/config.hpp>
-#include <engine/Engine.h>
-#include <engine/Geometry.h>
-#include <engine/utils.h>
-#include <engine/Scheduler.h>
+#include <furredengine/config.hpp>
+#include <furredengine/Engine.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/utils.h>
+#include <furredengine/Scheduler.h>
+
+using namespace FurredEngine;
 
 Object::Object() {}
 

@@ -1,13 +1,15 @@
 #include <cmath>
-#include <engine/Typeable.h>
+#include <furredengine/Typeable.h>
 
 #include <memory>
 #include <cstdint>
 
-#include <engine/ColorNode.h>
-#include <engine/RectangleNode.h>
-#include <engine/TextNode.h>
-#include <engine/Touchable.h>
+#include <furredengine/ColorNode.h>
+#include <furredengine/RectangleNode.h>
+#include <furredengine/TextNode.h>
+#include <furredengine/Touchable.h>
+
+using namespace FurredEngine;
 
 using Color4 = ColorNode::Color4;
 

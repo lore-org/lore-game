@@ -2,9 +2,11 @@
 
 #include <vector>
 
-#include <engine/Object.h>
-#include <engine/Scene.h>
-#include <engine/RectangleNode.h>
+#include <furredengine/Object.h>
+#include <furredengine/Scene.h>
+#include <furredengine/RectangleNode.h>
+
+namespace FurredEngine {
 
 class Director : public Object {
 public:
@@ -67,3 +69,5 @@ private:
     template<typename T>
     T _lerpTime(T start, T duration, T current);
 };
+
+}

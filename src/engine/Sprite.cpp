@@ -1,4 +1,4 @@
-#include <engine/Sprite.h>
+#include <furredengine/Sprite.h>
 
 #include <memory>
 #include <regex>
@@ -26,12 +26,14 @@
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
 
-#include <engine/config.hpp>
-#include <engine/utils.h>
-#include <engine/Geometry.h>
-#include <engine/ColorNode.h>
-#include <engine/Engine.h>
-#include <engine/Geometry.h>
+#include <furredengine/config.hpp>
+#include <furredengine/utils.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/ColorNode.h>
+#include <furredengine/Engine.h>
+#include <furredengine/Geometry.h>
+
+using namespace FurredEngine;
 
 Sprite::Sprite() :
     m_texture(nullptr),

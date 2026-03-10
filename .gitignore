@@ -1,8 +1,8 @@
 .cache
 .vscode/settings.json
 build*/
-src/engine/config.hpp
-include/engine/config.hpp
+src/furredengine/config.hpp
+include/furredengine/config.hpp
 .xmake/
 compile_commands.json
 *.pdb

@@ -1,4 +1,4 @@
-#include <engine/Geometry.h>
+#include <furredengine/Geometry.h>
 
 #include <math.h>
 #include <cmath>
@@ -11,10 +11,12 @@
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
 
-#include <engine/config.hpp>
-#include <engine/Engine.h>
-#include <engine/Geometry.h>
-#include <engine/utils.h>
+#include <furredengine/config.hpp>
+#include <furredengine/Engine.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/utils.h>
+
+using namespace FurredEngine;
 
 Point::Point(long double dim) : x(dim), y(dim) {}
 

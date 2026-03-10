@@ -7,21 +7,23 @@
 #include <fmt/ranges.h>
 #include <fmt/printf.h>
 
-#include <engine/config.hpp>
-#include <engine/Engine.h>
-#include <engine/Geometry.h>
-#include <engine/utils.h>
-#include <engine/PresenceManager.h>
-#include <engine/Scene.h>
-#include <engine/Sprite.h>
-#include <engine/Director.h>
-#include <engine/Typeable.h>
-#include <engine/RectangleNode.h>
-#include <engine/TextNode.h>
+#include <furredengine/config.hpp>
+#include <furredengine/Engine.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/utils.h>
+#include <furredengine/PresenceManager.h>
+#include <furredengine/Scene.h>
+#include <furredengine/Sprite.h>
+#include <furredengine/Director.h>
+#include <furredengine/Typeable.h>
+#include <furredengine/RectangleNode.h>
+#include <furredengine/TextNode.h>
+
+using namespace FurredEngine;
 
 int main() {
     auto engine = Engine::sharedInstance();
-    auto presence = utils::PresenceManager::sharedManager();
+    auto presence = PresenceManager::sharedManager();
 
     // ---- Config Setup ----
 
