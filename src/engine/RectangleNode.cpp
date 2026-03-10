@@ -66,7 +66,7 @@ bool RectangleNode::init(Point origin, Size size) {
     glEnableVertexAttribArray(vertexPos);
     glVertexAttribPointer(
         vertexPos,
-        2, GL_INT,
+        2, GL_FLOAT,
         GL_FALSE,
         sizeof(BufferData), reinterpret_cast<void*>(0)
     );
@@ -154,10 +154,10 @@ void RectangleNode::_updateVertices() {
     auto rect = this->getRect();
     auto framebufferHeight = Engine::sharedInstance()->getFrameBufferHeight();
 
-    int x = rect.getMinX();
-    int y = framebufferHeight - rect.getMinY();
-    int w = rect.getWidth();
-    int h = rect.getHeight();
+    float x = rect.getMinX();
+    float y = framebufferHeight - rect.getMinY();
+    float w = rect.getWidth();
+    float h = rect.getHeight();
 
     glUniform2f(
         glGetUniformLocation(m_glProgram, "rectOrigin"),

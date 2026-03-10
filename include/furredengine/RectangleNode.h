@@ -53,7 +53,7 @@ protected:
     bool m_filled;
 
     struct BufferData {
-        vec2<int> vertPos;
+        glm::vec2 vertPos;
     };
 
     GLuint m_glVertexArray;

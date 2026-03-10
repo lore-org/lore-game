@@ -11,10 +11,6 @@
 
 namespace FurredEngine {
 
-template <typename _Size>
-struct vec2;
-template <typename _Size>
-struct vec4;
 class Size;
 
 class Point : public std::enable_shared_from_this<Point> {
@@ -40,10 +36,7 @@ public:
     bool operator==(const Point& right) const;
 
     operator std::string() const;
-    operator vec2<double>() const;
-    operator vec2<float>() const;
-    operator vec2<int>() const;
-    operator vec2<unsigned int>() const;
+    operator glm::vec2() const;
 
     void setPoint(long double x, long double y);
     void setPoint(Point point);
@@ -89,10 +82,7 @@ public:
     bool operator==(const Size& right) const;
 
     operator std::string() const;
-    operator vec2<double>() const;
-    operator vec2<float>() const;
-    operator vec2<int>() const;
-    operator vec2<unsigned int>() const;
+    operator glm::vec2() const;
 
     void setSize(long double width, long double height);
     bool equals(const Size& target) const;
@@ -116,10 +106,7 @@ public:
     bool operator==(const Rect& right) const;
 
     operator std::string() const;
-    operator vec4<double>() const;
-    operator vec4<float>() const;
-    operator vec4<int>() const;
-    operator vec4<unsigned int>() const;
+    operator glm::vec4() const;
 
     void setRect(long double x, long double y, long double width, long double height);
     void setOrigin(const Point& point);

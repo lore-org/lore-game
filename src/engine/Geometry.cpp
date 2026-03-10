@@ -66,31 +66,10 @@ Point::operator std::string() const {
     return fmt::format("Point {{ {}, {} }}", x, y);
 }
 
-Point::operator vec2<double>() const {
-    return {
-        static_cast<double>(x),
-        static_cast<double>(y)
-    };
-}
-
-Point::operator vec2<float>() const {
+Point::operator glm::vec2() const {
     return {
         static_cast<float>(x),
         static_cast<float>(y)
-    };
-}
-
-Point::operator vec2<int>() const {
-    return {
-        static_cast<int>(x),
-        static_cast<int>(y)
-    };
-}
-
-Point::operator vec2<unsigned int>() const {
-    return {
-        static_cast<unsigned int>(x),
-        static_cast<unsigned int>(y)
     };
 }
 
@@ -177,31 +156,10 @@ Size::operator std::string() const {
     return fmt::format("Size {{ {}, {} }}", width, height);
 }
 
-Size::operator vec2<double>() const {
-    return {
-        static_cast<double>(width),
-        static_cast<double>(height)
-    };
-}
-
-Size::operator vec2<float>() const {
+Size::operator glm::vec2() const {
     return {
         static_cast<float>(width),
         static_cast<float>(height)
-    };
-}
-
-Size::operator vec2<int>() const {
-    return {
-        static_cast<int>(width),
-        static_cast<int>(height)
-    };
-}
-
-Size::operator vec2<unsigned int>() const {
-    return {
-        static_cast<unsigned int>(width),
-        static_cast<unsigned int>(height)
     };
 }
 
@@ -231,39 +189,12 @@ Rect::operator std::string() const {
     );
 }
 
-Rect::operator vec4<double>() const {
-    return {
-        static_cast<double>(origin.x),
-        static_cast<double>(origin.y),
-        static_cast<double>(size.width),
-        static_cast<double>(size.height)
-    };
-}
-
-Rect::operator vec4<float>() const {
+Rect::operator glm::vec4() const {
     return {
         static_cast<float>(origin.x),
         static_cast<float>(origin.y),
         static_cast<float>(size.width),
         static_cast<float>(size.height)
-    };
-}
-
-Rect::operator vec4<int>() const {
-    return {
-        static_cast<int>(origin.x),
-        static_cast<int>(origin.y),
-        static_cast<int>(size.width),
-        static_cast<int>(size.height)
-    };
-}
-
-Rect::operator vec4<unsigned int>() const {
-    return {
-        static_cast<unsigned int>(origin.x),
-        static_cast<unsigned int>(origin.y),
-        static_cast<unsigned int>(size.width),
-        static_cast<unsigned int>(size.height)
     };
 }
 

@@ -66,8 +66,8 @@ protected:
 
 
     struct BufferData {
-        vec2<int> vertPos;
-        vec2<unsigned int> texCoord;
+        glm::vec2 vertPos;
+        glm::vec2 texCoord;
     };
 
     GLuint m_glProgram;

@@ -75,7 +75,7 @@ bool TextNode::init(FontManager::FontFace* font, Point position) {
     glEnableVertexAttribArray(vertPos);
     glVertexAttribPointer(
         vertPos,
-        2, GL_INT,
+        2, GL_FLOAT,
         GL_FALSE,
         sizeof(BufferData), reinterpret_cast<void*>(0)
     );
@@ -84,7 +84,7 @@ bool TextNode::init(FontManager::FontFace* font, Point position) {
     glEnableVertexAttribArray(texCoord);
     glVertexAttribPointer(
         texCoord,
-        2, GL_UNSIGNED_INT,
+        2, GL_FLOAT,
         GL_FALSE,
         sizeof(BufferData), reinterpret_cast<void*>(sizeof(BufferData::vertPos))
     );
