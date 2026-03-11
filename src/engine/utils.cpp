@@ -34,21 +34,21 @@ bool utils::caseInsensitiveCompare(std::string first, std::string second) {
     return std::ranges::equal(first, second, [](char a, char b) { return tolower(a) == tolower(b); });
 }
 
-long double utils::dot(Point &p1, Point &p2) {
+long double utils::dot(FurredEngine::Point &p1, FurredEngine::Point &p2) {
     return (p1.x * p2.x) + (p1.y * p2.y);
 };
-long double utils::dot(Point &p1, Size &p2) {
+long double utils::dot(FurredEngine::Point &p1, FurredEngine::Size &p2) {
     return (p1.x * p2.width) + (p1.y * p2.height);
 };
-long double utils::dot(Size &p1, Point &p2) {
+long double utils::dot(FurredEngine::Size &p1, FurredEngine::Point &p2) {
     return (p1.width * p2.x) + (p1.height * p2.y);
 };
-long double utils::dot(Size &p1, Size &p2) {
+long double utils::dot(FurredEngine::Size &p1, FurredEngine::Size &p2) {
     return (p1.width * p2.width) + (p1.height * p2.height);
 };
 
 // Clockwise rotation
-Point utils::rotatePointByCenter(Point& point, Point& center, long double& degrees) {
+FurredEngine::Point utils::rotatePointByCenter(FurredEngine::Point& point, FurredEngine::Point& center, long double& degrees) {
     auto radians = -degrees * radDivisor;
 
     auto cos = std::cos(radians);
@@ -124,7 +124,7 @@ glm::mat4 utils::createOrthoMat(long double framebufferWidth, long double frameb
     );
 }
 
-glm::mat4 utils::createOrthoMat(Size framebufferSize) {
+glm::mat4 utils::createOrthoMat(FurredEngine::Size framebufferSize) {
     return createOrthoMat(framebufferSize.width, framebufferSize.height);
 }
 

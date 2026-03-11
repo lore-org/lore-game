@@ -34,7 +34,7 @@ TextNode::~TextNode() {
     glDeleteProgram(m_glProgram);
 }
 
-bool TextNode::init(FontManager::FontFace* font, Point position) {
+bool TextNode::init(FontManager::FontFace* font, FurredEngine::Point position) {
     if (!ColorNode::init()) return false;
     
     auto engine = Engine::sharedInstance();
@@ -98,7 +98,7 @@ bool TextNode::init(FontManager::FontFace* font, Point position) {
 }
 
 // Font will default to `resources/Noto Sans.ttf` if not given
-std::shared_ptr<TextNode> TextNode::create(FontManager::FontFace* font, Point position) {
+std::shared_ptr<TextNode> TextNode::create(FontManager::FontFace* font, FurredEngine::Point position) {
     auto ret = utils::protected_make_shared<TextNode>();
 
     if (
@@ -107,7 +107,7 @@ std::shared_ptr<TextNode> TextNode::create(FontManager::FontFace* font, Point po
     return ret;
 }
 
-std::shared_ptr<TextNode> TextNode::create(std::string fontFile, Point position) {
+std::shared_ptr<TextNode> TextNode::create(std::string fontFile, FurredEngine::Point position) {
     return TextNode::create(
         FontManager::sharedManager()->getOrCreateFontFace(fontFile),
         position

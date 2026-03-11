@@ -101,15 +101,15 @@ public:
         while (Engine::getTimeNS() - startTime <= duration) {}
     }
 
-    void setWindowSize(Size size);
+    void setWindowSize(FurredEngine::Size size);
     inline void setWindowWidth(long double width) { setWindowSize({ width, getWindowHeight() }); };
     inline void setWindowHeight(long double height) { setWindowSize({ getWindowWidth(), height }); };
 
-    inline Size getWindowSize() { return m_windowSize; };
+    inline FurredEngine::Size getWindowSize() { return m_windowSize; };
     inline long double getWindowWidth() { return m_windowSize.width; };
     inline long double getWindowHeight() { return m_windowSize.height; };
     
-    inline Size getFrameBufferSize() { return m_framebufferSize; };
+    inline FurredEngine::Size getFrameBufferSize() { return m_framebufferSize; };
     inline long double getFrameBufferWidth() { return m_framebufferSize.width; };
     inline long double getFrameBufferHeight() { return m_framebufferSize.height; };
 
@@ -144,7 +144,7 @@ public:
     // Gets the current video mode of the monitor that the program is located on.
     inline const GLFWvidmode* getCurrentVideoMode() { return glfwGetVideoMode(this->getCurrentMonitor()); };
     // Gets the current DPI of any valid monitor.
-    Size getMonitorDPI(GLFWmonitor* monitor);
+    FurredEngine::Size getMonitorDPI(GLFWmonitor* monitor);
 
     enum class ShaderType : GLenum {
         Unknown = 0,
@@ -199,8 +199,8 @@ protected:
     bool m_isSetup;
     bool m_isStarted;
 
-    Size m_windowSize;
-    Size m_framebufferSize;
+    FurredEngine::Size m_windowSize;
+    FurredEngine::Size m_framebufferSize;
 
     MouseData m_mouseState;
 

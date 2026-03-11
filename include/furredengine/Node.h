@@ -25,33 +25,33 @@ public:
 
     virtual void setPosition(long double x, long double y);
 
-    virtual inline void setPosition(Point position) { setPosition(position.x, position.y); }
+    virtual inline void setPosition(FurredEngine::Point position) { setPosition(position.x, position.y); }
     inline void setPositionX(long double x) { setPosition(x, getPositionY()); }
     inline void setPositionY(long double y) { setPosition(getPositionX(), y); }
 
-    inline Point getPosition() const { return m_position; }
+    inline FurredEngine::Point getPosition() const { return m_position; }
     inline long double getPositionX() const { return m_position.x; }
     inline long double getPositionY() const { return m_position.y; }
 
 
     virtual void setAnchorPoint(long double x, long double y);
 
-    virtual inline void setAnchorPoint(Point anchorPoint) { setAnchorPoint(anchorPoint.x, anchorPoint.y); }
+    virtual inline void setAnchorPoint(FurredEngine::Point anchorPoint) { setAnchorPoint(anchorPoint.x, anchorPoint.y); }
     inline void setAnchorX(long double x) { setAnchorPoint(x, getAnchorY()); }
     inline void setAnchorY(long double y) { setAnchorPoint(getAnchorX(), y); }
 
-    inline Point getAnchorPoint() const { return m_anchorPoint; }
+    inline FurredEngine::Point getAnchorPoint() const { return m_anchorPoint; }
     inline long double getAnchorX() const { return m_anchorPoint.x; }
     inline long double getAnchorY() const { return m_anchorPoint.y; }
 
 
     virtual void setContentSize(long double width, long double height);
 
-    virtual inline void setContentSize(Size contentSize) { setContentSize(contentSize.width, contentSize.height); }
+    virtual inline void setContentSize(FurredEngine::Size contentSize) { setContentSize(contentSize.width, contentSize.height); }
     inline void setContentWidth(long double width) { setContentSize(width, getContentHeight()); }
     inline void setContentHeight(long double height) { setContentSize(getContentWidth(), height); }
 
-    inline Size getContentSize() const { return m_contentSize; }
+    inline FurredEngine::Size getContentSize() const { return m_contentSize; }
     inline long double getContentWidth() const { return m_contentSize.width; }
     inline long double getContentHeight() const { return m_contentSize.height; }
 
@@ -62,7 +62,7 @@ public:
     virtual void setRotation(long double rotation);
     inline long double getRotation() const { return m_rotation; }
 
-    bool containsPoint(Point point);
+    bool containsPoint(FurredEngine::Point point);
     
 
     void addChild(std::shared_ptr<Node> child);
@@ -97,7 +97,7 @@ public:
     virtual void draw(const long double dt);
 
     
-    inline Rect getRect() {
+    inline FurredEngine::Rect getRect() {
         auto scaledWidth = this->getContentWidth() * this->getScale();
         auto scaledHeight = this->getContentHeight() * this->getScale();
 
@@ -117,9 +117,9 @@ protected:
 
     long double m_rotation;
     long double m_scale;
-    Point m_position;
-    Point m_anchorPoint;
-    Size m_contentSize;
+    FurredEngine::Point m_position;
+    FurredEngine::Point m_anchorPoint;
+    FurredEngine::Size m_contentSize;
     
     int64_t m_zOrder;
     

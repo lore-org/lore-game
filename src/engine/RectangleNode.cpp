@@ -25,7 +25,7 @@ RectangleNode::~RectangleNode() {
     glDeleteProgram(m_glProgram);
 }
 
-bool RectangleNode::init(Point origin, Size size) {
+bool RectangleNode::init(FurredEngine::Point origin, FurredEngine::Size size) {
     if (!ColorNode::init()) return false;
 
     auto engine = Engine::sharedInstance();
@@ -83,14 +83,14 @@ std::shared_ptr<RectangleNode> RectangleNode::create() {
     return ret;
 }
 
-std::shared_ptr<RectangleNode> RectangleNode::createWithVec(Point origin, Size size) {
+std::shared_ptr<RectangleNode> RectangleNode::createWithVec(FurredEngine::Point origin, FurredEngine::Size size) {
     auto ret = utils::protected_make_shared<RectangleNode>();
 
     if (!ret->init(origin, size)) return nullptr;
     return ret;
 }
 
-std::shared_ptr<RectangleNode> RectangleNode::createWithRect(Rect rectangle) {
+std::shared_ptr<RectangleNode> RectangleNode::createWithRect(FurredEngine::Rect rectangle) {
     auto ret = utils::protected_make_shared<RectangleNode>();
 
     if (!ret->init(rectangle.origin, rectangle.size)) return nullptr;
