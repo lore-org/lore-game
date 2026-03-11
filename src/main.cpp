@@ -11,25 +11,23 @@ using namespace FurredEngine;
 
 int main() {
     auto engine = Engine::sharedInstance();
-    auto presence = PresenceManager::sharedManager();
+    auto presenceManager = PresenceManager::sharedManager();
 
     // ---- Config Setup ----
 
     engine->setTimeDisplaySampleSize(25);
     // engine->setFramesPerSecond(30);
 
-    presence->enableRPC(true);
+    presenceManager->restartOnFail(true);
+    presenceManager->startRPC("1255916834662645760");
 
     // -----------------------------
 
     /**
-     * This function will initialise the Game Window along with the Discord RPC manager
-     * if enabled.
-     * 
+     * This function will initialise the Game Window
      * It must be called before any graphics are created, otherwise the buffers will not
      * be initialised.
      * 
-     * Only the PresenceManager must be set before setup.
      * Running this more than once will print a warning, but will not crash the program.
      */
 

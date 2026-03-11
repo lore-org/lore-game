@@ -255,9 +255,6 @@ file(REMOVE_RECURSE
     ${CMAKE_BINARY_DIR}/include
 )
 
-file(READ config.json CONFIG_FILE)
-configure_file(include/furredengine/config.hpp.in include/furredengine/config.hpp)
-
 execute_process(COMMAND ${PYTHON} ${CMAKE_SOURCE_DIR}/python/icon_generator.py --crop-type longest --build-dir ${CMAKE_BINARY_DIR} --resources-dir ${CMAKE_SOURCE_DIR}/resources)
 
 # Linker/Compiler checking

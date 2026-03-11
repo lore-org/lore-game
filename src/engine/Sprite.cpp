@@ -15,7 +15,6 @@
 #include <httplib.h>
 #include <fmt/format.h>
 
-#include <furredengine/config.hpp>
 #include <furredengine/utils.h>
 #include <furredengine/Geometry.h>
 #include <furredengine/ColorNode.h>

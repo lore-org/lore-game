@@ -15,22 +15,20 @@ public:
 
     static std::shared_ptr<PresenceManager> sharedManager();
 
-    // Default is false
-    void enableRPC(bool enable);
-
-    inline bool isEnabled() { return m_rpcIsEnabled; }
-    inline bool isActive() { return m_rpcIsActive; }
+    void startRPC(std::string clientID);
+    
+    inline void restartOnFail(bool which) { m_restartOnFail = which; }
+    inline bool restartOnFail() { return m_restartOnFail; }
+    inline bool isActive() { return m_isActive; }
 
 protected:
     PresenceManager();
 
-    bool m_rpcIsEnabled;
-    bool m_rpcIsActive;
-
-    void setActive(bool active);
-
 private:
     static std::shared_ptr<PresenceManager> m_instance;
+
+    bool m_isActive;
+    bool m_restartOnFail;
 };
 
 }

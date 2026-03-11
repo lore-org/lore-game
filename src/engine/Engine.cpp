@@ -31,7 +31,6 @@
 #include <fmt/format.h>
 #include <fmt/printf.h>
 
-#include <furredengine/config.hpp>
 #include <furredengine/Engine.h>
 #include <furredengine/utils.h>
 #include <furredengine/PresenceManager.h>
@@ -359,26 +358,6 @@ void Engine::setupEngine() {
     );
     m_tpsText->setAnchorPoint(0);
     m_tpsText->setFontPoint(16);
-
-
-    auto presenceManager = PresenceManager::sharedManager();
-
-    auto clientID = config->at("DISCORD_CLIENT_ID");
-    if (!clientID) clientID = "0";
-
-    if (presenceManager->isEnabled()) {
-        presenceManager->setActive(false);
-        discord::RPCManager::get()
-            .setClientID(clientID.get<std::string>())
-            .onReady([](auto) {
-                PresenceManager::sharedManager()->setActive(true);
-                LogInfo("Discord Presence initialised.");
-            })
-            .onErrored([](auto, auto) {
-                LogError("Discord Presence quit unexpectedly.");
-            })
-            .initialize();
-    }
 
     m_isSetup = true;
 }

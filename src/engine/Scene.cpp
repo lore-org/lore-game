@@ -1,6 +1,5 @@
 #include <furredengine/Scene.h>
 
-#include <furredengine/config.hpp>
 #include <furredengine/Engine.h>
 #include <furredengine/Geometry.h>
 #include <furredengine/utils.h>

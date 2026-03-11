@@ -20,7 +20,6 @@
 #include <ada.h>
 #include <httplib.h>
 
-#include <furredengine/config.hpp>
 #include <furredengine/Geometry.h>
 #include <furredengine/Object.h>
 
