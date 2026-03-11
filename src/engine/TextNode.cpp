@@ -285,11 +285,11 @@ void TextNode::_updateVertices() {
         float y = ypos + glyph->offsetY;
         float& w = glyph->width;
         float& h = glyph->height;
-
-        float texX = glyph->atlasX / atlasSize;
-        float texY = glyph->atlasY / atlasSize;
-        float texW = glyph->atlasWidth / atlasSize;
-        float texH = glyph->atlasHeight / atlasSize;
+         
+        float texX = static_cast<float>(glyph->atlasX) / atlasSize;
+        float texY = static_cast<float>(glyph->atlasY) / atlasSize;
+        float texW = static_cast<float>(glyph->atlasWidth) / atlasSize;
+        float texH = static_cast<float>(glyph->atlasHeight) / atlasSize;
         
 
         // Will be flipped across x-axis in vertex shader
