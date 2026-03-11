@@ -62,7 +62,7 @@ void Node::setRotation(long double rotation) {
     m_rotation = rotation;
 }
 
-bool Node::containsPoint(Point point) {
+bool Node::containsPoint(FurredEngine::Point point) {
     auto rect = this->getRect();
 
     auto screenOrigin = MakePoint(
@@ -70,11 +70,11 @@ bool Node::containsPoint(Point point) {
         this->getPositionY() + (this->getContentHeight() * this->getAnchorY())
     );
 
-    Point rotatedRect[4] = {
-        Point(rect.getMinX(), rect.getMaxY()).rotateAroundCenter(screenOrigin, this->getRotation()),
-        Point(rect.getMaxX(), rect.getMaxY()).rotateAroundCenter(screenOrigin, this->getRotation()),
-        Point(rect.getMaxX(), rect.getMinY()).rotateAroundCenter(screenOrigin, this->getRotation()),
-        Point(rect.getMinX(), rect.getMinY()).rotateAroundCenter(screenOrigin, this->getRotation())
+    FurredEngine::Point rotatedRect[4] = {
+        FurredEngine::Point(rect.getMinX(), rect.getMaxY()).rotateAroundCenter(screenOrigin, this->getRotation()),
+        FurredEngine::Point(rect.getMaxX(), rect.getMaxY()).rotateAroundCenter(screenOrigin, this->getRotation()),
+        FurredEngine::Point(rect.getMaxX(), rect.getMinY()).rotateAroundCenter(screenOrigin, this->getRotation()),
+        FurredEngine::Point(rect.getMinX(), rect.getMinY()).rotateAroundCenter(screenOrigin, this->getRotation())
     };
 
     auto x1 = rotatedRect[0].x;

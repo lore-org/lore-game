@@ -113,20 +113,20 @@ void Engine::setTimeDisplaySampleSize(uint64_t size) {
     memset(m_tickDeltas, m_secondsPerTick, sizeof(*m_tickDeltas) * m_sampleSize);
 }
 
-void Engine::setWindowSize(Size size) {
+void Engine::setWindowSize(FurredEngine::Size size) {
     glfwSetWindowSize(m_glWindow, static_cast<int>(size.width), static_cast<int>(size.height));
     m_windowSize = size;
 }
 
 GLFWmonitor* Engine::getCurrentMonitor() {
-    Point windowPos;
+    FurredEngine::Point windowPos;
     glfwGetWindowPos(
         m_glWindow,
         reinterpret_cast<int*>(&windowPos.x),
         reinterpret_cast<int*>(&windowPos.y)
     );
 
-    Point windowCenter {
+    FurredEngine::Point windowCenter {
         windowPos.x + this->getWindowWidth() / 2,
         windowPos.y + this->getWindowHeight() / 2
     };
@@ -144,7 +144,7 @@ GLFWmonitor* Engine::getCurrentMonitor() {
         int monitorX, monitorY;
         glfwGetMonitorPos(monitor, &monitorX, &monitorY);
 
-        Rect monitorRect {
+        FurredEngine::Rect monitorRect {
             static_cast<long double>(monitorX),
             static_cast<long double>(monitorY),
             static_cast<long double>(videoMode->width),
@@ -160,7 +160,7 @@ GLFWmonitor* Engine::getCurrentMonitor() {
     return currentMonitor;
 }
 
-Size Engine::getMonitorDPI(GLFWmonitor* monitor) {
+FurredEngine::Size Engine::getMonitorDPI(GLFWmonitor* monitor) {
     int monitorWidthMM, monitorHeightMM;
     glfwGetMonitorPhysicalSize(
         monitor,

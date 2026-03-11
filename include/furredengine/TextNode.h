@@ -20,10 +20,10 @@ class TextNode : public ColorNode {
 public:
     virtual ~TextNode();
 
-    virtual bool init(FontManager::FontFace* font, Point position);
+    virtual bool init(FontManager::FontFace* font, FurredEngine::Point position);
 
-    static std::shared_ptr<TextNode> create(FontManager::FontFace* font = nullptr, Point position = { 0, 0 });
-    static std::shared_ptr<TextNode> create(std::string fontFile, Point position = { 0, 0 });
+    static std::shared_ptr<TextNode> create(FontManager::FontFace* font = nullptr, FurredEngine::Point position = { 0, 0 });
+    static std::shared_ptr<TextNode> create(std::string fontFile, FurredEngine::Point position = { 0, 0 });
 
     virtual void draw(const long double dt) override;
 
@@ -45,13 +45,13 @@ public:
     virtual void setRotation(long double rotation) override;
     
     virtual void setPosition(long double x, long double y) override;
-    virtual inline void setPosition(Point position) override { setPosition(position.x, position.y); }
+    virtual inline void setPosition(FurredEngine::Point position) override { setPosition(position.x, position.y); }
 
     virtual void setAnchorPoint(long double x, long double y) override;
-    virtual inline void setAnchorPoint(Point anchorPoint) override { setAnchorPoint(anchorPoint.x, anchorPoint.y); }
+    virtual inline void setAnchorPoint(FurredEngine::Point anchorPoint) override { setAnchorPoint(anchorPoint.x, anchorPoint.y); }
 
     virtual void setContentSize(long double width, long double height) override;
-    virtual inline void setContentSize(Size contentSize) override { setContentSize(contentSize.width, contentSize.height); }
+    virtual inline void setContentSize(FurredEngine::Size contentSize) override { setContentSize(contentSize.width, contentSize.height); }
 
     virtual void setColorA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) override; // Includes alpha channel
     virtual inline void setColorA(Color4 color) override { setColorA(color.r, color.g, color.b, color.a); }; // Includes alpha channel

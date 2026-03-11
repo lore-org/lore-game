@@ -31,9 +31,9 @@
     #define __always_inline
 #endif
 
-#define MakePoint(x, y) Point(static_cast<long double>(x), static_cast<long double>(y))
-#define MakeSize(width, height) Size(static_cast<long double>(width), static_cast<long double>(height))
-#define MakeRect(x, y, width, height) Rect(static_cast<long double>(x), static_cast<long double>(y), static_cast<long double>(width), static_cast<long double>(height))
+#define MakePoint(x, y) FurredEngine::Point(static_cast<long double>(x), static_cast<long double>(y))
+#define MakeSize(width, height) FurredEngine::Size(static_cast<long double>(width), static_cast<long double>(height))
+#define MakeRect(x, y, width, height) FurredEngine::Rect(static_cast<long double>(x), static_cast<long double>(y), static_cast<long double>(width), static_cast<long double>(height))
 
 #define EPSILON std::numeric_limits<long double>::epsilon()
 #define IsZero(f) std::fabs(static_cast<long double>(f)) < EPSILON
@@ -99,15 +99,15 @@ std::vector<std::string> splitString(std::string string, std::regex delimiter = 
 
 bool caseInsensitiveCompare(std::string first, std::string second);
 
-long double dot(Point &p1, Point &p2);
-long double dot(Point &p1, Size &p2);
-long double dot(Size &p1, Point &p2);
-long double dot(Size &p1, Size &p2);
+long double dot(FurredEngine::Point &p1, FurredEngine::Point &p2);
+long double dot(FurredEngine::Point &p1, FurredEngine::Size &p2);
+long double dot(FurredEngine::Size &p1, FurredEngine::Point &p2);
+long double dot(FurredEngine::Size &p1, FurredEngine::Size &p2);
 
 constexpr long double radDivisor = std::numbers::pi / 180.L;
 
 // Clockwise rotation
-Point rotatePointByCenter(Point& point, Point& center, long double& degrees);
+FurredEngine::Point rotatePointByCenter(FurredEngine::Point& point, FurredEngine::Point& center, long double& degrees);
 
 const char* sha512(const char* input);
 std::string sha512(std::string& input);
@@ -122,7 +122,7 @@ GLStatus checkProgramLink(GLuint program);
 GLStatus linkAndUseProgram(GLuint program);
 
 glm::mat4 createOrthoMat(long double framebufferWidth, long double framebufferHeight);
-glm::mat4 createOrthoMat(Size framebufferSize);
+glm::mat4 createOrthoMat(FurredEngine::Size framebufferSize);
 
 httplib::Result getURL(std::string url);
 

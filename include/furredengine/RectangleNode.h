@@ -17,13 +17,13 @@ class RectangleNode : public ColorNode {
 public:
     virtual ~RectangleNode();
 
-    virtual bool init(Point origin, Size size);
+    virtual bool init(FurredEngine::Point origin, FurredEngine::Size size);
 
     static std::shared_ptr<RectangleNode> create();
 
-    static std::shared_ptr<RectangleNode> createWithVec(Point origin, Size size);
+    static std::shared_ptr<RectangleNode> createWithVec(FurredEngine::Point origin, FurredEngine::Size size);
 
-    static std::shared_ptr<RectangleNode> createWithRect(Rect rectangle);
+    static std::shared_ptr<RectangleNode> createWithRect(FurredEngine::Rect rectangle);
 
     virtual void draw(const long double dt) override;
 
@@ -35,13 +35,13 @@ public:
     virtual void setRotation(long double rotation) override;
     
     virtual void setPosition(long double x, long double y) override;
-    virtual inline void setPosition(Point position) override { setPosition(position.x, position.y); }
+    virtual inline void setPosition(FurredEngine::Point position) override { setPosition(position.x, position.y); }
 
     virtual void setAnchorPoint(long double x, long double y) override;
-    virtual inline void setAnchorPoint(Point anchorPoint) override { setAnchorPoint(anchorPoint.x, anchorPoint.y); }
+    virtual inline void setAnchorPoint(FurredEngine::Point anchorPoint) override { setAnchorPoint(anchorPoint.x, anchorPoint.y); }
 
     virtual void setContentSize(long double width, long double height) override;
-    virtual inline void setContentSize(Size contentSize) override { setContentSize(contentSize.width, contentSize.height); }
+    virtual inline void setContentSize(FurredEngine::Size contentSize) override { setContentSize(contentSize.width, contentSize.height); }
 
     virtual void setColorA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) override; // Includes alpha channel
     virtual inline void setColorA(Color4 color) override { setColorA(color.r, color.g, color.b, color.a); }; // Includes alpha channel

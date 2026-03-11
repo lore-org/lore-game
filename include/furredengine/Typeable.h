@@ -66,13 +66,13 @@ public:
     virtual void setScale(long double scale) override;
     
     virtual void setPosition(long double x, long double y) override;
-    virtual inline void setPosition(Point position) override { setPosition(position.x, position.y); }
+    virtual inline void setPosition(FurredEngine::Point position) override { setPosition(position.x, position.y); }
 
     virtual void setAnchorPoint(long double x, long double y) override;
-    virtual inline void setAnchorPoint(Point anchorPoint) override { setAnchorPoint(anchorPoint.x, anchorPoint.y); }
+    virtual inline void setAnchorPoint(FurredEngine::Point anchorPoint) override { setAnchorPoint(anchorPoint.x, anchorPoint.y); }
 
     virtual void setContentSize(long double width, long double height) override;
-    virtual inline void setContentSize(Size contentSize) override { setContentSize(contentSize.width, contentSize.height); }
+    virtual inline void setContentSize(FurredEngine::Size contentSize) override { setContentSize(contentSize.width, contentSize.height); }
 
 protected:
     Typeable();
