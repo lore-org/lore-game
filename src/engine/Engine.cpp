@@ -2,11 +2,10 @@
 
 #include <chrono>
 #include <cstring>
-#include <algorithm>
 #include <memory>
+#include <numeric>
 #include <stdexcept>
 #include <thread>
-#include <utility>
 #include <cstdint>
 #include <condition_variable>
 #ifdef HAS_PAR_UNSEQ
