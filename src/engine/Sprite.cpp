@@ -269,7 +269,7 @@ void Sprite::_createTexture() {
 
     glTexImage2D(
         GL_TEXTURE_2D, 0,
-        format,
+        internalFormat,
         m_texture->width, m_texture->height,
         0,
         format, GL_UNSIGNED_BYTE,

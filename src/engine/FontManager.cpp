@@ -201,7 +201,7 @@ FontManager::Glyph* FontManager::FontFace::loadGlyph(char32_t codepoint) {
                 break;
             default:
                 LogError(fmt::format("Unsupported glyph render mode (mode={})", pixelMode));
-                break;
+                return nullptr;
         }
     }
 

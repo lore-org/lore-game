@@ -141,7 +141,6 @@ void Typeable::_focusIn(void* data) {
     auto engine = Engine::sharedInstance();
     auto& inputText = m_displayText->m_displayedText;
 
-    auto window = engine->getWindow();
     engine->requestTextInputCapturing(utils::cast_shared<Typeable>(this));
 
     m_seekBounds.start = inputText.size();
@@ -150,7 +149,6 @@ void Typeable::_focusIn(void* data) {
 void Typeable::_focusOut(void* data) {
     auto engine = Engine::sharedInstance();
 
-    auto window = engine->getWindow();
     engine->removeTextInputCapturing(utils::cast_shared<Typeable>(this));
 }
 
