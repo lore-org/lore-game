@@ -344,21 +344,21 @@ message("Git_VERSION:           ${Git_VERSION}")
 CPMAddPackage(
     NAME discord-rpc
     GIT_REPOSITORY https://github.com/EclipseMenu/discord-presence.git
-    GIT_TAG 59a3ba7
+    GIT_TAG 3b50b08
 )
 
 CPMAddPackage(
     NAME fmt
-    VERSION 11.2.0
+    VERSION 12.1.0
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-    GIT_TAG 11.2.0
+    GIT_TAG 12.1.0
 )
 
 CPMAddPackage(
     NAME glaze
-    VERSION 5.5.4
+    VERSION 7.0.2
     GIT_REPOSITORY https://github.com/stephenberry/glaze.git
-    GIT_TAG v5.5.4
+    GIT_TAG v7.0.2
 )
 
 CPMAddPackage(
