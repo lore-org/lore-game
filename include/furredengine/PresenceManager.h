@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include <discord-rpc.hpp>
+
 #include <furredengine/Object.h>
 
 namespace FurredEngine {
