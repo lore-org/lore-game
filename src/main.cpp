@@ -83,16 +83,12 @@ int main() {
 
     auto textInput = Typeable::createWithColors(
         { 30, 25, 40, 255 },
-        { 30, 25, 40, 190 },
-        { 210, 205, 220, 255 }
+        { 30, 25, 40, 190 }
     );
     textInput->m_placeholderText->setDisplayedText("Placeholder...");
     textInput->setAnchorPoint(0);
     textInput->setPosition(100, 100);
     textInput->setContentSize(250, 30);
-    textInput->setUpdate(std::make_shared<Update_Callback>([&textInput](auto) {
-        textInput->m_background->setOpacity(!textInput->isPressed() ? 255 : 200);
-    }));
     textInput->scheduleSelf();
     scene->addChild(textInput);
 

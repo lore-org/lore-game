@@ -44,10 +44,10 @@ public:
         int32_t length;
     };
 
-    virtual bool init(ColorNode::Color4 displayTextColor, ColorNode::Color4 placeholderTextColor, ColorNode::Color4 backgroundColor);
+    virtual bool init(ColorNode::Color4 displayTextColor, ColorNode::Color4 placeholderTextColor);
 
     static std::shared_ptr<Typeable> create();
-    static std::shared_ptr<Typeable> createWithColors(ColorNode::Color4 displayTextColor, ColorNode::Color4 placeholderTextColor, ColorNode::Color4 backgroundColor);
+    static std::shared_ptr<Typeable> createWithColors(ColorNode::Color4 displayTextColor, ColorNode::Color4 placeholderTextColor);
 
     void setInputType(InputType type);
     inline InputType getInputType() { return m_inputType; }
@@ -58,7 +58,6 @@ public:
     std::shared_ptr<TextNode> m_displayText;
     std::shared_ptr<TextNode> m_placeholderText;
     std::shared_ptr<RectangleNode> m_cursor;
-    std::shared_ptr<RectangleNode> m_background;
 
 
     // overrides for statusBitset

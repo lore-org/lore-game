@@ -17,7 +17,7 @@ Typeable::Typeable() :
     m_inputType(InputType::Text), m_seekBounds({ 0, 0 }),
     m_widthToCursor(0) {}
 
-bool Typeable::init(Color4 displayTextColor, Color4 placeholderTextColor, Color4 backgroundColor) {
+bool Typeable::init(Color4 displayTextColor, Color4 placeholderTextColor) {
     if (!Touchable::init()) return false;
 
     auto rect = this->getRect();
@@ -51,20 +51,13 @@ bool Typeable::init(Color4 displayTextColor, Color4 placeholderTextColor, Color4
     });
     m_cursor->setAnchorPoint(0);
     m_cursor->setColor(m_displayText->getColor());
-    m_cursor->setOpacity(190);
-
-    // ---- Background ----
-
-    m_background = RectangleNode::createWithRect(rect);
-    m_background->setAnchorPoint(0);
-    m_background->setColorA(backgroundColor);
+    m_cursor->setOpacity(m_displayText->getOpacity() / 2.f);
 
     // --------------------
 
     this->addChild(m_displayText, 1);
     this->addChild(m_placeholderText, 1);
     this->addChild(m_cursor, 2);
-    this->addChild(m_background, 0);
 
     this->registerEventListener(
         Typeable::Events::focusin,
@@ -87,17 +80,16 @@ std::shared_ptr<Typeable> Typeable::create() {
     auto ret = utils::protected_make_shared<Typeable>();
 
     if (!ret->init(
-        { 0, 0, 0, 255 },
-        { 0, 0, 0, 155 },
-        { 255, 255, 255, 255 }
+        { 255, 255, 255, 255 },
+        { 255, 255, 255, 155 }
     )) return nullptr;
     return ret;
 }
 
-std::shared_ptr<Typeable> Typeable::createWithColors(Color4 displayTextColor, Color4 placeholderTextColor, Color4 backgroundColor) {
+std::shared_ptr<Typeable> Typeable::createWithColors(Color4 displayTextColor, Color4 placeholderTextColor) {
     auto ret = utils::protected_make_shared<Typeable>();
 
-    if (!ret->init(displayTextColor, placeholderTextColor, backgroundColor)) return nullptr;
+    if (!ret->init(displayTextColor, placeholderTextColor)) return nullptr;
     return ret;
 }
 
@@ -249,9 +241,4 @@ void Typeable::_updateChildren() {
         rect.getMinY() + 3
     );
     m_cursor->setContentHeight(rect.getHeight() - 6);
-    
-    // ---- Background ----
-
-    m_background->setPosition(rect.origin);
-    m_background->setContentSize(rect.size);
 }
