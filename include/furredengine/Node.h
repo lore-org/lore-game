@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <vector>
+#include <memory>
+#include <cstddef>
 
 #include <furredengine/Object.h>
 #include <furredengine/utils.h>

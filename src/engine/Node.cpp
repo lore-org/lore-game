@@ -4,11 +4,11 @@
 #include <memory>
 #include <vector>
 #include <cmath>
+#include <cstdint>
+#include <cstddef>
 
-#include <furredengine/Engine.h>
 #include <furredengine/Geometry.h>
 #include <furredengine/utils.h>
-#include <furredengine/Object.h>
 #include <furredengine/Scheduler.h>
 
 using namespace FurredEngine;

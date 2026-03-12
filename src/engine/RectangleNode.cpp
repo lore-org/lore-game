@@ -1,12 +1,19 @@
 #include <furredengine/RectangleNode.h>
 
-#include <fmt/base.h>
-#include <fmt/format.h>
-#include <fmt/ranges.h>
-#include <fmt/printf.h>
+#include <cstddef>
+#include <memory>
+#include <cstdint>
+
+#if __ANDROID__
+    #include <glad/gles1.h>
+    #include <glad/gles2.h>
+#else
+    #include <glad/gl.h>
+#endif
 
 #include <furredengine/Engine.h>
 #include <furredengine/Geometry.h>
+#include <furredengine/ColorNode.h>
 #include <furredengine/utils.h>
 #include <furredengine/Engine.h>
 

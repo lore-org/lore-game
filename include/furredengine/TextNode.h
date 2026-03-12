@@ -1,15 +1,21 @@
 #pragma once
 
+#include <memory>
+#include <string>
+#include <cstdint>
+#include <cstddef>
+
 #if __ANDROID__
     #include <glad/gles1.h>
     #include <glad/gles2.h>
 #else
     #include <glad/gl.h>
 #endif
-#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include <furredengine/ColorNode.h>
 #include <furredengine/FontManager.h>
+#include <furredengine/Geometry.h>
 
 namespace FurredEngine {
 

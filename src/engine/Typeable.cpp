@@ -3,11 +3,17 @@
 #include <cmath>
 #include <memory>
 #include <cstdint>
+#include <cstddef>
+
+#include <fmt/format.h>
 
 #include <furredengine/ColorNode.h>
 #include <furredengine/RectangleNode.h>
 #include <furredengine/TextNode.h>
 #include <furredengine/Touchable.h>
+#include <furredengine/Object.h>
+#include <furredengine/Engine.h>
+#include <furredengine/utils.h>
 
 using namespace FurredEngine;
 

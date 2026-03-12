@@ -1,8 +1,7 @@
 #pragma once
 
 #include <memory>
-
-#include <discord-rpc.hpp>
+#include <string>
 
 #include <furredengine/Object.h>
 

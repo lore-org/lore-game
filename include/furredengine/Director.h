@@ -1,10 +1,14 @@
 #pragma once
 
 #include <vector>
+#include <memory>
+#include <cstdint>
+#include <cstddef>
 
 #include <furredengine/Object.h>
 #include <furredengine/Scene.h>
 #include <furredengine/RectangleNode.h>
+#include <furredengine/ColorNode.h>
 
 namespace FurredEngine {
 

@@ -1,6 +1,8 @@
 #include <furredengine/TextNode.h>
 
 #include <cstring>
+#include <memory>
+#include <cstdint>
 
 #if __ANDROID__
     #include <glad/gles1.h>
@@ -8,14 +10,13 @@
 #else
     #include <glad/gl.h>
 #endif
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <simdutf.h>
 
 #include <furredengine/utils.h>
 #include <furredengine/Engine.h>
 #include <furredengine/FontManager.h>
 #include <furredengine/Typeable.h>
+#include <furredengine/Geometry.h>
+#include <furredengine/ColorNode.h>
 
 using namespace FurredEngine;
 

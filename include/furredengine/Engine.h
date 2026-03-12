@@ -3,8 +3,10 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
-#include <unordered_map>
 #include <thread>
+#include <chrono>
+#include <string>
+#include <cstddef>
 
 #if __ANDROID__
     #include <glad/gles1.h>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <furredengine/Node.h>
 
 namespace FurredEngine {

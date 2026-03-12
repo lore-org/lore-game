@@ -1,9 +1,11 @@
 #pragma once
 
-#include <cstdlib>
+#include <memory>
+#include <unordered_map>
+#include <vector>
+#include <string>
 
 #include <ft2build.h>
-#include <string>
 #include FT_FREETYPE_H
 #include <simdutf.h>
 #include <rectpack2D/finders_interface.h>

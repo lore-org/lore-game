@@ -1,6 +1,16 @@
 #include <furredengine/Director.h>
 
 #include <thread>
+#include <memory>
+#include <cstdint>
+#include <cstdlib>
+
+#if __ANDROID__
+    #include <glad/gles1.h>
+    #include <glad/gles2.h>
+#else
+    #include <glad/gl.h>
+#endif
 
 #include <furredengine/Engine.h>
 #include <furredengine/Geometry.h>
@@ -9,6 +19,7 @@
 #include <furredengine/Scene.h>
 #include <furredengine/Engine.h>
 #include <furredengine/RectangleNode.h>
+#include <furredengine/ColorNode.h>
 
 using namespace FurredEngine;
 

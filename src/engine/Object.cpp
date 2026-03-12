@@ -3,9 +3,8 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
-#include <furredengine/Engine.h>
-#include <furredengine/Geometry.h>
 #include <furredengine/utils.h>
 #include <furredengine/Scheduler.h>
 

@@ -1,12 +1,15 @@
 #include <furredengine/Touchable.h>
 
 #include <cstdint>
+#include <memory>
 
 #include <furredengine/Engine.h>
 #include <furredengine/Geometry.h>
 #include <furredengine/utils.h>
 #include <furredengine/Scheduler.h>
 #include <furredengine/Engine.h>
+#include <furredengine/Node.h>
+#include <furredengine/Object.h>
 
 using namespace FurredEngine;
 

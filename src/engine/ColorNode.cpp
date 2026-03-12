@@ -1,7 +1,8 @@
 #include <furredengine/ColorNode.h>
 
-#include <furredengine/Engine.h>
-#include <furredengine/Geometry.h>
+#include <cstdint>
+#include <memory>
+
 #include <furredengine/utils.h>
 
 using namespace FurredEngine;

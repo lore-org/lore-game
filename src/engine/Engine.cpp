@@ -8,6 +8,12 @@
 #include <thread>
 #include <cstdint>
 #include <condition_variable>
+#include <cstdlib>
+#include <string>
+#include <fstream>
+#include <ios>
+#include <cmath>
+#include <mutex>
 #ifdef HAS_PAR_UNSEQ
     #include <execution>
     #define par_unseq std::execution::par_unseq,
@@ -22,17 +28,13 @@
     #include <glad/gl.h>
 #endif
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <simdutf.h>
-#include <openssl/sha.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <fmt/format.h>
 #include <fmt/printf.h>
 
 #include <furredengine/Engine.h>
 #include <furredengine/utils.h>
-#include <furredengine/PresenceManager.h>
 #include <furredengine/Scheduler.h>
 #include <furredengine/Director.h>
 #include <furredengine/Typeable.h>

@@ -4,11 +4,16 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <memory>
+#include <vector>
+#include <cstdlib>
+#include <cstring>
 
+#include <ft2build.h>
 #include FT_FREETYPE_H
-#include <simdutf.h>
-#include <rectpack2D/finders_interface.h>
 #include <rectpack2D/empty_spaces.h>
+#include <simdutf.h>
+#include <fmt/format.h>
 
 #include <furredengine/Engine.h>
 #include <furredengine/utils.h>

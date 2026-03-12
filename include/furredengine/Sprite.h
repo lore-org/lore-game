@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <string>
+#include <cstdint>
 
 #if __ANDROID__
     #include <glad/gles1.h>
@@ -8,13 +10,10 @@
 #else
     #include <glad/gl.h>
 #endif
-#include <GLFW/glfw3.h>
 #include <stb_image.h>
+#include <glm/glm.hpp>
 
-#include <furredengine/Engine.h>
 #include <furredengine/Geometry.h>
-#include <furredengine/utils.h>
-
 #include <furredengine/ColorNode.h>
 
 namespace FurredEngine {

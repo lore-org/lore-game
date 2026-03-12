@@ -1,12 +1,16 @@
 #pragma once
 
-#include <cmath>
 #include <numbers>
 #include <string>
 #include <algorithm>
 #include <vector>
 #include <regex>
-#include <cctype>
+#include <locale>
+#include <utility>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <cstddef>
 
 #if __ANDROID__
     #include <glad/gles1.h>

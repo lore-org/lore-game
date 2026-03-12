@@ -1,6 +1,31 @@
 #include <furredengine/utils.h>
 
-#include <glm/ext/matrix_clip_space.hpp>
+#include <cstddef>
+#include <cstdio>
+#include <string>
+#include <algorithm>
+#include <locale>
+#include <vector>
+#include <regex>
+#include <cmath>
+#include <cstring>
+#include <cstdlib>
+#include <cctype>
+
+#if __ANDROID__
+    #include <glad/gles1.h>
+    #include <glad/gles2.h>
+#else
+    #include <glad/gl.h>
+#endif
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+#include <httplib.h>
+#include <ada.h>
+#include <openssl/sha.h>
+#include <fmt/format.h>
+
+#include <furredengine/Geometry.h>
 
 using namespace FurredEngine;
 

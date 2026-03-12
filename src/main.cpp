@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <furredengine/Engine.h>
 #include <furredengine/PresenceManager.h>
 #include <furredengine/Scene.h>
@@ -6,6 +8,7 @@
 #include <furredengine/TextNode.h>
 #include <furredengine/RectangleNode.h>
 #include <furredengine/Director.h>
+#include <furredengine/Object.h>
 
 using namespace FurredEngine;
 

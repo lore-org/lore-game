@@ -5,8 +5,7 @@
 #include <memory>
 #include <string>
 
-#include <glm/ext/vector_float2.hpp>
-#include <glm/ext/vector_float4.hpp>
+#include <glm/glm.hpp>
 
 namespace FurredEngine {
 

@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <vector>
 
 #define Event_Callback std::function<void(void*)>
 #define Update_Callback std::function<void(const long double)>

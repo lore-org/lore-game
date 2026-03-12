@@ -1,11 +1,10 @@
 #include <furredengine/PresenceManager.h>
 
 #include <memory>
+#include <string>
 
 #include <discord-rpc.hpp>
 
-#include <furredengine/Engine.h>
-#include <furredengine/Geometry.h>
 #include <furredengine/utils.h>
 
 using namespace FurredEngine;

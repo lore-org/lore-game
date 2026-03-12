@@ -1,8 +1,10 @@
 #include <furredengine/Scene.h>
 
+#include <memory>
+
 #include <furredengine/Engine.h>
-#include <furredengine/Geometry.h>
 #include <furredengine/utils.h>
+#include <furredengine/Node.h>
 
 using namespace FurredEngine;
 

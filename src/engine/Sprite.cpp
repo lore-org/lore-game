@@ -1,6 +1,8 @@
 #include <furredengine/Sprite.h>
 
 #include <memory>
+#include <cstddef>
+#include <cstdint>
 
 #if __ANDROID__
     #include <glad/gles1.h>
@@ -8,10 +10,8 @@
 #else
     #include <glad/gl.h>
 #endif
-#include <GLFW/glfw3.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <ada.h>
 #include <httplib.h>
 #include <fmt/format.h>
 

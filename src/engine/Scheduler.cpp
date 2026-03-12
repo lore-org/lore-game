@@ -1,8 +1,12 @@
 #include <furredengine/Scheduler.h>
 
-#include <furredengine/Engine.h>
-#include <furredengine/Geometry.h>
+#include <memory>
+#include <cstdint>
+#include <algorithm>
+#include <unordered_set>
+
 #include <furredengine/utils.h>
+#include <furredengine/Object.h>
 
 using namespace FurredEngine;
 

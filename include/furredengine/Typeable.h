@@ -1,10 +1,15 @@
 #pragma once
 
 #include <memory>
+#include <cstdint>
+#include <string>
 
+#include <furredengine/Geometry.h>
 #include <furredengine/ColorNode.h>
 #include <furredengine/RectangleNode.h>
 #include <furredengine/Touchable.h>
+#include <furredengine/Engine.h>
+#include <furredengine/utils.h>
 
 namespace FurredEngine {
 
